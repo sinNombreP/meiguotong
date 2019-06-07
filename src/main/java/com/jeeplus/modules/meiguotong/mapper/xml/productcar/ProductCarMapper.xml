@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.productcar.ProductCarMapper">
+    
+	<sql id="productCarColumns">
+		a.id AS "id",
+		a.memberid AS "memberid",
+		a.type AS "type",
+		a.typeid AS "typeid",
+		a.adult_num AS "adultNum",
+		a.child_num AS "childNum",
+		a.one_num AS "oneNum",
+		a.two_num AS "twoNum",
+		a.three_num AS "threeNum",
+		a.four_num AS "fourNum",
+		a.arrange_num AS "arrangeNum",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.languageid AS "languageid",
+		a.price AS "price",
+		a.create_date AS "createDate",
+		a.roomids as "roomids"
+	</sql>
+	
+	<sql id="productCarJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ProductCar" >
+		SELECT 
+			<include refid="productCarColumns"/>
+		FROM product_car a
+		<include refid="productCarJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ProductCar" >
+		SELECT 
+			<include refid="productCarColumns"/>
+		FROM product_car a
+		<include refid="productCarJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProductCar" >
+		SELECT 
+			<include refid="productCarColumns"/>
+		FROM product_car a
+		<include refid="productCarJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO product_car(
+			memberid,
+			type,
+			typeid,
+			adult_num,
+			child_num,
+			one_num,
+			two_num,
+			three_num,
+			four_num,
+			arrange_num,
+			begin_date,
+			end_date,
+			languageid,
+			price,
+			create_date,
+			roomids
+		) VALUES (
+			#{memberid},
+			#{type},
+			#{typeid},
+			#{adultNum},
+			#{childNum},
+			#{oneNum},
+			#{twoNum},
+			#{threeNum},
+			#{fourNum},
+			#{arrangeNum},
+			#{beginDate},
+			#{endDate},
+			#{languageid},
+			#{price},
+			#{createDate},
+			#{roomids}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE product_car SET 	
+			memberid = #{memberid},
+			type = #{type},
+			typeid = #{typeid},
+			adult_num = #{adultNum},
+			child_num = #{childNum},
+			one_num = #{oneNum},
+			two_num = #{twoNum},
+			three_num = #{threeNum},
+			four_num = #{fourNum},
+			arrange_num = #{arrangeNum},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			price = #{price},
+			languageid = #{languageid},
+			roomids = #{roomids}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM product_car
+		WHERE id = #{id}
+	</update>
+	<!--购物车删除（多个id）-->
+	<update id="deleteCar">
+		DELETE FROM product_car
+		WHERE id in
+		<foreach collection="array" item="id" open="("  close=")" separator=",">
+			#{id}
+		</foreach>
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE product_car SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ProductCar" statementType="STATEMENT">
+		select * FROM product_car  where ${propertyName} = '${value}'
+	</select>
+	<!-- 根据用户ID查询购物列表 -->
+	<select id="findproductCarByMemberId" resultType="ProductCar" >
+		SELECT case when (a.type=1 or a.type=2) then r.title  
+		 when (a.type=3) then g.introduction 
+		 when (a.type=4) then l.name
+		 when (a.type=5) then s.name
+		 when (a.type=6) then gr.title
+		 end  as "title",
+		 case when (a.type=1 or a.type=2) then r.car_img  
+		 when (a.type=3) then g.photo_url 
+		 when (a.type=4) then l.img_url
+		 when (a.type=5) then s.img_url
+		 when (a.type=6) then gr.photo
+		 end  as "img",
+			<include refid="productCarColumns"/>,
+		case when (a.type=1 or a.type=2) then if(r.status=3 and r.del_flag=0 ,1,0)
+		 when (a.type=3) then if(g.status=1 and g.type=1,1,0)
+		 when (a.type=4) then if(l.status=3 and l.del_flag=0,1,0)
+		 when (a.type=5) then if(ss.status=1 and ss.del_flag=0 and s.status=3 and s.del_flag=0,1,0)
+		 when (a.type=6) then if(gr.status=3 and gr.del_flag=0 ,1,0)
+		 end  as "status"
+		FROM product_car a
+		<include refid="productCarJoins"/>
+		LEFT join route r on a.typeid =r.id and (a.type=1 or a.type=2) 
+		left join liner_line l on a.typeid=l.id and a.type=4
+		left join guide g on a.typeid=g.id and a.type=3
+		left join scenic_spot_ticket ss on a.typeid=ss.id and a.type=5
+		LEFT join scenic_spot s on ss.scenicid=s.id
+		left join guide_route gr on a.typeid=gr.id and a.type=6
+		WHERE a.memberid = #{memberid} and a.languageid=#{languageid}
+	</select>
+	
+	<!-- 根据用户ID查询购物列表 -->
+	<select id="findproductCarListByMemberId" resultType="ProductCar" >
+		SELECT case when (a.type=1 or a.type=2) then r.title  
+		 when (a.type=3) then g.introduction 
+		 when (a.type=4) then l.name
+		 when (a.type=5) then s.name
+		 when (a.type=6) then gr.title
+		 end  as "title",
+		 case when (a.type=1 or a.type=2) then r.car_img  
+		 when (a.type=3) then g.photo_url 
+		 when (a.type=4) then l.img_url
+		 when (a.type=5) then s.img_url
+		 when (a.type=6) then gr.photo
+		 end  as "img",
+			<include refid="productCarColumns"/>,
+		case when (a.type=1 or a.type=2) then if(r.status=3 and r.del_flag=0 ,1,0)
+		 when (a.type=3) then if(g.status=1 and g.type=1,1,0)
+		 when (a.type=4) then if(l.status=3 and l.del_flag=0,1,0)
+		 when (a.type=5) then if(ss.status=1 and ss.del_flag=0 and s.status=3 and s.del_flag=0,1,0)
+		 when (a.type=6) then if(gr.status=3 and gr.del_flag=0 ,1,0)
+		 end  as "status"
+		FROM product_car a
+		<include refid="productCarJoins"/>
+		LEFT join route r on a.typeid =r.id and (a.type=1 or a.type=2) 
+		left join liner_line l on a.typeid=l.id and a.type=4
+		left join guide g on a.typeid=g.id and a.type=3
+		left join scenic_spot_ticket ss on a.typeid=ss.id and a.type=5
+		LEFT join scenic_spot s on ss.scenicid=s.id
+		left join guide_route gr on a.typeid=gr.id and a.type=6
+		WHERE a.memberid = #{memberid} and a.languageid = #{languageid}
+		<if test="type != null  and type ==3 ">
+			and (a.type=3 or a.type=6)
+		</if>
+		<if test="type != null and type >0 and type !=3 ">
+			and a.type=#{type}
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 查询购物车各类型订单数量 -->
+	<select id="findNumGroupByType" resultType="ProductCar" >
+	select t2.type,IFNULL(b.num,0) as num from 
+		(SELECT @cdate := @cdate+1 type from
+			(SELECT @cdate :=-1  from sys_log limit 6) t1) t2
+		left join 
+		(select type,count(type) as "num" from product_car
+		where memberid=#{memberid} and FIND_IN_SET(type,"1,2,4,5") and languageid=#{languageid} GROUP BY type
+		union all
+		 SELECT 0 AS type,count(*) AS "num"  FROM product_car WHERE memberid=#{memberid}
+		 UNION ALL
+		select 3 as "type",sum(num) as "num" from(
+		select type,count(type)as "num" from product_car 
+		where memberid=#{memberid} and FIND_IN_SET(type,"3,6") and languageid=#{languageid} GROUP BY type) a ) b on t2.type=b.type
+	</select>
+	
+	<!-- 查询购物车各类型订单数量 -->
+	<select id="findProductCarById" resultType="ProductCar" >
+		SELECT 
+			<include refid="productCarColumns"/>
+		FROM product_car a
+		<include refid="productCarJoins"/>
+		where FIND_IN_SET(a.id,#{id})
+	</select>
+</mapper>

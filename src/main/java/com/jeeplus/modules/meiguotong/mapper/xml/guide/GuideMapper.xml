@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.guide.GuideMapper">
+    
+	<sql id="guideColumns">
+		a.id AS "id",
+		a.memberid AS "memberid",
+		a.real_name AS "realName",
+		a.address AS "address",
+		a.status AS "status",
+		a.introduction AS "introduction",
+		a.deltails AS "deltails",
+		a.type AS "type",
+		a.code_type AS "codeType",
+		a.code AS "code",
+		a.photo_url AS "photoUrl",
+		a.sex AS "sex",
+		a.tag_id AS "tagId",
+		a.countryid AS "countryid",
+		a.look_num AS "lookNum",
+		a.collection_num AS "collectionNum",
+		a.comment_num AS "commentNum",
+		a.finish_num AS "finishNum",
+		a.star AS "star",
+		a.cityid AS "cityid",
+		a.img AS "img",
+		gt.price as "price"
+	</sql>
+	
+	<sql id="guideJoins">
+		left join guide_time gt on gt.guideid=a.id and gt.type=1
+	</sql>
+	
+	<!-- 获取导游列表 -->
+	<select id="getGuideList"  resultType="Guide">
+		SELECT 
+			<include refid="guideColumns"/>,
+			b.city_name as "cityName",
+			c.title as "countryName",
+		    d.photo AS "memberPhoto"
+		FROM guide a
+			LEFT JOIN member_information d ON a.memberid = d.memberid
+			LEFT JOIN com_city b on b.id = a.cityid
+			LEFT JOIN country c on c.id = b.province_id
+			<include refid="guideJoins"/>
+		<where>
+			${dataScope}
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type}
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where>
+	</select>
+	
+    <!-- 获取抽成比例 -->
+    <select id="findDiscount" resultType="Guide">
+    select 
+    		<include refid="guideColumns"/>,
+    		sut.discount AS "discount"
+		FROM guide a
+		left join sys_user_type sut on a.id=sut.id
+		<include refid="guideJoins"/>
+    </select>
+    <!-- 获取玩家认证信息接口 -->
+    <select id="getGuide" resultType="Guide" >
+		SELECT 
+			a.id AS "guideid",
+			a.real_name AS "realName",
+			a.countryid AS "countryid",
+			a.cityid AS "cityid",
+			a.address AS "address",
+			a.introduction AS "introduction",
+			a.deltails AS "deltails",
+			a.code_type AS "codeType",
+			a.code AS "code",
+			a.photo_url AS "photoUrl",
+			a.tag_id AS "tagId",
+			a.img AS "img"
+		FROM guide a
+		WHERE a.memberid = #{memberid}
+	</select>
+	<!-- 根据memberid获取导游信息 -->
+	<select id="findGuide" resultType="Guide" >
+		SELECT 
+			<include refid="guideColumns"/>
+		FROM guide a
+		<include refid="guideJoins"/>
+		WHERE a.memberid = #{memberid}
+	</select>
+	<!-- 接口获取导游详情 -->
+	<select id="getGuideInfo" resultType="Guide" >
+		SELECT 
+			a.id AS "id",
+			a.img AS "img",
+			a.real_name AS "realName",
+			a.introduction AS "introduction",
+			cc.city_name as "cityName",
+			country.title as "countryName",
+			gt.price as "price",
+			a.comment_num AS "commentNum",
+			a.star AS "star",
+			mi.sex as "sex",
+			mi.photo as "photo",
+			DATE_FORMAT(now(), '%Y')-DATE_FORMAT(mi.birthday, '%Y') as "age",
+			a.deltails AS "deltails",
+			ifnull((SELECT  group_concat(b.content) FROM com_tag b 
+				WHERE FIND_IN_SET(b.id,a.tag_id) > 0 ),"") AS "tagContent",
+			if((select count(pc.id) from product_collection pc where pc.type=3 and 
+				pc.typeid=a.id and pc.memberid=#{memberid})>0,1,2) as "ifcollection"
+		FROM guide a
+		left join guide_time gt on gt.guideid=a.id and gt.type=1
+		left join member_information mi on mi.memberid=a.memberid
+		left join com_city cc on cc.id=a.cityid
+		left join country country on country.id=cc.province_id
+		WHERE a.id = #{id}
+	</select>
+	<select id="get" resultType="Guide" >
+		SELECT 
+			<include refid="guideColumns"/>,
+			if(mi.sex=1,"男","女") as "sexName",
+			mi.birthday as "birthday"
+		FROM guide a
+		<include refid="guideJoins"/>
+		left join member_information mi on mi.memberid=a.memberid
+		WHERE a.id = #{id}
+	</select>
+	
+		<!--  导游筛选接口 -->
+		<select id="findGuideScreenList" resultType="Guide" >
+		SELECT 
+			a.id AS "id",
+			a.introduction AS "introduction",
+			mi.photo as "photo",
+			a.img AS "img",
+			a.real_name AS "realName",
+			gt.price as "price",
+			cc.city_name as "cityName",
+			country.title as "countryName"
+		FROM guide a
+		left join guide_time gt on gt.guideid=a.id and gt.type=1
+		left join member_information mi on mi.memberid=a.memberid
+		left join com_city cc on cc.id=a.cityid
+		left join country country on country.id=cc.province_id
+		where
+			a.status =1 AND a.type = 1  
+			<if test="cityid != null and cityid != ''">	
+				and a.city = #{cityid}
+			</if>
+			<if test="cityName != null and cityName != ''">	
+				and cc.city_name LIKE concat('%',#{cityName},'%')
+			</if>
+ 		<if test="guideAge != null and guideAge != ''">	
+ 				and FIND_IN_SET(if(DATE_FORMAT(mi.birthday, '%Y')>='1980',(
+ 						case when (DATE_FORMAT(mi.birthday,'%Y')>='1980' and '1990'>DATE_FORMAT(mi.birthday,'%Y')) then '1980'
+ 						when (DATE_FORMAT(mi.birthday,'%Y')>='1990' and '2000'>DATE_FORMAT(mi.birthday,'%Y')) then '1990'
+ 						when (DATE_FORMAT(mi.birthday,'%Y')>='2000' and '2010'>DATE_FORMAT(mi.birthday,'%Y')) then '2000'
+ 						end
+ 					),'1970'),#{guideAge})>0 
+		</if>
+		<if test="guideSex != null and guideSex != ''">
+				and FIND_IN_SET(a.sex,#{guideSex})>0 
+		</if>
+		<if test="minPrice != null and minPrice != ''">
+			and gt.price>=#{minPrice}
+		</if>
+		<if test="maxPrice != null and maxPrice != ''">
+			and #{maxPrice}>=gt.price
+		</if>
+		<if test="tagIds != null and tagIds != ''">
+			and 
+			(<foreach item="tag" index="index" collection="tagIds" separator="or">
+                find_in_set(#{tag},a.tag_id)>0
+			</foreach>)
+		</if>
+	</select>
+	
+	<!-- 根据搜索条件获取导游列表 -->
+	<select id="getGuideByCity" resultType="Guide" >
+		SELECT 
+			a.id as "guideid",
+			a.real_name as "realName",
+			mi.photo as "photo",
+			a.sex as "sex",
+			mi.birthday as "birthday",
+			cc.city_name as "cityName",
+			a.introduction as "introduction",
+			a.comment_num as "commentNum",
+			a.star as "star",
+			gd.price as "price",
+			gd.type as "type",
+			a.img as "img",
+			IFNULL((SELECT  group_concat(b.content) FROM com_tag b
+				WHERE FIND_IN_SET(b.id,a.tag_id) > 0 ),'') AS "tagContent"
+		FROM guide a
+		left join guide_date gd on gd.guideid=a.id and gd.type=#{guideType}
+			and DATE_FORMAT(gd.price_date, '%Y-%m-%d')=DATE_FORMAT(#{date}, '%Y-%m-%d')
+		left join member_information mi on mi.memberid=a.memberid
+		left join com_city cc on cc.id=a.cityid
+		where a.status =1 AND a.type = 1  AND
+		a.cityid = #{cityid} and gd.id is not null
+ 		<if test="guideAge != null and guideAge != ''">	
+ 				and FIND_IN_SET(if(DATE_FORMAT(mi.birthday, '%Y')>='1980',(
+ 						case when (DATE_FORMAT(mi.birthday,'%Y')>='1980' and '1990'>DATE_FORMAT(mi.birthday,'%Y')) then '1980'
+ 						when (DATE_FORMAT(mi.birthday,'%Y')>='1990' and '2000'>DATE_FORMAT(mi.birthday,'%Y')) then '1990'
+ 						when (DATE_FORMAT(mi.birthday,'%Y')>='2000' and '2010'>DATE_FORMAT(mi.birthday,'%Y')) then '2000'
+ 						end
+ 					),'1970'),#{guideAge})>0 
+		</if>
+		<if test="guideSex != null and guideSex != ''">
+				and FIND_IN_SET(a.sex,#{guideSex})>0 
+		</if>
+		<if test="minPrice != null and minPrice != ''">
+			and gd.price>=#{minPrice}
+		</if>
+		<if test="maxPrice != null and maxPrice != ''">
+			and #{maxPrice}>=gd.price
+		</if>
+		<if test="tagIds != null and tagIds != ''">
+			and 
+			(<foreach item="tag" index="index" collection="tagIds" separator="or">
+                find_in_set(#{tag},a.tag_id)>0
+			</foreach>)
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findList" resultType="Guide" >
+		SELECT 
+			<include refid="guideColumns"/>,
+			m.mobile AS "mobile",
+			mi.nick_name AS "nickName",
+			m.lastLogin_date AS "lastLoginDate",
+			mi.photo AS "photo",
+			m.email AS "email",
+			(select group_concat(b.content) from com_tag b 
+				where FIND_IN_SET(b.id,a.tag_id)>0
+				and b.type=5 group by b.type) as "tagContent"			 
+		FROM guide a
+		left join member m on m.id=a.memberid
+		left join member_information mi  on mi.memberid=a.memberid
+		<include refid="guideJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="realName != null and realName != ''">
+				AND a.real_name = #{realName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Guide" >
+		SELECT 
+			<include refid="guideColumns"/>
+		FROM guide a
+		left join 
+		<include refid="guideJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO guide(
+		    memberid,
+			real_name,
+			address,
+			status,
+			introduction,
+			deltails,
+			type,
+			code_type,
+			code,
+			photo_url,
+			sex,
+			tag_id,
+			countryid,
+			cityid,
+			look_num,
+			collection_num,
+			comment_num,
+			finish_num,
+			star,
+			img
+		) VALUES (
+		    #{memberid},
+			#{realName},
+			#{address},
+			#{status},
+			#{introduction},
+			#{deltails},
+			#{type},
+			#{codeType},
+			#{code},
+			#{photoUrl},
+			#{sex},
+			#{tagId},
+			#{countryid},
+			#{cityid},
+			0,
+			0,
+			0,
+			0,
+			5,
+			#{img}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE guide SET 	
+			real_name = #{realName},
+			address = #{address},
+			status = #{status},
+			introduction = #{introduction},
+			deltails = #{deltails},
+			type = #{type},
+			code_type = #{codeType},
+			code = #{code},
+			photo_url = #{photoUrl},
+			sex=#{sex},
+			tag_id=#{tagId},
+			countryid=#{countryid},
+			cityid=#{cityid},
+			img=#{img}
+		WHERE id = #{id}
+	</update>
+	<update id="status">
+	 update guide Set
+	 status=#{status},
+	 type=#{type}
+	WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM guide
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE guide SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Guide" statementType="STATEMENT">
+		select * FROM guide  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findguidesByName" resultType="Guide" >
+		select g.id,g.real_name as "realName"
+		from guide g 
+			left join member m on g.memberid=m.id
+		where m.type=1 and g.id is not null
+		<if test="realName != null and realName != ''">
+		and g.real_name like concat('%',#{realName},'%')
+		</if>
+		<if test="cityId != null and cityId != ''">
+		and cityid=#{cityId} 
+		</if>
+		<if test="guideids != null and guideids != ''">
+		and !find_in_set(g.id,#{guideids})>0 
+		</if>
+	</select>
+	<select id="findguidesByPlayerId" resultType="Guide" >
+		select g.id,g.real_name as "realName"
+		from guide g 
+			left join member m on g.memberid=m.id
+		where m.type=1 and  find_in_set(g.id,#{playerTop})>0 
+	</select>
+	
+	<!-- 获取当地玩家列表 -->
+	<select id="getPlayerList"  resultType="Guide">
+		SELECT 
+		a.id,a.introduction,a.deltails,a.finish_num,a.img,a.photo_url,m.create_date,gt.price,i.nick_name,i.photo,
+		b.city_name as "cityName",
+		c.title as "countryName"
+		FROM guide a
+		LEFT JOIN com_city b on b.id = a.cityid
+		LEFT JOIN country c on c.id = b.province_id
+		left join guide_time gt on gt.guideid=a.id and gt.type=1
+		left join member m on m.id=a.memberid and m.status=1
+		left join member_information i on i.memberid=m.id
+		<where>
+			a.status = 1
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where>
+		<if test="order != null and order != '' ">
+			order by ${order}
+		</if>
+		<if test="pageNo != null  and pageSize !=null ">
+			limit  #{pageNo,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	     </if>
+	</select>
+	
+	<select id="findGuideList"  resultType="Guide">
+		select a.id,m.nick_name as "nickName" 
+		from guide a left join member_information m on a.memberid=m.memberid
+		where a.status=1 and a.type=1
+	</select>
+	
+	<select id="productCar_findGuide"  resultType="Guide">
+		select <include refid="guideColumns"/>,
+		m.nick_name as "nickName",YEAR(now())-YEAR(m.birthday) as "age",
+		c.title as "countryName",
+		cc.city_name as "cityName",
+		(select GROUP_CONCAT(content) from com_tag where FIND_IN_SET(id,a.tag_id)) as "tagContent" 
+		from guide a 
+		<include refid="guideJoins"/>
+		left join member_information m on a.memberid=m.memberid
+		left join country c on m.countryid=c.id
+		left join com_city cc on m.cityid=cc.id
+		where a.id=#{id}
+	</select>
+	
+	<!--修改星级、评论数-->
+	<update id="changeCommnetNum">
+		UPDATE guide SET 	
+			star=(select truncate(sum(level)/count(id),1) from com_comment where type=8 and type_id=#{id}),
+			comment_num=comment_num+1
+		WHERE id = #{id}
+	</update>
+	
+	<!--修改收藏数量-->
+	<update id="changecollectionNum">
+		update guide set collection_num=collection_num+#{collectionNum} where id=#{id}
+	</update>
+</mapper>

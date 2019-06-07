@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.product.RouteContentMapper">
+    
+	<sql id="routeContentColumns">
+		a.id AS "id",
+		a.routeid AS "routeid",
+		a.day_count AS "dayCount",
+		a.trip_date AS "tripDate",
+		a.trip_type AS "tripType",
+		a.trip_scenic AS "tripScenic",
+		a.title AS "title",
+		a.infor AS "infor",
+		a.img AS "img"
+	</sql>
+	
+	<sql id="routeContentJoins">
+		
+	</sql>
+	
+    <!--获取行程内容-->
+    <select id="getContentList" resultMap="contentList" >
+		SELECT 
+			a.day_count AS "dayCount",
+			a.routeid AS "routeid"
+		FROM route_content a
+		where a.routeid=#{routeid}
+		GROUP BY a.day_count,a.routeid
+		order by a.day_count
+	</select>
+
+	<resultMap id="contentList" type="RouteContent">
+		<result property="dayCount" column="dayCount"/>
+		<result property="routeid" column="routeid"/>
+		 <collection property="contentList" column="{dayCount=dayCount,routeid=routeid}" javaType="ArrayList" 
+	                ofType="RouteContent" select="getDayContentList"/>
+	</resultMap>
+
+	 <select id="getDayContentList" resultType="RouteContent" >
+		SELECT 
+			a.trip_date AS "tripDate",
+			a.trip_type AS "tripType",
+			a.trip_scenic AS "tripScenic",
+			a.title AS "title",
+			a.infor AS "infor",
+			a.img AS "img",
+			ss.name as "scenicName",
+			ss.content as "scenicInfor"
+		FROM route_content a
+		left join scenic_spot ss on ss.id=a.trip_scenic
+		where a.day_count=#{dayCount} and a.routeid=#{routeid}
+	</select>
+	
+	<select id="get" resultType="RouteContent" >
+		SELECT 
+			<include refid="routeContentColumns"/>
+		FROM route_content a
+		<include refid="routeContentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="RouteContent" >
+		SELECT 
+			<include refid="routeContentColumns"/>
+		FROM route_content a
+		<include refid="routeContentJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RouteContent" >
+		SELECT 
+			<include refid="routeContentColumns"/>
+		FROM route_content a
+		<include refid="routeContentJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 获取行程 -->
+	<select id="findListByRouteid" resultType="RouteContent">
+		SELECT
+			<include refid="routeContentColumns"/>
+		FROM route_content a
+		<include refid="routeContentJoins"/>
+		WHERE a.routeid = #{routeid}
+	</select>
+
+	<insert id="insert">
+		INSERT INTO route_content(
+			routeid,
+			day_count,
+			trip_date,
+			trip_type,
+			trip_scenic,
+			title,
+			infor,
+			img
+		) VALUES (
+			#{routeid},
+			#{dayCount},
+			#{tripDate},
+			#{tripType},
+			#{tripScenic},
+			#{title},
+			#{infor},
+			#{img}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE route_content SET 	
+			routeid = #{routeid},
+			day_count = #{dayCount},
+			trip_date = #{tripDate},
+			trip_type = #{tripType},
+			trip_scenic = #{tripScenic},
+			title = #{title},
+			infor = #{infor},
+			img = #{img}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 根据参团ID删除数据 -->
+	<update id="deleteByRouteId">
+		DELETE FROM route_content
+		WHERE routeid = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM route_content
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE route_content SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="RouteContent" statementType="STATEMENT">
+		select * FROM route_content  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.settingtitle.SettingTitleMapper">
+    
+	<sql id="settingTitleColumns">
+		a.id AS "id",
+		a.sort AS "sort",
+		a.title AS "title",
+		a.status AS "status",
+		a.type AS "type",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.isadd as "isadd"
+	</sql>
+	
+	<sql id="settingTitleJoins">
+		
+	</sql>
+	<!--  获取最大的isAdd -->
+	<select id="getMaxIsAdd" resultType="Integer" >
+		SELECT 
+			max(isadd)
+		FROM setting_title a
+		where
+			a.type=#{type} and a.language_id=#{languageId}
+	</select>
+    <!-- 获取产品菜单接口 -->
+    <select id="getProMenu" resultType="SettingTitle" >
+		SELECT 
+			a.id as "id",
+			a.isadd as "isadd",
+			a.sort AS "sort",
+			a.title AS "title",
+			stp.content as "content",
+			a.status AS "status"
+		FROM setting_title a
+		left join setting_title_pro stp on stp.titleid=a.id and stp.proid=#{proid}
+		where
+			a.del_flag = 0 and a.type=#{type} and a.language_id=#{languageId}
+			and a.status=1
+		order by a.sort
+	</select>
+	<select id="get" resultType="SettingTitle" >
+		SELECT 
+			<include refid="settingTitleColumns"/>
+		FROM setting_title a
+		<include refid="settingTitleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 邮轮详情标题接口 -->
+	<select id="cruiseList" resultType="SettingTitle" >
+		SELECT 
+			<include refid="settingTitleColumns"/>
+		FROM setting_title a
+		WHERE a.type = 4
+	</select>
+	<!-- 获取各类型新增的标题 -->
+	<select id="getAddTitle" resultType="SettingTitle" >
+		SELECT 
+			<include refid="settingTitleColumns"/>,
+			 stp.id as "titleProid",
+			 stp.content as "content"
+		FROM setting_title a
+		<include refid="settingTitleJoins"/>
+		left join setting_title_pro stp on stp.proid=#{proid} and stp.titleid=a.id
+		where
+			a.del_flag = 0 and(a.isadd!=2 and a.isadd!=3 and a.isadd!=4) and a.status=1
+			and a.type=#{type} AND a.language_id=#{languageId}
+	</select>
+	<select id="findList" resultType="SettingTitle" >
+		SELECT 
+			<include refid="settingTitleColumns"/>,
+			cl.content as "languageName"
+		FROM setting_title a
+		left join com_language cl on cl.id=a.language_id
+		<include refid="settingTitleJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id=#{languageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.language_id,a.type,a.sort
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SettingTitle" >
+		SELECT 
+			<include refid="settingTitleColumns"/>
+		FROM setting_title a
+		<include refid="settingTitleJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO setting_title(
+			sort,
+			title,
+			content,
+			status,
+			type,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			isadd
+		) VALUES (
+			#{sort},
+			#{title},
+			#{content},
+			1,
+			#{type},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{isadd}
+		)
+	</insert>
+	<!--修改状态-->
+	<update id="status">
+		UPDATE setting_title SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	<update id="update">
+		UPDATE setting_title SET 	
+			sort = #{sort},
+			title = #{title},
+			content = #{content},
+			status = #{status},
+			type = #{type},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM setting_title
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE setting_title SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SettingTitle" statementType="STATEMENT">
+		select * FROM setting_title  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

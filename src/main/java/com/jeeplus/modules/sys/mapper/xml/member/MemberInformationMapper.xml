@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.member.MemberInformationMapper">
+    
+	<sql id="memberInformationColumns">
+		b.memberid AS "memberid",
+		b.photo AS "photo",
+		b.sex AS "sex",
+		b.birthday AS "birthday",
+		b.nick_name AS "nickName",
+		b.countryid as "countryid",
+		b.cityid as "cityid",
+		b.address AS "address",
+		b.real_name AS "realName",
+		b.cert_type AS "certType",
+		b.cert_no AS "certNo",
+		b.phone as "phone"
+	</sql>
+	
+	<sql id="memberColumns">
+		a.id AS "id",
+		a.father_id AS "fatherId",
+		a.code AS "code",
+		a.mobile AS "mobile",
+		a.password AS "password",
+		a.status AS "status",
+		a.audit AS "audit",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.lastlogin_date AS "lastloginDate",
+		a.lastlogin_ip AS "lastloginIp",
+		a.login_deyid AS "loginDeyid",
+		a.create_type AS "createType",
+		a.email AS "email",
+		a.loginx AS "loginx",
+		a.loginy AS "loginy",
+		a.type AS "type",
+		a.qq_id AS "qqId",
+		a.weixin_id AS "weixinId",
+		a.weibo_id AS "weiboId"
+	</sql>
+	
+	<sql id="memberInformationJoins">
+		LEFT JOIN member_information b ON  a.id = b.memberid
+	</sql>
+	<!-- 获取会员个人信息（接口） -->
+    <select id="getMember" resultType="MemberInformation" >
+		SELECT 
+			b.photo AS "photo",
+			a.mobile as "mobile",
+			b.nick_name AS "nickName",
+			b.phone as "phone",
+			a.email AS "email",
+			b.address AS "address",
+			b.sex AS "sex",
+			b.birthday AS "birthday",
+			b.countryid as "countryid",
+			b.cityid as "cityid",
+			
+			a.type AS "type",
+			a.create_type AS "createType"
+			
+		FROM member_information b 
+		left join member a on a.id=b.memberid
+		WHERE b.memberid = #{memberid}
+	</select>
+	<!-- 获取会员个人信息(旅行社)（接口） -->
+    <select id="getMemberTravel" resultType="MemberInformation" >
+		SELECT 
+			a.type AS "type",
+			a.create_type AS "createType",
+			b.legal_person AS "legalPerson",
+			b.company_name AS "companyName",
+			b.company_name AS "nickName",
+			b.company_logo AS "companyLogo",
+			b.company_img AS "companyImg",
+			b.cards_img AS "cardsImg",
+			b.company_content AS "companyContent",
+			b.company_logo AS "photo",
+			b.phone as "phone",
+			a.mobile as "mobile",
+			a.email AS "email",
+			b.address AS "address",
+			b.countryid as "countryid",
+			b.cityid as "cityid",
+			b.company_type as "companyType"
+		FROM member_travel b 
+		left join member a on a.id=b.memberid
+		WHERE b.memberid = #{memberid}
+	</select>
+	<select id="get" resultType="MemberInformation" >
+		SELECT 
+			<include refid="memberColumns"/>,
+			<include refid="memberInformationColumns"/>,
+		    c.city_name AS "cityName",
+		    d.title AS "countryName"
+		FROM member a
+		<include refid="memberInformationJoins"/>
+		LEFT JOIN com_city c ON c.id = b.cityid
+		LEFT JOIN country d ON d.id = b.countryid
+		WHERE a.id = #{id}
+	</select>
+	<!-- 根据memberid查找数据 -->
+	<select id="findByMemberid" resultType="MemberInformation" >
+		SELECT 
+		b.photo AS "photo",
+		b.sex AS "sex",
+		b.birthday AS "birthday",
+		b.nick_name AS "nickName",
+			b.countryid as "countryid",
+			b.cityid as "cityid",
+		b.address AS "address",
+		b.real_name AS "realName",
+		b.cert_type AS "certType",
+		b.cert_no AS "certNo"
+		FROM member_information b 
+		WHERE b.memberid = #{memberid}
+	</select>
+	
+	<!-- 获取导游信息 -->
+	<select id="getInfo" resultType="MemberInformation">
+		SELECT 
+			e.sex AS "sex",
+			e.nick_name AS "nickName",
+			e.address AS "address",
+			TIMESTAMPDIFF(YEAR, e.birthday, now())  AS "age"
+		FROM order_sys a
+		INNER  JOIN order_sys b ON a.fatherid = b.id 
+		INNER  JOIN order_sys c ON a.fatherid = c.fatherid 
+		LEFT JOIN  order_guide d ON c.orderid = d.id
+		LEFT JOIN member_information e ON d.member_id = e.memberid
+		WHERE   a.orderid = #{id}  AND a.type= 11 AND c.fatherid = b.id  AND c.type = 12 LIMIT 1
+	</select>
+	
+	<select id="findList" resultType="MemberInformation" >
+		SELECT 
+			<include refid="memberColumns"/>,
+			<include refid="memberInformationColumns"/>
+		FROM member a 
+		<include refid="memberInformationJoins"/>
+		<where>
+			${dataScope}
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="type != null">
+				AND a.type = #{type}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND (a.mobile LIKE concat('%',#{searchContent},'%') OR a.email LIKE concat('%',#{searchContent},'%') )
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="lastloginDate != null">
+				AND a.lastlogin_date >= #{lastloginDate}
+			</if>
+		</where>
+				ORDER BY b.create_date DESC
+	</select>
+	
+	<select id="findAllList" resultType="MemberInformation" >
+		SELECT 
+			<include refid="memberColumns"/>,
+			<include refid="memberInformationColumns"/>
+		FROM memberid a 
+		<include refid="memberInformationJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 修改会员状态 -->
+	<update id="changeStatus">
+		UPDATE member SET 	
+			status = #{status}
+		WHERE id = #{id}
+	</update>
+	
+	<insert id="insert">
+		INSERT INTO member_information(
+			memberid,
+			photo,
+			sex,
+			birthday,
+			nick_name,
+			countryid,
+			cityid,
+			address,
+			real_name,
+			cert_type,
+			cert_no,
+			phone,
+			create_date
+		) VALUES (
+			#{memberid},
+			#{photo},
+			#{sex},
+			#{birthday},
+			#{nickName},
+			#{countryid},
+			#{cityid},
+			#{address},
+			#{realName},
+			#{certType},
+			#{certNo},
+			#{phone},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE member_information SET 	
+			memberid = #{memberid},
+			photo = #{photo},
+			sex = #{sex},
+			birthday = #{birthday},
+			nick_name = #{nickName},
+			countryid = #{countryid},
+			cityid = #{cityid},
+			address = #{address},
+			real_name = #{realName},
+			cert_type = #{certType},
+			cert_no = #{certNo},
+			phone = #{phone}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 修改会员信息 -->
+	<update id="updateMember">
+		UPDATE member_information SET 	
+			photo = #{photo},
+			sex = #{sex},
+			birthday = #{birthday},
+			nick_name = #{nickName},
+			address = #{address},
+			countryid = #{countryid},
+			cityid = #{cityid},
+			phone = #{phone}
+		WHERE  memberid = #{memberid}
+	</update>
+	<!-- 修改会员信息(邮箱) -->
+	<update id="updateMemberEmail">
+		UPDATE member SET 	
+			email = #{email}
+		WHERE  id = #{memberid}
+	</update>
+	<!-- 修改会员信息（旅行社） -->
+	<update id="updateMemberTravel">
+		UPDATE member_travel SET 	
+			countryid = #{countryid},
+			cityid = #{cityid},
+			address = #{address},
+			phone = #{phone},
+			photo = #{photo},
+			legal_person = #{legalPerson},
+			nick_name = #{companyName},
+			company_name = #{companyName},
+			company_img = #{companyImg},
+			cards_img = #{cardsImg},
+			company_content = #{companyContent},
+			company_logo = #{companyLogo}
+		WHERE  memberid = #{memberid}
+	</update>
+	<!-- 修改会员信息(审核状态) -->
+	<update id="updateMemberAudit">
+		UPDATE member SET 	
+			audit =2
+		WHERE  id = #{memberid}
+	</update>
+	<update id="uPdate">
+		UPDATE member_information SET 	
+			memberid = #{memberid},
+			photo = #{photo},
+			sex = #{sex},
+			real_name = #{realName}
+		WHERE memberid = #{memberid}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM member_information
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE member_information SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="MemberInformation" statementType="STATEMENT">
+		select * FROM member_information  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

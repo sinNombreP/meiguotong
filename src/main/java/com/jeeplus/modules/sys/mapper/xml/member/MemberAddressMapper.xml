@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.member.MemberAddressMapper">
+    
+	<sql id="memberAddressColumns">
+		a.id AS "id",
+		a.memberid AS "memberId",
+		a.address as "address",	
+		a.people as "people",
+		a.get_mobile as "getMobile",
+		a.is_top as "isTop",	
+		a.create_date as "createDate",
+		a.country as "country",
+		a.city as "city",
+		a.area as "area"
+	</sql>
+	
+	<sql id="memberAddressJoins">
+		
+	</sql>
+	
+	<select id="getTopAddress" resultType="MemberAddress" >
+		SELECT 
+			<include refid="memberAddressColumns"/>
+		FROM member_address a
+		<include refid="memberAddressJoins"/>
+		WHERE a.memberid = #{memberId} and a.is_top=1 limit 0,1
+	</select>
+    
+	<select id="get" resultType="MemberAddress" >
+		SELECT 
+			<include refid="memberAddressColumns"/>
+		FROM member_address a
+		<include refid="memberAddressJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findNotAddress" resultType="MemberAddress" >
+		SELECT 
+			<include refid="memberAddressColumns"/>
+		FROM member_address a
+		<include refid="memberAddressJoins"/>
+		WHERE a.id != #{id}  and a.memberid =#{memberId}
+		order by a.create_date desc limit 0,1
+	</select>
+	
+	<select id="findList" resultType="MemberAddress" >
+		SELECT 
+			<include refid="memberAddressColumns"/>
+		FROM member_address a
+		<include refid="memberAddressJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="people != null and people != ''">
+				AND a.people LIKE 
+					<if test="dbName == 'oracle'">'%'||#{people}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{people}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{people},'%')</if>
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+			<if test="memberId != null and memberId != ''">
+				AND a.memberId=#{memberId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				order by a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MemberAddress" >
+		SELECT 
+			<include refid="memberAddressColumns"/>
+		FROM member_address a
+		<include refid="memberAddressJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO member_address(
+			memberid,
+			address,	
+			people,
+			get_mobile,
+			is_top,	
+			create_date,
+			country,
+			city,
+			area 
+		) VALUES (
+			#{memberId},
+			#{address},
+			#{people},
+			#{getMobile},
+			#{isTop},
+			now(),
+			#{country},
+			#{city},
+			#{area}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE member_address SET 	
+			memberid = #{memberId},
+			address = #{address},	
+			people = #{people},
+			get_mobile = #{getMobile},
+			is_top = #{isTop},	
+			create_date = #{createDate},
+			country = #{country},
+			city = #{city},
+			area = #{area}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateIsFirst">
+		UPDATE member_address SET 
+			is_top = #{isTop}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM member_address
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE member_address SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="MemberAddress" statementType="STATEMENT">
+		select * FROM member_address  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

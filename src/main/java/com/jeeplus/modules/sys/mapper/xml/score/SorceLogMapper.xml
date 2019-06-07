@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.score.SorceLogMapper">
+    
+	<sql id="sorceLogColumns">
+		a.id AS "id",
+		a.memberid AS "memberId",
+		a.type AS "type",
+		a.way AS "way",
+		a.score AS "score",
+		a.create_date AS "createDate"
+	</sql>
+	
+	<sql id="sorceLogJoins">
+		
+	</sql>
+	
+	<select id="getMyScore" resultType="Integer" >
+		SELECT 
+			Sum(score)
+		FROM sorce_log a
+		<include refid="sorceLogJoins"/>
+		WHERE a.memberid = #{memberId} and a.way= #{way}
+	</select>
+	
+	<select id="getMyUseScore" resultType="Integer" >
+		SELECT 
+			Sum(score)
+		FROM sorce_log a
+		<include refid="sorceLogJoins"/>
+		WHERE a.memberid = #{memberid} and a.way=2
+	</select>
+    
+	<select id="get" resultType="SorceLog" >
+		SELECT 
+			<include refid="sorceLogColumns"/>
+		FROM sorce_log a
+		<include refid="sorceLogJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SorceLog" >
+		SELECT 
+			<include refid="sorceLogColumns"/>
+		FROM sorce_log a
+		<include refid="sorceLogJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="memberId != null and memberId != ''">
+				AND a.memberid = #{memberId}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="way != null and way != ''">
+				AND a.way = #{way}
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SorceLog" >
+		SELECT 
+			<include refid="sorceLogColumns"/>
+		FROM sorce_log a
+		<include refid="sorceLogJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sorce_log(
+			memberid,
+			type,
+			way,
+			score,
+			create_date
+		) VALUES (
+			#{memberId},
+			#{type},
+			#{way},
+			#{score},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sorce_log SET 	
+			memberid = #{memberId},
+			type = #{type},
+			way = #{way},
+			score = #{score}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sorce_log
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sorce_log SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SorceLog" statementType="STATEMENT">
+		select * FROM sorce_log  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findSorceLogList" resultType="SorceLog" >
+		SELECT 
+			a.type AS "scoreType",
+			a.score AS "score",
+			a.way AS "status",
+			a.create_date AS "createDate"
+		FROM sorce_log a
+		where a.memberid = #{memberId}
+		order by a.create_date desc
+	</select>
+	
+</mapper>

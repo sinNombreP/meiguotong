@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>万事通</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/E-publc.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" href="../../css/common.css" />
+
+</head>
+
+
+<!-- 修改模块之前页面 -->
+
+<body>
+    <div id="app" v-cloak>
+        <ez-header></ez-header>
+        <ez-container></ez-container>
+        <!--content-->
+        <div class="container-fluid ez-search-wrap">
+            <div class="container ez-container ez-search">
+                <form class="ez-search-form">
+                    <h4 class="text-white">开启你的旅程</h4>
+                    <div class="input-group input-group-lg ez-search-box">
+                        <input type="text" class="form-control ez-search-input" placeholder="搜索旅行地/酒店/旅游/景点门票/交通"
+                            aria-describedby="basic-search">
+                        <a class="input-group-addon" id="basic-search" href="./pages/index/搜索-旅行.html"><i class="iconfont icon-search"></i></a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="container ez-container">
+                <!--part1-->
+                <section class="ez-index-wrap" :class="lists |  classVc" v-for="(lists, index1) in contentList" :key="lists.id">
+                    <div class="ez-index-hot col-md-12 text-center" v-if="lists.moduleType == 3 &&((lists.type == 7 && lists.moduleSize == '1+2') || (lists.type == 3 && (lists.moduleSize == '1*4' || lists.moduleSize == '2+3')) || lists.type == 14 || (lists.type == 11 && (lists.moduleSize == '1*4' || lists.moduleSize == '2+3' || lists.moduleSize == '2*4' )) ) || (lists.moduleType==2 && lists.type==4)">
+                            <div class="ez-content-title" style="width:500px;">
+                                <div class="title-icon title-icon-left"></div>
+                                <div class="content-title">{{lists.name}}</div>
+                                <div class="title-icon title-icon-right"></div>
+                            </div>
+                            <div class="ez-content-subtitle">
+                                <div class="subtitle-text">FOLLOWING MORE DISPLAY</div>
+                            </div>
+                    </div>
+                    <div class="ez-index-box col-lg-12" v-else  v-show="lists.moduleType != 5 && lists.moduleType == 3"> 
+                        <div class="title-box ez-title-style1">
+                            <h4 class="title">{{lists.name}}<span class="sub-title">CITY CAR RENTAL</span></h4>
+                        </div>
+                        <ul class="list-inline ez-title-nav" v-if="lists.moduleDetails">
+                            <li :class="{'active':lists.index==index2}" v-for="(list, index2) in lists.moduleDetails" :key="index2" @click="titleIndexClick(index1,index2)">{{list.firstTypeContent}}</li>
+                            <li>MORE >></li>
+                        </ul>
+                    </div>
+                    <div class="ez-index-rental pull-left" v-if="index2 == lists.index && lists.moduleDetails &&lists.moduleType == 3 && lists.type == 1"
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2" >
+                        <div class="col-md-4 ez-index-grid" v-for="(carInfo, index3) in list.carInfoList" :key="index3">
+                            <div class="grid-img">
+                                <img :src="carInfo.carImg" class="center-block img-responsive">
+                            </div>
+                            <div class="text-center grid-text">
+                                <h4 class="title">{{carInfo.countryName}} • {{carInfo.cityName}}</h4>
+                                <p>{{currencySign}}{{carInfo.price}}<span>/元起</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-left pull-left" v-if="lists.index == index2 && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*3' && lists.type == 3"
+                        v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                            <div class="col-md-4 box-card ez-card-v" v-for="(comCity, index3) in list.comCityList" :key="index3">
+                                <div class="card-img">
+                                    <img :src="comCity.photoUrl?comCity.photoUrl.split(',')[0]:''" class="center-block img-responsive">
+                                </div>
+                                <div class="card-text">
+                                    <h4 class="title">{{comCity.countryName}}·{{comCity.cityName}}</h4>
+                                    <div class="text-gray content beyond-content-4"> {{comCity.cityDetails}} </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="ez-nav-tabs" v-if="lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '1*4' && lists.type == 3">
+                            <!-- Nav tabs -->
+                            <ul class="tab-list list-inline">
+                                    <li :class="{'active':lists.index==index2}" v-for="(list, index2) in lists.moduleDetails" :key="index2"><a>{{list.firstTypeContent}}</a></li>
+                            </ul>
+                            <!-- Tab panes -->
+                            <div class="tab-content">
+                                <!--选项卡1-->
+                                <div class="tab-pane"  v-for="(list, index2) in lists.moduleDetails" :key="index2" :class="{'active':lists.index==index2}">
+                                    <div class="col-md-3 img-md-v"  v-for="(comCity, index3) in list.comCityList" :key="index3">
+                                        <img :src="comCity.photoUrl?comCity.photoUrl.split(',')[0]:''" class="img-responsive center-block">
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="ez-nav-tabs col-md-12" v-if="lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2+3' && lists.type == 3">
+                            <!-- Nav tabs -->
+                            <ul class="tab-list list-inline" v-if="lists.moduleDetails">
+                                    <li class="col-md-1" :class="{'active':lists.index==index2}" v-for="(list, index2) in lists.moduleDetails" :key="index2"><a>{{list.firstTypeContent}}</a></li>
+                                 </ul>
+                            <!-- Tab panes -->
+                            <div class="tab-content ez-img-grid">
+                                <!--1月-->
+                                <div class="tab-pane" v-for="(list, index2) in lists.moduleDetails" :key="index2" :class="{'active':lists.index==index2}">
+                                    <div :class="index3 < 2?'col-md-6 img-lg':'col-md-4 img-md'"  v-for="(comCity, index3) in list.comCityList" :key="index3">
+                                        <img  :src="comCity.photoUrl?comCity.photoUrl.split(',')[0]:''" >
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="box-left pull-left"  v-if="lists.index == index2 && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*3' && lists.type == 4"
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                            <div class="col-md-4 box-card ez-card-v" v-for="(scenicSpot, index3) in list.scenicSpotList" :key="index3">
+                                <div class="card-img">
+                                    <img :src="scenicSpot.imgUrl?scenicSpot.imgUrl.split(',')[0]:''" class="center-block img-responsive">
+                                </div>
+                                <div class="card-text">
+                                    <h4 class="title">{{scenicSpot.name}}</h4>
+                                    <div class="text-gray">
+                                        <span>{{scenicSpot.commentNum}}个点评，满意度{{scenicSpot.star | perVc}}%</span>
+                                        <span class="pull-right text-orange ez-price"><span>{{currencySign}}</span>{{scenicSpot.price}}</span>
+                                    </div>
+                                    <div class="text-gray card-like text-right">
+                                        <i class="iconfont icon-eye"></i>{{scenicSpot.lookNum}}
+                                        <i class="iconfont icon-heart-s text-lightorange ez-ml-10"></i>{{scenicSpot.collectionNum}}
+                                    </div>
+                                </div>
+                            </div>
+                     </div>
+                    <div class="box-left pull-left" style="width: inherit" v-if="lists.index == index2 && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*4' && lists.type == 4"
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                            <div class="col-md-3 box-card ez-card-v" v-for="(scenicSpot, index3) in list.scenicSpotList" :key="index3">
+                                <div class="card-img">
+                                    <img :src="scenicSpot.imgUrl?scenicSpot.imgUrl.split(',')[0]:''" class="center-block img-responsive">
+                                </div>
+                                <div class="card-text">
+                                    <h4 class="title">{{scenicSpot.name}}</h4>
+                                    <div class="text-gray">
+                                        <span>{{scenicSpot.commentNum}}个点评，满意度{{scenicSpot.star | perVc}}%</span>
+                                        <span class="pull-right text-orange ez-price"><span>{{currencySign}}</span>{{scenicSpot.price}}</span>
+                                    </div>
+                                    <div class="text-gray card-like text-right">
+                                        <i class="iconfont icon-eye"></i>{{scenicSpot.lookNum}}
+                                        <i class="iconfont icon-heart-s text-lightorange ez-ml-10"></i>{{scenicSpot.collectionNum}}
+                                    </div>
+                                </div>
+                            </div>
+                     </div>
+                    <div class="box-left pull-left" v-if="index2 == lists.index && lists.moduleDetails &&lists.moduleType == 3 && lists.type == 5"
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                        <div class="col-md-4 box-card ez-card-v" v-for="(linerLine, index3) in list.linerLineList" :key="index3">
+                            <div class="card-img">
+                                <img :src="linerLine.imgUrl?linerLine.imgUrl.split(',')[0]:''"  class="center-block img-responsive">
+                            </div>
+                            <div class="card-text">
+                                <h4 class="title">{{linerLine.name}}</h4>
+                                <div class="text-gray card-like">
+                                    <div class="pull-right text-orange ez-price">{{currencySign}}{{linerLine.price}}<span class="text-gray">/元起</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 activity-banner" v-if="lists.moduleType == 3 && lists.type == 7 && lists.moduleSize == '1+2'">
+                            <div class="activity-banner-lg pull-left">
+                                <a><img :src="lists.img?lists.img.split(',')[0]:''"></a>
+                            </div>
+                            <div class="activity-banner-md pull-right">
+                                <div><a ><img :src="lists.img?lists.img.split(',')[1]:''"></a></div>
+                                <div><a ><img :src="lists.img?lists.img.split(',')[2]:''"></a></div>
+                            </div>
+                     </div>
+                    <div class="ez-index-rental pull-left" v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*3' && lists.type == 8 "
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                        <div class="col-md-4 ez-index-grid" v-for="(travelCustomization, index3) in list.travelCustomizationList" :key="index3">
+                            <div class="grid-img">
+                                <img :src="travelCustomization.img" class="center-block img-responsive">
+                            </div>
+                            <div class="grid-text-sm custom-box">
+                                <h4 class="title">{{travelCustomization.name}}</h4>
+                                <div><i class="iconfont icon-mark"></i>&nbsp;{{travelCustomization.cityNum}}个目的地，{{travelCustomization.scenicNum}}个景点</div>
+                                <div>
+                                    <div class="pull-left"><i class="iconfont icon-eye"></i>&nbsp;{{travelCustomization.lookNum}}</div>
+                                    <div class="pull-right"><i class="iconfont icon-heart"></i>&nbsp;{{travelCustomization.collectionNum}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-left pull-left" v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '1+1+3' && lists.type == 8" 
+                        v-for="(list, index2) in lists.moduleDetails" :key="index2" >
+                        <div class="box-img" v-for="(travelCustomization, index3) in list.travelCustomizationList" :key="index3" v-if="index3 === 0">
+                            <img :src="travelCustomization.img">
+                            <div class="info">
+                                <h4>{{travelCustomization.name}}</h4>
+                                <p class="text-gray">
+                                    <span class="pull-left"><i class="iconfont icon-mark"></i>&nbsp;{{travelCustomization.cityNum}}个目的地，{{travelCustomization.scenicNum}}个景点</span>
+                                    <span class="pull-right">
+                                        <i class="iconfont icon-eye"></i>{{travelCustomization.lookNum}}&nbsp;&nbsp;
+                                        <i class="iconfont icon-heart-s text-orange"></i>{{travelCustomization.collectionNum}}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="box-card ez-card-h" v-for="(travelCustomization, index3) in list.travelCustomizationList" :key="index3+10" v-if="index3 == 1">
+                            <div class="card-img"><img :src="travelCustomization.img" class="center-block img-responsive"></div>
+                            <div class="card-text">
+                                <h4 class="title">{{travelCustomization.name}}</h4>
+                                <div class="text-gray"><i class="iconfont icon-mark"></i>{{travelCustomization.cityNum}}个目的地，{{travelCustomization.scenicNum}}个景点</div>
+                                <div class="text-gray card-like">
+                                    <a class="pull-left"><i class="iconfont icon-eye"></i>{{travelCustomization.lookNum}}</a>
+                                    <a class="pull-right"><i class="iconfont icon-heart-s text-orange"></i>{{travelCustomization.collectionNum}}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-right pull-right" v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '1+1+3' && lists.type == 8" 
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2+10" >
+                        <div class="box-card ez-card-h" v-for="(travelCustomization, index3) in list.travelCustomizationList" :key="index3+20" v-if="index3 > 1">
+                            <div class="card-img"><img :src="travelCustomization.img" class="center-block img-responsive"></div>
+                            <div class="card-text">
+                                <h4 class="title">{{travelCustomization.name}}</h4>
+                                <div class="text-gray"><i class="iconfont icon-mark"></i>{{travelCustomization.cityNum}}个目的地，{{travelCustomization.scenicNum}}个景点</div>
+                                <div class="text-gray card-like">
+                                    <a class="pull-left"><i class="iconfont icon-eye"></i>{{travelCustomization.lookNum}}</a>
+                                    <a class="pull-right"><i class="iconfont icon-heart-s text-orange"></i>{{travelCustomization.collectionNum}}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-left pull-left" v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '3*1' && lists.type == 8"
+                     v-for="(list, index2) in lists.moduleDetails" :key="index2" >
+                        <div class="box-card ez-card-h" v-for="(travelCustomization, index3) in list.travelCustomizationList" :key="index3">
+                            <div class="card-img"><img :src="travelCustomization.img" class="center-block img-responsive"></div>
+                            <div class="card-text">
+                                <h4 class="title">{{travelCustomization.name}}</h4>
+                                <p class="intro text-gray">本案例中的行程为定制师推荐，定制行程后可以根据需要更换景点酒店</p>
+                                <div class="card-like">
+                                    <a class="pull-left text-gray "><i class="iconfont icon-mark"></i>{{travelCustomization.cityNum}}个目的地，{{travelCustomization.scenicNum}}个景点</a>
+                                    <a class="pull-right text-gray ">
+                                        <i class="iconfont icon-eye"></i>{{travelCustomization.lookNum}}
+                                        <i class="iconfont icon-heart-s text-orange ez-ml-10 btn-like"></i>{{travelCustomization.collectionNum}}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-left pull-left" style="width: inherit"  v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*4' && lists.type == 8"
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2" >
+                        <div class="col-md-3 box-card ez-card-v"  v-for="(travelCustomization, index3) in list.travelCustomizationList" :key="index3">
+                            <div class="card-img">
+                                <img :src="travelCustomization.img" class="center-block img-responsive">
+                            </div>
+                            <div class="card-text">
+                                <h4 class="title">{{travelCustomization.name}}</h4>
+                                <div class="text-gray"><i class="iconfont icon-mark"></i>&nbsp;{{travelCustomization.cityNum}}个目的地，{{travelCustomization.scenicNum}}个景点</div>
+                                <div class="text-gray card-like">
+                                    <div class="pull-right text-orange ez-price">¥699<span class="text-gray">/元起</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ez-nav-tabs"  v-if="lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '1*4' && lists.type == 11" >
+                        <!-- Nav tabs -->
+                        <ul class="tab-list list-inline" v-if="lists.moduleDetails">
+                            <li :class="{'active':lists.index==index2}" v-for="(list, index2) in lists.moduleDetails" :key="index2"><a>{{list.firstTypeContent}}</a></li>
+                        </ul>
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div class="tab-pane" v-for="(list, index2) in lists.moduleDetails" :key="index2" :class="{'active':lists.index==index2}">
+                                <div class="col-md-3 player-card" v-for="(guide, index3) in list.guideList" :key="index3">
+                                    <div class="player-card-img text-center">
+                                        <img :src="guide.img"  class="center-block img-responsive img-circle">
+                                    </div>
+                                    <h4 class="text-center">明星玩家·{{guide.realName}}</h4>
+                                    <div class="content beyond-content-9"> {{guide.introduction}} </div>
+                                    <div class="location text-center">
+                                        <i class="iconfont icon-mark text-lightorange"></i><span class="text-blue">{{guide.countryName}}·{{guide.cityName}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ez-nav-tabs"  v-if="lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2+3' && lists.type == 11">
+                            <!-- Nav tabs -->
+                            <ul class="tab-list list-inline" v-if="lists.moduleDetails">
+                                <li :class="{'active':lists.index==index2}" v-for="(list, index2) in lists.moduleDetails" :key="index2"><a>{{list.firstTypeContent}}</a></li>
+                             </ul>
+                            <!-- Tab panes -->
+                            <div class="tab-content ez-img-grid">
+                                <div class="tab-pane" v-for="(list, index2) in lists.moduleDetails" :key="index2" :class="{'active':lists.index==index2}">
+                                    <div :class="index3 < 2?'col-md-6 img-lg':'col-md-4 img-md'"  v-for="(guide, index3) in list.guideList" :key="index3">
+                                        <img :src="guide.img" >
+                                        <div class="city-name text-center">
+                                            <div class="ch-name"><span>{{guide.realName}}</span></div>
+                                            <div class="en-name">TOKYO</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="ez-nav-tabs"  v-if="lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*4' && lists.type == 11">
+                            <!-- Nav tabs -->
+                            <ul class="tab-list list-inline" v-if="lists.moduleDetails">
+                                    <li :class="{'active':lists.index==index2}" v-for="(list, index2) in lists.moduleDetails" :key="index2"><a>{{list.firstTypeContent}}</a></li>
+                             </ul>
+                            <!-- Tab panes -->
+                            <div class="tab-content ez-img-grid">
+                                <div class="tab-pane "  v-for="(list, index2) in lists.moduleDetails" :key="index2" :class="{'active':lists.index==index2}">
+                                    <div class="col-md-3 img-md-v" v-for="(guide, index3) in list.guideList" :key="index3">
+                                        <img :src="guide.img" >
+                                        <div class="city-name text-center">
+                                            <div class="ch-name"><span>{{guide.realName}}</span></div>
+                                            <div class="en-name">ROME</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="box-left pull-left" v-if="lists.index == index2 && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*3' && lists.type == 11"
+                        v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                            <div class="col-md-4 ez-hot-card" v-for="(guide, index3) in list.guideList" :key="index3">
+                                <div class="hot-card-img">
+                                    <img src="../../images/hot-1.png">
+                                    <div class="hot-card-logo">
+                                        <img src="../../images/avatar-1.png">
+                                    </div>
+                                </div>
+                                <div class="hot-card-text">
+                                    <h4 class="text-center">明星玩家·{{guide.realName}}</h4>
+                                    <p class="content">{{guide.introduction}}</p>
+                                    <div>
+                                        <span class="text-gray"><i class="iconfont icon-mark"></i>{{guide.countryName}}·{{guide.cityName}}</span>
+                                        <div class="pull-right text-orange ez-price">{{currencySign}}{{guide.price}}<span class="text-gray">天</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="text-center" v-if=" lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '1*4' && lists.type == 11">
+                        <a class="btn link-more">查看更多></a>
+                    </div>
+                    <div class="box-right pull-left" v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*3' && lists.type == 12"
+                        v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                        <div class="col-md-4 box-card ez-card-v" v-for="(route, index3) in list.routeList" :key="index3">
+                            <div class="card-img">
+                                <img :src="route.carImg?route.carImg.split(',')[0]:''" class="center-block img-responsive">
+                                <div class="card-img-label">
+                                    <h4 class="text-white">{{route.startCityContent}}<i>出发</i></h4>
+                                </div>
+                            </div>
+                            <div class="card-text">
+                                <h4 class="title beyond-content-2">{{route.title}}</h4>
+                                <div class="ez-icon-tag" v-for="(tag, index4) in (route.tagContent || '').split(',')" :key="index4" v-if="index4 < 2">
+                                    <div class="ez-triangle-left"><i></i></div>
+                                    <div class="ez-rect">{{tag}}</div>
+                                </div>
+                                <div class="text-gray card-like">
+                                    <div class="pull-right text-orange ez-price">{{currencySign}}{{route.price}}<span class="text-gray">/元起</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-left pull-left" v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '1+1+3' && lists.type == 12"
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                        <div class="box-img"  v-for="(route, index3) in list.routeList" :key="index3" v-if="index3 == 0">
+                            <img :src="route.carImg?route.carImg.split(',')[0]:''">
+                            <div class="info">
+                                <h4>{{route.title}}</h4>
+                                <div class="text-gray">
+                                    <div class="text-gray card-like">
+                                        <div class="pull-right text-orange ez-price">{{currencySign}}{{route.price}}<span class="text-gray">/元起</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="index-img-label">
+                                <h4 class="text-white">{{route.startCityContent}}<i>出发</i></h4>
+                            </div>
+                        </div>
+                        <div class="box-card ez-card-h" v-for="(route, index3) in list.routeList" :key="index3+5" v-if="index3 == 1">
+                            <div class="card-img">
+                                <img :src="route.carImg?route.carImg.split(',')[0]:''" class="center-block img-responsive">
+                                <div class="card-img-label">
+                                    <h4 class="text-white">{{route.startCityContent}}<i>出发</i></h4>
+                                </div>
+                            </div>
+                            <div class="card-text">
+                                <h4 class="title">{{route.title}}</h4>
+                                <div class="ez-icon-tag" style="margin-bottom: 10px;" v-for="(tag, index4) in (route.tagContent || '').split(',')" :key="index4">
+                                    <div class="ez-triangle-left"><i></i></div>
+                                    <div class="ez-rect">{{tag}}</div>
+                                </div>
+                                <div class="text-gray card-like">
+                                    <div class="pull-right text-orange ez-price">{{currencySign}}{{route.price}}<span class="text-gray">/元起</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-right pull-right" v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '1+1+3' && lists.type == 12"
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2+20">
+                        <div class="box-card ez-card-h" v-for="(route, index3) in list.routeList" :key="index3+20" v-if="index3 > 1">
+                            <div class="card-img">
+                                <img :src="route.carImg?route.carImg.split(',')[0]:''" class="center-block img-responsive">
+                                <div class="card-img-label">
+                                    <h4 class="text-white">{{route.startCityContent}}<i>出发</i></h4>
+                                </div>
+                            </div>
+                            <div class="card-text">
+                                <h4 class="title">{{route.title}}</h4>
+                                <div class="ez-icon-tag"  style="margin-bottom: 10px;" v-for="(tag, index4) in (route.tagContent || '').split(',')" :key="index4">
+                                    <div class="ez-triangle-left"><i></i></div>
+                                    <div class="ez-rect">{{tag}}</div>
+                                </div>
+                                <div class="text-gray card-like">
+                                    <div class="pull-right text-orange ez-price">{{currencySign}}{{route.price}}<span class="text-gray">/元起</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-right pull-left" style="width: inherit"  v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*4' && lists.type == 12"
+                        v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                        <div class="col-md-3 box-card ez-card-v" v-for="(route, index3) in list.routeList" :key="index3">
+                            <div class="card-img">
+                                <img :src="route.carImg?route.carImg.split(',')[0]:''" class="center-block img-responsive">
+                                <div class="card-img-label">
+                                    <h4 class="text-white">{{route.startCityContent}}<i>出发</i></h4>
+                                </div>
+                            </div>
+                            <div class="card-text">
+                                <h4 class="title beyond-content-2">{{route.title}}</h4>
+                                <div class="ez-icon-tag" v-for="(tag, index4) in (route.tagContent || '').split(',')" :key="index4" v-if="index4 < 2">
+                                    <div class="ez-triangle-left"><i></i></div>
+                                    <div class="ez-rect">{{tag}}</div>
+                                </div>
+                                <div class="text-gray card-like">
+                                    <div class="pull-right text-orange ez-price">{{currencySign}}{{route.price}}<span class="text-gray">/元起</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" v-if="lists.type == 14  && lists.moduleType == 3">
+                            <div class="col-md-3 ez-hot-card" v-for="(sysUser, index2) in lists.sysUserList" :key="index2">
+                                <div class="hot-card-img">
+                                    <img :src="sysUser.companyLogo">
+                                    <div class="hot-card-logo">
+                                        <img :src="sysUser.companyimg">
+                                    </div>
+                                </div>
+                                <div class="hot-card-text">
+                                    <h4 class="text-center">{{sysUser.companyName}}</h4>
+                                    <p>{{sysUser.companyContent}}</p>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="box-left pull-left"  v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*3' && lists.type == 15"
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                        <div class="col-md-4 box-card ez-card-v" v-for="(route, index3) in list.routeList" :key="index3">
+                            <div class="card-img">
+                                <img :src="route.carImg?route.carImg.split(',')[0]:''" class="center-block img-responsive">
+                            </div>
+                            <div class="card-text">
+                                <h4 class="title beyond-content-2">{{route.title}}</h4>
+                                <div class="ez-icon-tag" v-for="(tag, index4) in (route.tagContent || '').split(',')" :key="index4" v-if="index4 < 2">
+                                    <div class="ez-triangle-left"><i></i></div>
+                                    <div class="ez-rect">{{tag}}</div>
+                                </div>
+                                <div class="text-gray card-like">
+                                    <div class="pull-right text-orange ez-price">{{currencySign}}{{route.price}}<span class="text-gray">/元起</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box-left pull-left" v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '1+1+3' && lists.type == 15"
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                            <div class="box-img" v-for="(route, index3) in list.routeList" :key="index3" v-if="index3 == 0">
+                                <img :src="route.carImg?route.carImg.split(',')[0]:''">
+                                <div class="info">
+                                    <h4>{{route.title}}</h4>
+                                    <div class="text-gray">
+                                        <div class="text-gray card-like">
+                                            <div class="pull-right text-orange ez-price">{{currencySign}}{{route.price}}<span class="text-gray">/元起</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="box-card ez-card-h" v-for="(route, index3) in list.routeList" :key="index3+10" v-if="index3 == 1">
+                                <div class="card-img">
+                                    <img :src="route.carImg?route.carImg.split(',')[0]:''" class="center-block img-responsive">
+                                </div>
+                                <div class="card-text">
+                                    <h4 class="title">{{route.title}}</h4>
+                                    <div class="ez-icon-tag" v-for="(tag, index4) in (route.tagContent || '').split(',')" :key="index4">
+                                            <div class="ez-triangle-left"><i></i></div>
+                                            <div class="ez-rect" style="margin-bottom: 10px;">{{tag}}</div>
+                                    </div>
+                                    <div class="text-gray card-like">
+                                        <div class="pull-right text-orange ez-price">{{currencySign}}{{route.price}}<span class="text-gray">/元起</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="box-right pull-right" v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '1+1+3' && lists.type == 15"
+                        v-for="(list, index2) in lists.moduleDetails" :key="index2+30">
+                            <div class="box-card ez-card-h" v-for="(route, index3) in list.routeList" :key="index3+20" v-if="index3 > 1">
+                                <div class="card-img">
+                                    <img :src="route.carImg?route.carImg.split(',')[0]:''" class="center-block img-responsive">
+                                </div>
+                                <div class="card-text">
+                                    <h4 class="title">{{route.title}}</h4>
+                                    <div class="ez-icon-tag" v-for="(tag, index4) in (route.tagContent || '').split(',')" :key="index4">
+                                            <div class="ez-triangle-left"><i></i></div>
+                                            <div class="ez-rect" style="margin-bottom: 10px;">{{tag}}</div>
+                                    </div>
+                                    <div class="text-gray card-like">
+                                        <div class="pull-right text-orange ez-price">{{currencySign}}{{route.price}}<span class="text-gray">/元起</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="box-left pull-left" v-if="index2 == lists.index && lists.moduleDetails && lists.moduleType == 3  && lists.moduleSize == '2*4' && lists.type == 15"
+                    v-for="(list, index2) in lists.moduleDetails" :key="index2">
+                            <div class="col-md-3 box-card ez-card-v" v-for="(route, index3) in list.routeList" :key="index3">
+                                <div class="card-img">
+                                    <img :src="route.carImg?route.carImg.split(',')[0]:''" class="center-block img-responsive">
+                                </div>
+                                <div class="card-text">
+                                    <h4 class="title beyond-content-2">{{route.title}}</h4>
+                                    <div class="ez-icon-tag" v-for="(tag, index4) in (route.tagContent || '').split(',')" :key="index4" v-if="index4 < 2">
+                                            <div class="ez-triangle-left"><i></i></div>
+                                            <div class="ez-rect" style="margin-bottom: 10px;">{{tag}}</div>
+                                    </div>
+                                    <div class="text-gray card-like">
+                                        <div class="pull-right text-orange ez-price">{{currencySign}}{{route.price}}<span class="text-gray">/元起</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="ez-slide-container" v-if="lists.type == 4 && lists.moduleType == 2 && lists.moduleSize == '1*3' ">
+                            <div class="ez-slide-content">
+                                <ul>
+                                    <li class="pic1" v-for="(scenicSpot, index2) in lists.scenicSpotList" :key="index2">
+                                        <div class="ez-slide-img">
+                                            <img :src="scenicSpot.imgUrl?scenicSpot.imgUrl.split(',')[0]:''">
+                                            <div class="ez-slide-mask">
+                                                <h4 class="title">{{scenicSpot.name}}</h4>
+                                                <div class="line"></div>
+                                                <p>{{scenicSpot.content}}</p>
+                                                <a href="#" class="btn link-more">查看详情</a>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="buttons">
+                                <a href="javascript:;" class="'active':index2==lists.index" v-for="(scenicSpot, index2) in lists.scenicSpotList" :key="index2"></a>
+                            </div>
+                    </div>
+                    <div class="ez-index-news pull-right" v-if="(lists.moduleType == 1 || lists.moduleType == 2) && !(lists.type == 4 && lists.moduleSize =='1*3')" >
+                            <div class="ez-aside-card" v-if="lists.type == 1">
+                                <div class="aside-card-title bg-style1">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more">MORE>></span>
+                                </div>
+                                <div class="aside-card" v-for="(carInfo, index2) in lists.carInfoList" :key="index2">
+                                    <div class="aside-card-no active">{{index2+1}}</div>
+                                    <div class="aside-card-car">
+                                        <img :src="carInfo.carImg" class="img-responsive center-block">
+                                    </div>
+                                    <div class="title">{{carInfo.carName}}</div>
+                                </div>
+                            </div>
+                            <div class="ez-aside-card"  v-if="lists.type == 2">
+                                <div class="aside-card-title bg-style1">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more">MORE>></span>
+                                </div>
+                                <div class="aside-card" v-for="(comComment, index2) in lists.comCommentList" :key="index2">
+                                    <div class="aside-card-user">
+                                        <img :src="comComment.memberPhoto">
+                                        <div class="pull-left">{{comComment.memberName}}</div>
+                                        <div class="pull-right">{{comComment.createDate}}</div>
+                                    </div>
+                                    <div class="aside-card-msg text-gray beyond-content-2">{{comComment.content}}</div>
+                                </div>
+                            </div>
+                            <div class="ez-aside-card" v-if="lists.type == 3">
+                                <div class="aside-card-title bg-style1">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more">MORE>></span>
+                                </div>
+                                <div class="aside-card" v-for="(comCity, index2) in lists.comCityList" :key="index2">
+                                    <div class="aside-card-img">
+                                        <img :src="comCity.photoUrl?comCity.photoUrl.split(',')[0]:''" class="center-block img-responsive">
+                                    </div>
+                                    <div class="aside-card-city">
+                                        <h4 class="title">{{comCity.cityName}}</h4>
+                                        <p class="text-gray">{{comCity.num}}个景点</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ez-aside-card" v-if="lists.type == 4">
+                                <div class="aside-card-title bg-style3">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more">MORE>></span>
+                                </div>
+                                <div class="aside-card"  v-for="(scenicSpot, index) in lists.scenicSpotList" :key="index">
+                                    <div class="aside-card-img">
+                                        <img :src="scenicSpot.imgUrl?scenicSpot.imgUrl.split(',')[0]:''" class="img-responsive center-block">
+                                    </div>
+                                    <div class="aside-card-text">
+                                        <h5>{{scenicSpot.name}}</h5>
+                                        <div class="pull-right">
+                                            <i class="iconfont icon-eye"></i>&nbsp;{{scenicSpot.lookNum}}
+                                            <i class="iconfont icon-heart-s text-orange ez-ml-10 btn-like"></i>&nbsp;{{scenicSpot.collectionNum}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ez-aside-card" v-if="lists.type == 5">
+                                <div class="aside-card-title bg-style3">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more">MORE>></span>
+                                </div>
+                                <div class="aside-card" v-for="(linerLine, index) in lists.linerLineList" :key="index">
+                                    <div class="aside-card-img">
+                                        <img :src="linerLine.imgUrl?linerLine.imgUrl.split(',')[0]:''" class="img-responsive center-block">
+                                    </div>
+                                    <div class="aside-card-text">
+                                        <h5 class="beyond-content-2">{{linerLine.name}}</h5>
+                                        <div class="pull-right">
+                                            <i class="iconfont icon-eye"></i>&nbsp;{{linerLine.lookNum}}
+                                            <i class="iconfont icon-heart-s text-orange ez-ml-10 btn-like"></i>&nbsp;{{linerLine.collectionNum}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ez-aside-card" v-if="lists.type == 6">
+                                <div class="aside-card-title bg-style3">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more">MORE>></span>
+                                </div>
+                                <div class="aside-card" v-for="(orderSys, index2) in lists.orderSysList" :key="index2">
+                                    <div class="aside-card-msg">{{orderSys.title}}</div>
+                                    <div class="aside-card-user">
+                                        <img :src="orderSys.photo">
+                                        <div class="pull-left">{{orderSys.nickName}}</div>
+                                        <div class="pull-right">{{orderSys.createDate}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="news-banner" v-if="lists.type == 7">
+                                  <img :src="lists.img">
+                            </div>
+                            <div class="ez-aside-card" v-if="lists.type == 8">
+                                <div class="aside-card-title bg-style3">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more">MORE>></span>
+                                </div>
+                                <div class="aside-card" v-for="(travelCustomization, index2) in lists.travelCustomizationList" :key="index2">
+                                    <div class="aside-card-img">
+                                        <img :src="travelCustomization.img"class="img-responsive center-block">
+                                    </div>
+                                    <div class="aside-card-text">
+                                        <h5>{{travelCustomization.name}}</h5>
+                                        <p class="text-gray text-right">{{travelCustomization.createDate}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ez-aside-card" v-if="lists.type == 9">
+                                <div class="aside-card-title bg-style3">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more">MORE>></span>
+                                </div>
+                                <div class="aside-card" v-for="(cityStrategy, index2) in lists.cityStrategyList" :key="index2">
+                                    <div class="aside-card-msg">{{cityStrategy.title}}</div>
+                                    <div class="aside-card-user">
+                                        <img :src="cityStrategy.photo">
+                                        <div class="pull-left">{{cityStrategy.nickName}}</div>
+                                        <div class="pull-right">{{cityStrategy.createDate}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ez-aside-card" v-if="lists.type == 10">
+                                <div class="aside-card-title bg-style1">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more">MORE>></span>
+                                </div>
+                                <div class="aside-card" v-for="(guideRoute, index2) in lists.guideRouteList" :key="index2">
+                                    <div class="aside-card-img">
+                                        <img :src="guideRoute.photo" class="img-responsive center-block">
+                                    </div>
+                                    <div class="aside-card-text">
+                                        <h5>{{guideRoute.title}}</h5>
+                                        <div class="text-orange text-right">{{currencySign}}{{guideRoute.price}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ez-aside-card" v-if="lists.type == 11">
+                                <div class="aside-card-title bg-style3 ez-mb-10">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more">MORE>></span>
+                                </div>
+                                <div class="aside-card" v-for="(guide, index2) in lists.guideList" :key="index2">
+                                    <div class="aside-card-img img-md">
+                                        <img :src="guide.img" class="center-block img-responsive img-circle">
+                                    </div>
+                                    <div class="aside-card-city">
+                                        <h4 class="title">当地导游 • {{guide.realName}}</h4>
+                                        <p class="text-gray">服务{{guide.finishNum}}次</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ez-aside-card" v-if="lists.type == 12">
+                                    <div class="aside-card-title bg-style1">
+                                        <h4 class="title">{{lists.name}}</h4>
+                                        <!-- <span class="link-more">MORE>></span> -->
+                                    </div>
+                                    <div class="aside-card" v-for="(route, index2) in lists.routeList" :key="index2">
+                                        <div class="aside-card-img">
+                                            <img :src="route.carImg?route.carImg.split(',')[0]:''" class="img-responsive center-block">
+                                        </div>
+                                        <div class="aside-card-text">
+                                            <h5>{{route.title}}</h5>
+                                            <div class="text-orange text-right">{{currencySign}}{{route.price}}</div>
+                                        </div>
+                                    </div>
+                            </div>
+                            <div class="ez-aside-card" v-if="lists.type ==13">
+                                <div class="aside-card-title bg-style1">
+                                    <h4 class="title">{{lists.name}}</h4>
+                                    <span class="link-more" >MORE>></span>
+                                </div>
+                                <div class="aside-card" v-for="(comArticle, index2) in lists.comArticleList" :key="index2">
+                                <div class="aside-card-img">
+                                    <img :src="comArticle.imgUrl" class="img-responsive center-block">
+                                </div>
+                                <div class="aside-card-text">
+                                    <h5><a href="#">{{comArticle.title}}</a></h5>
+                                    <p class="text-right">{{comArticle.createDate}}</p>
+                                </div>
+                                </div>
+                            </div>
+                    </div>
+                    <img :src="lists.img" v-if="lists.moduleType == 5">
+                    <!-- <div class="cruise-info" v-if="lists.moduleType == 5">
+                        <div class="cruise-msg">
+                            <ul class="list-inline">
+                                <h4>出发港口</h4>
+                                <li>广州</li>
+                                <li>天津</li>
+                                <li>厦门</li>
+                                <li>香港</li>
+                                <li>西沙</li>
+                                <li>宜昌</li>
+                                <li>重庆</li>
+                                <li><a href="#">更多></a></li>
+                            </ul>
+
+                            <ul class="list-inline">
+                                <h4>邮轮航线</h4>
+                                <li>日本</li>
+                                <li>东南亚</li>
+                                <li>地中海</li>
+                                <li>三沙&西沙</li>
+                                <li>加勒比海</li>
+                                <li>南极</li>
+                                <li><a href="#">更多></a></li>
+                            </ul>
+
+                            <ul class="list-inline">
+                                <h4>邮轮公司</h4>
+                                <li>皇家加勒比</li>
+                                <li>歌诗达邮轮</li>
+                                <li>天海邮轮</li>
+                                <li>诺唯真邮轮</li>
+                                <li>地中海邮轮</li>
+                                <li><a href="#">更多></a></li>
+                            </ul>
+
+                        </div>
+                        <div class="cruise-name">
+                            <h4>Greece</h4>
+                            <h3>SANTORINI</h3>
+                        </div>
+                    </div> -->
+                </section>
+
+
+            <!--part23 目的地列表 start-->
+                <section class="col-md-12 ez-index-wrap ez-index-citylist">
+                    <h4 class="title">目的地列表</h4>
+                    <div class="row citylist-content">
+                        <div class="col-md-3">
+                            <ul class="country-list">
+                                <li class="active">美国</li>
+                                <li>中国</li>
+                                <li>加拿大</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-9 city-box active">
+                            <ul class="city-list">
+                                <li><i>A</i><a>奥兰多</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>B</i><a>波兹曼</a><a>缅因州·波特兰</a><a>波士顿</a><a>俄勒冈州·波特兰</a><a>巴尔的摩</a></li>
+                                <li><i>C</i><a>达拉斯</a><a>丹佛</a></li>
+                                <li><i>D</i><a>尔湾</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>E</i><a>奥兰多</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>F</i><a>费城</a></li>
+                            </ul>
+                            <ul class="city-list">
+                                <li><i>H</i><a>奥兰多</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>I</i><a>奥兰多</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>G</i><a>奥兰多</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>K</i><a>奥兰多</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>L</i><a>奥兰多</a><a>奥克兰</a><a>安大略</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-9 city-box">
+                            <ul class="city-list">
+                                <li><i>A</i><a>澳门</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>B</i><a>北京</a><a>缅因州·波特兰</a></li>
+                                <li><i>C</i><a>达拉斯</a><a>丹佛</a></li>
+                                <li><i>D</i><a>大连</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>E</i><a>奥兰多</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>F</i><a>费城</a></li>
+                            </ul>
+                            <ul class="city-list">
+                                <li><i>H</i><a>海南</a><a>杭州</a><a>湖南</a></li>
+                                <li><i>I</i><a>奥兰多</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>G</i><a>广东</a><a>广西</a><a>甘肃</a></li>
+                                <li><i>K</i><a>奥兰多</a><a>奥克兰</a><a>安大略</a></li>
+                                <li><i>L</i><a>兰州</a><a>奥克兰</a><a>安大略</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-9 city-box">
+                            <ul class="city-list">
+                                <li><i>M</i><a>蒙特利尔</a></li>
+                                <li><i>T</i><a>多伦多</a></li>
+                                <li><i>V</i><a>温哥华</a></li>
+                                <li><i>W</i><a>渥太华</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                <!--part23 目的地列表 end-->
+
+
+                <!--part25 更多活动 start-->
+                <section class="col-md-12 ez-index-wrap ez-index-service">
+                    <div class="text-center">
+                        <div class="service-box">
+                            <a>
+                                <i class="iconfont icon-sun-half"></i>
+                                <h4 class="">阳光资讯</h4>
+                            </a>
+                        </div>
+                        <div class="service-box">
+                            <a>
+                                <i class="iconfont icon-app"></i>
+                                <h4 class="">加盟</h4>
+                            </a>
+                        </div>
+                        <div class="service-box">
+                            <a>
+                                <i class="iconfont icon-org"></i>
+                                <h4 class="">分销</h4>
+                            </a>
+                        </div>
+                        <div class="service-box">
+                            <a>
+                                <i class="iconfont icon-help"></i>
+                                <h4 class="">帮助</h4>
+                            </a>
+                        </div>
+                        <div class="service-box">
+                            <a>
+                                <i class="iconfont icon-feedback"></i>
+                                <h4 class="">体验反馈</h4>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+                <!--part25 更多活动 end-->
+
+
+
+            </div>
+        </div>
+
+        <ez-footer></ez-footer>
+        <ez-aside></ez-aside>
+    </div>
+
+</body>
+
+</html>
+
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-pro.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+<script>
+
+    const app = new Vue({
+        el: "#app",
+        data: {
+            contentList: [],
+        },
+        props:[],
+        mounted() {
+            this.getData();
+        },
+        methods: {
+            //查询路线
+            getData: function (pageNo = this.current_page) {
+                this.current_page = pageNo;
+                requestGet(getModuleDataInfoUrl, {
+                    htmlName: "首页",
+                    htmlSeal: "内容模块",
+                }, function (data) {
+                    app.contentList = data.body.list;
+                    app.dataInit(data.body.list);
+                });
+            },
+            //处理数据
+            dataInit(lists) {
+                for (const [key, list] of Object.entries(lists)) {
+                    console.log(key);
+                    console.log(list);
+                }
+            },
+            //点击导航栏
+            titleIndexClick(index1,index2){
+                Vue.set(this.contentList[index1],'index',index2);
+            },
+        },
+        filters:{
+            classVc(lists){
+                if(lists.moduleType == 3 && lists.moduleSize == "1+1+3" && lists.type == 8) return "ez-index-4";
+                if(lists.moduleType == 3 && lists.moduleSize == "2*4" && lists.type == 8) return "ez-index-5 ez-index-public";
+                if(lists.moduleType == 3 && lists.moduleSize == "3*1" && lists.type == 8) return "ez-index-6";
+                if(lists.moduleType == 3 && lists.moduleSize == "2*3" && lists.type == 12) return "ez-index-7";
+                if(lists.moduleType == 3 && lists.moduleSize == "2*4" && lists.type == 12) return "ez-index-7";
+                if(lists.moduleType == 3 && lists.moduleSize == "1+1+3" && lists.type == 12) return "ez-index-4";
+                if(lists.moduleType == 3 && lists.moduleSize == "2*3" && lists.type == 15) return "ez-index-10 ez-index-public";
+                if(lists.moduleType == 3 && lists.moduleSize == "1+1+3" && lists.type == 15) return "ez-index-4";
+                if(lists.moduleType == 3 && lists.moduleSize == "2*4" && lists.type == 15) return "ez-index-12 ez-index-public";
+                if(lists.moduleType == 5) return "col-md-12 ez-index-cruise";
+                if(lists.moduleType == 3 && lists.type == 5) return "ez-index-public ez-index-14";
+                if(lists.moduleType == 3 && lists.moduleSize == "1*4" && lists.type == 11) return "ez-index-traveler col-md-12";
+                if(lists.moduleType == 3 && lists.moduleSize == "2+3" && lists.type == 11) return "ez-gobal-traveler col-md-12";
+                if(lists.moduleType == 3 && lists.moduleSize == "2*4" && lists.type == 11) return "ez-gobal-traveler col-md-12";
+                if(lists.moduleType == 3 && lists.moduleSize == "2*3" && lists.type == 11) return "ez-index-public ez-index-17";
+                if(lists.moduleType == 3 && lists.moduleSize == "2*3" && lists.type == 3) return "ez-index-public ez-index-24";
+                if(lists.moduleType == 2 && lists.moduleSize == "1*3" && lists.type == 4) return "ez-index-slide col-md-12";
+                if(lists.moduleType == 3 && lists.moduleSize == "2*3" && lists.type == 4) return "ez-index-public ez-index-5";
+                if(lists.moduleType == 3 && lists.moduleSize == "2*4" && lists.type == 4) return "ez-index-public ez-index-5";
+                if(lists.moduleType == 3 && lists.moduleSize == "1*4" && lists.type == 3) return "ez-index-theme col-md-12";
+                if(lists.moduleType == 3 && lists.moduleSize == "2+3" && lists.type == 3) return "ez-index-month col-md-12";
+                if(lists.moduleType == 3 && lists.moduleSize == "1+2" && lists.type == 7) return "ez-index-activity col-md-12";
+            }
+        },
+    })
+
+</script>

@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.member.MemberMapper">
+    
+	<sql id="memberColumns">
+		a.id AS "id",
+		a.father_id AS "fatherId",
+		a.code AS "code",
+		a.mobile AS "mobile",
+		a.password AS "password",
+		a.status AS "status",
+		a.audit AS "audit",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.lastlogin_date AS "lastloginDate",
+		a.lastlogin_ip AS "lastloginIp",
+		a.login_deyid AS "loginDeyid",
+		a.create_type AS "createType",
+		a.email AS "email",
+		a.loginx AS "loginx",
+		a.loginy AS "loginy",
+		a.type AS "type",
+		a.qq_id AS "qqId",
+		a.weixin_id AS "weixinId",
+		a.weibo_id AS "weiboId",
+		a.view_password as "viewPassword"
+	</sql>
+	
+	<sql id="memberJoins">
+		
+	</sql>
+	
+    <select id="getValidateCount" resultType="Integer" >
+		SELECT 
+			count(a.id)
+		FROM member a
+		WHERE a.mobile = #{name} or a.email = #{name}
+	</select>
+	<select id="get" resultType="Member" >
+		SELECT 
+			<include refid="memberColumns"/>
+		FROM member a
+		<include refid="memberJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取旅行社子账号 -->
+	<select id="getChildMember" resultType="Member" >
+		SELECT 
+			a.id as "memberid",
+			a.mobile AS "mobile",
+			a.view_password AS "viewPassword"
+		FROM member a
+		where a.del_flag = 0 and a.father_id =#{memberid}
+	</select>
+	<select id="findList" resultType="Member" >
+		SELECT 
+			<include refid="memberColumns"/>
+		FROM member a
+		<include refid="memberJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile = #{mobile}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="email != null and email != ''">
+				AND a.email = #{email}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Member" >
+		SELECT 
+			<include refid="memberColumns"/>
+		FROM member a
+		<include refid="memberJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--登录判断是否注册-->
+	<select id="ifRegister" resultType="Member">
+		SELECT
+		<include refid="memberColumns"/>
+		FROM member a
+		WHERE  a.del_flag  = 0 AND (a.mobile = #{mobile} OR a.email=#{mobile} or a.mobile = #{email} OR a.email=#{email})
+	</select>
+
+	<!-- 查找手机是否注册 -->
+	<select id="ifRegisterByPhone" resultType="Member">
+		SELECT
+		<include refid="memberColumns"/>
+		FROM member a
+		where
+		a.mobile=#{mobile}
+		and a.type=#{type}
+	</select>
+
+
+	<!-- 查找邮箱是否注册 -->
+	<select id="ifRegisterByEmail" resultType="Member">
+		SELECT
+		<include refid="memberColumns"/>
+		FROM member a
+		where
+		a.email=#{email}
+		and a.type=#{type}
+	</select>
+
+	<!-- 登录验证-->
+	<select id="login" resultType="Member">
+	SELECT
+		<include refid="memberColumns"/>
+		FROM member a
+		WHERE a.del_flag  = 0 AND (
+		(a.mobile=#{mobile} AND a.password = #{password})
+		OR
+		(a.email=#{mobile} AND a.password = #{password})
+		)
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO member(
+			father_id,
+			code,
+			mobile,
+			password,
+			status,
+			audit,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			del_date,
+			del_by,
+			lastlogin_date,
+			lastlogin_ip,
+			login_deyid,
+			create_type,
+			email,
+			loginx,
+			loginy,
+			type,
+			qq_id,
+			weixin_id,
+			weibo_id,
+			view_password
+		) VALUES (
+			#{fatherId},
+			#{code},
+			#{mobile},
+			#{password},
+			#{status},
+			#{audit},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{delDate},
+			#{delBy},
+			#{lastloginDate},
+			#{lastloginIp},
+			#{loginDeyid},
+			#{createType},
+			#{email},
+			#{loginx},
+			#{loginy},
+			#{type},
+			#{qqId},
+			#{weixinId},
+			#{weiboId},
+			#{viewPassword}
+		)
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+		select LAST_INSERT_ID() as id
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE member SET 	
+			father_id = #{fatherId},
+			code = #{code},
+			mobile = #{mobile},
+			password = #{password},
+			status = #{status},
+			audit = #{audit},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			lastlogin_date = #{lastloginDate},
+			lastlogin_ip = #{lastloginIp},
+			login_deyid = #{loginDeyid},
+			create_type = #{createType},
+			email = #{email},
+			loginx = #{loginx},
+			loginy = #{loginy},
+			type = #{type},
+			qq_id = #{qqId},
+			weixin_id = #{weixinId},
+			weibo_id = #{weiboId},
+			view_password = #{viewPassword}
+		WHERE id = #{id}
+	</update>
+
+	<update id="uPdate">
+	UPDATE member SET 	
+	mobile = #{mobile},
+	email = #{email}
+	WHERE id = #{id}
+	</update>
+
+	<!--修改用户密码-->
+	<update id="updatePassword">
+		UPDATE member
+		SET password = #{password}
+		WHERE id = #{id}
+	</update>
+	<!--修改用户手机号-->
+	<update id="updateMobile">
+		UPDATE member
+		SET mobile = #{mobile}
+		WHERE id = #{id}
+	</update>
+
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM member
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE member SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<!--删除旅行社子账号-->
+	<update id="deleteMember">
+		DELETE FROM member
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Member" statementType="STATEMENT">
+		select * FROM member  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<!-- 登录验证-->
+	<select id="statisticsMemberNum" resultType="Member">
+	select t2.days as "createDate",IFNULL(t3.num,0) as "num" from 
+		(SELECT @cdate := date_add(@cdate,interval -1 day) days from 
+			(SELECT @cdate := date_format(#{beginDate},'%Y-%m-%d') from sys_log limit #{days}) t1) t2
+	LEFT JOIN 
+	(SELECT DATE_FORMAT(a.create_date,'%Y-%m-%d') days,count(*) as "num"
+	FROM member a 
+	LEFT JOIN guide g on a.id=g.memberid 
+	where 1=1
+	<if test="type != null and type == 1">
+	and a.type=1
+	and g.id is null
+	</if>
+	<if test="type != null and type == 2">
+	and a.type=1
+	and g.id is not null
+	</if>
+	<if test="type != null and type == 3">
+	and a.type=2
+	</if>
+	<if test="currentDate != null and currentDate != ''">
+	 and DATE_FORMAT(a.create_date,'%Y%m')=DATE_FORMAT(#{currentDate},'%Y%m')
+	</if>
+	group by days) T3 ON t2.days=t3.days order by t2.days
+	</select>
+</mapper>

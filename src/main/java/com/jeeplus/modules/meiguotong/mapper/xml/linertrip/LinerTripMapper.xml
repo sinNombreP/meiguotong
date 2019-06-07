@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.linertrip.LinerTripMapper">
+    
+	<sql id="linerTripColumns">
+		a.id AS "id",
+		a.trip_date AS "tripDate",
+		a.trip_type AS "tripType",
+		a.scenic_spot_id AS "scenicSpotId",
+		a.scenic_spot_infor AS "scenicSpotInfor",
+		a.title AS "title",
+		a.content AS "content",
+		a.img_url AS "imgUrl",
+		a.liner_line_id AS "linerLineId",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.day_count AS "dayCount"
+		
+	</sql>
+	
+	<sql id="linerTripJoins">
+		
+	</sql>
+	
+     <select id="getTripList" resultMap="tripList" >
+		SELECT 
+			a.day_count AS "dayCount",
+			a.liner_line_id AS "linerLineId"
+		FROM liner_trip a
+		where a.liner_line_id=#{linerLineId}
+		GROUP BY a.day_count,a.liner_line_id
+		order by a.day_count
+	</select>
+	<resultMap id="tripList" type="LinerTrip">
+		<result property="dayCount" column="dayCount"/>
+		<result property="linerLineId" column="linerLineId"/>
+		 <collection property="contentList" column="{dayCount=dayCount,linerLineId=linerLineId}" javaType="ArrayList" 
+	                ofType="LinerTrip" select="getDayContentList"/>
+	</resultMap>
+	 <select id="getDayContentList" resultType="LinerTrip" >
+		SELECT 
+			a.trip_date AS "tripDate",
+			a.trip_type AS "tripType",
+			a.scenic_spot_id AS "scenicSpotId",
+			a.title AS "title",
+			a.content AS "content",
+			a.img_url AS "imgUrl",
+			ss.name as "scenicName",
+			ss.content as "scenicSpotInfor"
+		FROM liner_trip a
+		left join scenic_spot ss on ss.id=a.scenic_spot_id
+		where a.day_count=#{dayCount} and a.liner_line_id=#{linerLineId}
+		order by a.trip_date
+	</select>
+	<select id="get" resultType="LinerTrip" >
+		SELECT 
+			<include refid="linerTripColumns"/>
+		FROM liner_trip a
+		<include refid="linerTripJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!--   邮轮行程天数 -->
+		<select id="findTrip" resultType="LinerTrip" >
+		SELECT 
+			<include refid="linerTripColumns"/>
+		FROM liner_trip a
+		<include refid="linerTripJoins"/>
+		WHERE a.liner_line_id = #{linerLineId} and a.del_flag=0
+	</select>
+	<!-- 查找行程数据 -->
+	<select id="getLinerTrip" resultType="LinerTrip" >
+		SELECT 
+			<include refid="linerTripColumns"/>
+		FROM liner_trip a
+		<include refid="linerTripJoins"/>
+		WHERE
+		a.del_flag=0 and
+        a.liner_line_id = #{linerLineId}
+	</select>
+		<!-- 获取行程列表接口 -->
+	<select id="findTripList" resultType="LinerTrip" >
+		SELECT 
+			<include refid="linerTripColumns"/>,
+			ll.path AS "path"
+	FROM liner_trip a
+	right join liner_line ll on ll.id=a.liner_line_id
+		WHERE
+		a.del_flag=0 and 
+		 a.liner_line_id = #{linerLineId}
+	</select>
+	<select id="findList" resultType="LinerTrip" >
+		SELECT 
+			<include refid="linerTripColumns"/>
+		FROM liner_trip a
+		<include refid="linerTripJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="LinerTrip" >
+		SELECT 
+			<include refid="linerTripColumns"/>
+		FROM liner_trip a
+		<include refid="linerTripJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO liner_trip(
+			trip_date,
+			trip_type,
+			scenic_spot_id,
+			scenic_spot_infor,
+			title,
+			content,
+			img_url,
+			liner_line_id,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			day_count
+		) VALUES (
+			#{tripDate},
+			#{tripType},
+			#{scenicSpotId},
+			#{scenicSpotInfor},
+			#{title},
+			#{content},
+			#{imgUrl},
+			#{linerLineId},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{dayCount}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE liner_trip SET 	
+			trip_date = #{tripDate},
+			trip_type = #{tripType},
+			scenic_spot_id = #{scenicSpotId},
+			scenic_spot_infor = #{scenicSpotInfor},
+			title = #{title},
+			content = #{content},
+			img_url = #{imgUrl},
+			liner_line_id = #{linerLineId},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			day_count=#{dayCount}
+		WHERE id = #{id}
+	</update>
+		<update id="uPdate">
+		UPDATE liner_trip SET 	
+			trip_date = #{tripDate},
+			trip_type = #{tripType},
+			scenic_spot_id = #{scenicSpotId},
+			scenic_spot_infor = #{scenicSpotInfor},
+			title = #{title},
+			content = #{content},
+			img_url = #{imgUrl},
+			liner_line_id = #{linerLineId},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			day_count=#{dayCount}
+		WHERE liner_line_id = #{linerLineId}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="deleteByLinerLineId">
+		DELETE FROM liner_trip
+		WHERE liner_line_id = #{linerLineId}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM liner_trip
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE liner_trip SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="LinerTrip" statementType="STATEMENT">
+		select * FROM liner_trip  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 获取邮轮行程信息 -->
+	<select id="findTripByLinerLineId" resultType="LinerTrip" >
+		select <include refid="linerTripColumns"/>
+		 from liner_trip a where liner_line_id=#{0}
+	</select>
+</mapper>

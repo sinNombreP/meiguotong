@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/bootstrap-modal.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="./css/iconfont.css" />
+    <title>模块管理</title>
+    <style>
+        body{
+            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        }
+        .head{ 
+            text-align: center;
+            background-color:#f2f2f2;
+            height: 40px;
+            line-height: 40px;
+        }
+        .title{
+            height:20px;
+        }
+        .content{
+            height:20px;
+            padding-left: 20px;
+        }
+        .active{
+            color: blue;
+        }
+        .active > .active{
+            color: blue;
+        }
+        .overflow-y .modal-dialog { 
+            position: absolute; 
+            top: 0; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+        } 
+
+        .overflow-y .modal-content { 
+            position: absolute; 
+            top: 0; 
+            bottom: 0; 
+            width: 100%; 
+        } 
+
+        .overflow-y .modal-body { 
+            overflow-y: scroll; 
+            position: absolute; 
+            top: 55px; 
+            bottom: 65px; 
+            width: 100%; 
+        } 
+        .overflow-y .modal-header .close {margin-right: 15px;} 
+        .overflow-y .modal-footer {
+            position: absolute; 
+            width: 100%; 
+            bottom: 0; 
+        }
+        .skill-list > li {
+            margin-bottom: 10px;
+        }
+        .skill-list > li > a {
+            position: relative;
+            width: 110px;
+            height: 36px;
+            line-height: 36px;
+            padding: 0 18px;
+            background: #f6f8f9;
+            border-radius: 0;
+        }
+        .skill-list > li > a > .iconfont {
+            position: absolute;
+            right: 2px;
+            bottom: -10px;
+            color: #f6f8f9;
+        }
+        .skill-list > li > a.active {
+            background: #63a6ff;
+            color: #fff;
+        }
+        .skill-list > li > a.active > .iconfont {
+            color: #fff;
+        }
+        .required:after {
+            content: '*';
+            color: #f03;
+        }
+        /* .modal-stack{
+            background:none !important;
+        } */
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">语言：</label>
+                <div class="col-sm-2">
+                    <select class="form-control" v-model="languageId" @change="getData">
+                        <option :value="list.languageid" v-for="(list, index) in languageList" :key="index">{{list.content}}</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-primary" @click="addModuleClick">添加模块</button>
+        </div>
+        <div class="col-md-2">
+            <h4 class="head">网站页面</h4>
+            <div v-for="(lists, index1) in moduleHtmlList" :key="index1">
+                <div class="title" :class="{'active':index1==htmlIndex1}" @click="titleClick(index1)">{{lists.htmlName}}</div>
+                <div v-if="lists.htmlShow">
+                    <div class="content" :class="{'active':index2==htmlIndex2}" v-for="(list, index2) in lists.moduleHtmlList"
+                        :key="index2" @click="moduleHtmlClick(index1,index2)">{{list.hemlSeal}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <h4 class="head">已添加模块</h4>
+            <div v-if="htmlIndex2">
+                <ul>
+                    <li v-for="(list, index) in moduleHtmlNameList" :key="index">{{list.moduleName}}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <h4 class="head">可添加模块</h4>
+            <ul class="skill-list list-inline">
+                <li v-for="(list, index) in moduleNameList" :key="index">
+                    <a class="btn" :class="{'active':index == moduleNameIndex}" @click="moduleNameIndexClick(index)">
+                        {{list.moduleName}}<i class="iconfont icon-yes"></i></a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 选择模块（Modal） -->
+        <div class="modal fade overflow-y" id="addModuleModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title" id="myModalLabel">
+                            添加模块
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>车辆编号</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in carList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.carNo"></td>
+                                    <td>{{list.carNo}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                        </button>
+                        <button type="button" class="btn btn-primary" @click="addCarConfirm">确定</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+        <!-- 选择模块（Modal） -->
+
+        <!-- 添加模块内容（Modal） -->
+        <div class="modal fade" id="addModuleContentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title" id="myModalLabel">
+                            {{moduleNameIndexContent.moduleName}}
+                            （{{moduleNameIndexContent.moduleSize}}-
+                            {{moduleNameIndexContent.moduleType |moduleTypeVc}}）
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label required">名称<i></span>
+                            <div class="col-sm-7">
+                                <input class="form-control" type="text" v-model.trim="moduleContent.name">
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label required">车辆编号<i></span>
+                            <div class="col-sm-7">
+                                <button class="btn btn-primary" @click.stop="addCarClick">添加车辆编号</button>
+                            </div>
+                        </div>
+                        <div>
+                            <ul class="skill-list list-inline">
+                                <li v-for="(list, index) in moduleContent.typeid" :key="index">
+                                    <a class="btn active"> {{list}}
+                                        <i class="iconfont icon-shanchu" @click="delModuleContent(index)"></i></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭
+                        </button>
+                        <button type="button" class="btn btn-primary" @click="addModuleContentConfirm">确定</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+        <!-- 添加模块内容（Modal） -->
+    </div>
+</body>
+
+</html>
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<!-- <script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script> -->
+<script type="text/javascript" src="./js/bootstrap.min.js"></script>
+<script type="text/javascript" src="./js/bootstrap-modalmanager.js"></script>
+<script type="text/javascript" src="./js/bootstrap-modal.js"></script>
+<script src="../../js/import/vue.min.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="./js/ajax.js"></script>
+<script>
+
+    $(document).ready(function () {
+        // 通过该方法来为每次弹出的模态框设置最新的zIndex值，从而使最新的modal显示在最前面
+        $(document).on('show.bs.modal', '.modal', function () {
+            var zIndex = 1040 + (10 * $('.modal:visible').length);
+            $(this).css('z-index', zIndex);
+            setTimeout(function () {
+                $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+            }, 0);
+        });
+    });
+
+
+    const app = new Vue({
+        el: "#app",
+        data: {
+            moduleHtmlList: [],  //前端页面集合
+            moduleNameList: [], //可添加模块
+            languageList: [],   //语言集合
+            languageId: "", //选择的语言
+            htmlIndex1: null,  //选择的页面下标
+            htmlIndex2: null,  //选择的页面下标
+            moduleNameIndex: null,  //选择的模板下标
+            moduleHtmlNameList: [],  //关联的模块
+            carList: [], //车辆列表
+            comCommentList: [], //评论列表
+            comCityList: [], //城市列表
+            scenicSpotList: [], //景点列表
+            linertList: [], //邮轮列表
+            orderSysList: [], //订单列表
+            travelCustomizationList: [], //定制列表
+            cityStrategyList: [], //攻略列表
+            guideList: [], //导游列表
+            guideRouteList: [], //导游路线列表
+            route1List: [], //常规路线列表
+            route2List: [], //当地参团列表
+            comArticleList: [], //资讯列表
+            sysUserList: [], //租车供应商列表
+            scenicSpotTicketList: [], //景点门票列表
+            typeidFlag: null,   //选择的车辆编号及其他类型编号或ID
+            moduleContent: {
+                id: null,
+                name: null,  //模块名称
+                typeid: [],   //添加的车辆编号及其他类型编号或ID
+                orderType: null,  //排序类型
+                oneFooterShow: null,		// 页脚是否显示
+                oneFooter: null,		// 页脚图片（多个用逗号区分）
+                twoFooterShow: null,		// two_footer_show
+                twoFooter: null,		// two_footer
+                threeFooterShow: null,		// three_footer_show
+                threeFooter: null,		// three_footer
+                img: null,		// 图片（多个用逗号隔开）
+                url: null,		// 链接
+            },
+            ModuleDetails: {
+                id: null,
+                moduleContentId: null,   // module_content的主键ID
+                cityid: [],  // 地区限制（城市ID：多个用逗号区分）
+                tagid: [],   // 标签属性（多个用逗号区分）
+                typeid: [],	// 对于的类型ID（多个用逗号区分）
+                firstTypeContent: null,		// 一级分类名称（页脚）
+                contentId: null, 		// 文章ID
+                name: null,  	// 名称
+                url: null,  	// 链接
+            }
+        },
+        computed: {
+            //选择的模块内容
+            moduleNameIndexContent() {
+                if (this.moduleNameList.length <= 0 || this.moduleNameIndex == null) return {};
+                return this.moduleNameList[this.moduleNameIndex];
+            },
+        },
+        methods: {
+            //添加模板内容
+            addModuleContent() {
+                let param = this.moduleContent;
+                param.typeid = param.typeid.toString();
+                param.languageId = this.languageId;
+                param.moduleHtmlId = this.moduleHtmlList[this.htmlIndex1].moduleHtmlList[this.htmlIndex2].id;
+                param.moduleNameId = this.moduleNameIndexContent.id;
+                requestGet(addModuleContentUrl, param , function (data) {
+                    layerMsg("保存成功");
+                    app.getModuleHtmlNameList();
+                })
+            },
+            //删除模板内容
+            delModuleContent(index) {
+                Vue.delete(this.moduleContent.typeid,index);
+            },
+            //确定添加模板内容
+            addModuleContentConfirm() {
+                let size = this.countModuleSize(this.moduleNameIndexContent.moduleSize);
+                console.log(size);
+                if (this.moduleContent.typeid.length > size) {
+                    layerMsg("大于最大添加数据");
+                    return;
+                }
+                $('#addModuleContentModal').modal('hide');
+                this.addModuleContent();
+            },
+            //确定添加车辆编号
+            addCarConfirm() {
+                if (this.typeidFlag == null) {
+                    layerMsg("请选择一条数据");
+                    return;
+                }
+                this.moduleContent.typeid.push(this.typeidFlag);
+                $('#addModuleModal').modal('hide');
+            },
+            //点击添加车辆编号
+            addCarClick() {
+                $('#addModuleModal').modal('show');
+            },
+            //点击添加模块
+            addModuleClick() {
+                if (this.htmlIndex1 == null || this.htmlIndex2 == null) {
+                    layerMsg("请选择页面");
+                    return;
+                }
+                if (this.moduleNameIndex == null) {
+                    layerMsg("请选择要添加的模块");
+                    return;
+                }
+                for (const key of Object.keys(this.moduleContent)) {
+                    if (key == "typeid") this.moduleContent[key] = [];
+                    else this.moduleContent[key] = null;
+                }
+                for (const [key, value] of Object.entries(this.ModuleDetails)) {
+                    if (key == "typeid" || key == "tagid" || key == "cityid") this.ModuleDetails[key] = [];
+                    else this.ModuleDetails[key] = null;
+                }
+                $('#addModuleContentModal').modal('show');
+            },
+            //选择模块下标
+            moduleNameIndexClick(index) {
+                this.moduleNameIndex = index;
+            },
+            //点击网站页面
+            moduleHtmlClick(index1, index2) {
+                this.htmlIndex1 = index1;
+                this.htmlIndex2 = index2;
+                this.getModuleHtmlNameList();
+            },
+            //点击标题
+            titleClick(index) {
+                this.moduleHtmlList.map(element => Vue.set(element, "htmlShow", false));
+                Vue.set(this.moduleHtmlList[index], "htmlShow", !this.moduleHtmlList[index].htmlShow);
+                this.htmlIndex1 = index;
+                this.htmlIndex2 = null;
+            },
+            //语言改变
+            languageChange() {
+
+            },
+            //计算可添加最大的广告个数
+            countModuleSize(moduleSize) {
+                let length = 0;
+                let moduleSize1 = moduleSize.split("*");
+                let moduleSize2 = moduleSize.split("+");
+                if (moduleSize1.length == 2)
+                    length = parseInt(moduleSize1[0]) * parseInt(moduleSize1[1]);
+                else if (moduleSize2.length == 2)
+                    length = parseInt(moduleSize2[0]) + parseInt(moduleSize2[1]);
+                else if (moduleSize2.length == 3)
+                    length = parseInt(moduleSize2[0]) + parseInt(moduleSize2[1]) + parseInt(moduleSize2[2]);
+                return length;
+            },
+            //获取关联模块
+            getModuleHtmlNameList: function () {
+                this.moduleHtmlNameList = [];
+                requestGet(getModuleHtmlNameListUrl, {
+                    languageId: this.languageId,
+                    moduleHtmlId: this.moduleHtmlList[this.htmlIndex1].moduleHtmlList[this.htmlIndex2].id,
+                }, function (data) {
+                    app.moduleHtmlNameList = data.body.list;
+                })
+            },
+            //获取语言
+            getLanguage: function () {
+                requestGet(getLanguageUrl, {}, function (data) {
+                    app.languageList = data.body.list;
+                    app.languageId = data.body.list[0].languageid;
+                    app.getData();
+                })
+            },
+            //获取可添加模板
+            getModuleNameList: function () {
+                requestGet(getModuleNameListUrl, {
+                }, function (data) {
+                    app.moduleNameList = data.body.list;
+                })
+            },
+            //获取网站页面
+            getModuleHtmlList: function () {
+                requestGet(getModuleHtmlListUrl, {
+                }, function (data) {
+                    app.moduleHtmlList = data.body.list;
+                })
+            },
+            //获取车辆列表
+            getCarList: function () {
+                requestGet(getCarListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.carList = data.body.list;
+                })
+            },
+            //获取评论列表
+            getComCommentList: function () {
+                requestGet(getComCommentListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.comCommentList = data.body.list;
+                })
+            },
+            //获取城市列表
+            getComCityList: function () {
+                requestGet(getComCityListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.comCityList = data.body.list;
+                })
+            },
+            //获取景点列表
+            getScenicSpotList: function () {
+                requestGet(getScenicSpotListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.scenicSpotList = data.body.list;
+                })
+            },
+            //获取游轮列表
+            getLinertList: function () {
+                requestGet(getLinertListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.linertList = data.body.list;
+                })
+            },
+            //获取订单列表
+            getOrderSysList: function () {
+                requestGet(getOrderSysListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.orderSysList = data.body.list;
+                })
+            },
+            //获取定制列表
+            getTravelCustomizationList: function () {
+                requestGet(getTravelCustomizationListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.travelCustomizationList = data.body.list;
+                })
+            },
+            //获取攻略列表
+            getCityStrategyList: function () {
+                requestGet(getCityStrategyListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.cityStrategyList = data.body.list;
+                })
+            },
+            //获取导游列表
+            getGuideList: function () {
+                requestGet(getGuideListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.guideList = data.body.list;
+                })
+            },
+            //获取导游路线列表
+            getGuideRouteList: function () {
+                requestGet(getGuideRouteListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.guideRouteList = data.body.list;
+                })
+            },
+            //获取常规路线列表
+            getRoute1List: function () {
+                requestGet(getRoute1ListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.route1List = data.body.list;
+                })
+            },
+            //获取当地参团列表
+            getRoute2List: function () {
+                requestGet(getRoute2ListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.route2List = data.body.list;
+                })
+            },
+            //获取资讯列表
+            getComArticleList: function () {
+                requestGet(getComArticleListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.comArticleList = data.body.list;
+                })
+            },
+            //获取租车供应商列表
+            getSysUserList: function () {
+                requestGet(getSysUserListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.sysUserList = data.body.list;
+                })
+            },
+            //获取景点门票列表
+            getScenicSpotTicketList: function () {
+                requestGet(getScenicSpotTicketListUrl, {
+                    languageId: this.languageId,
+                }, function (data) {
+                    app.scenicSpotTicketList = data.body.list;
+                })
+            },
+            async getData(languageId = this.languageId){
+                this.moduleHtmlList = await  ajax(getModuleHtmlListUrl);
+                this.moduleNameList = await  ajax(getModuleNameListUrl);
+                this.languageList = await  ajax(getLanguageUrl);
+                this.languageId = languageId || this.languageList[0].languageid;
+                const param = {languageId : this.languageId};
+                this.carList = await  ajax(getCarListUrl,param);
+                this.comCommentList = await  ajax(getComCommentListUrl,param);
+                this.comCityList = await  ajax(getComCityListUrl,param);
+                this.scenicSpotList = await  ajax(getScenicSpotListUrl,param);
+                this.linertList = await  ajax(getLinertListUrl,param);
+                this.orderSysList = await  ajax(getOrderSysListUrl,param);
+                this.travelCustomizationList = await  ajax(getTravelCustomizationListUrl,param);
+                this.cityStrategyList = await  ajax(getCityStrategyListUrl,param);
+                this.guideList = await  ajax(getGuideListUrl,param);
+                this.guideRouteList = await  ajax(getGuideRouteListUrl,param);
+                this.route1List = await  ajax(getRoute1ListUrl,param);
+                this.route2List = await  ajax(getRoute2ListUrl,param);
+                this.comArticleList = await  ajax(getComArticleListUrl,param);
+                this.sysUserList = await  ajax(getSysUserListUrl,param);
+                this.scenicSpotTicketList = await  ajax(getScenicSpotTicketListUrl,param);
+                this.htmlIndex1 = null;
+                this.htmlIndex2 = null;
+                this.moduleNameIndex = null;
+                this.typeidFlag = null;
+                this.moduleHtmlNameList = [];
+                this.moduleNameList = [];
+            }
+        },
+         mounted() {
+            this.getData();
+        },
+        filters: {
+            //模块规格
+            moduleSizeVc(value) {
+                switch (parseInt(value)) {
+                    case 1: return "1*1";
+                    case 2: return "1+2";
+                    case 3: return "1+1+3";
+                    case 4: return "1*3";
+                    case 5: return "1*4";
+                    case 6: return "1*5";
+                    case 7: return "1*6";
+                    case 8: return "2+3";
+                    case 9: return "2*3";
+                    case 10: return "2*4";
+                    case 11: return "3*1";
+                    case 12: return "3*4";
+                    case 13: return "4*2";
+                }
+            },
+            //模块位置
+            moduleTypeVc(value) {
+                switch (parseInt(value)) {
+                    case 1: return "左侧广告";
+                    case 2: return "右侧广告";
+                    case 3: return "内容";
+                    case 4: return "页脚";
+
+                }
+            },
+        },
+    })
+
+
+</script>

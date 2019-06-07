@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.order.OrderCommentMapper">
+    
+	<sql id="orderCommentColumns">
+		a.id AS "id",
+		a.memberid AS "memberid",
+		a.memberphoto AS "memberphoto",
+		a.name AS "name",
+		a.orderid AS "orderid",
+		a.order_no AS "orderNo",
+		a.comment AS "comment",
+		a.img AS "img",
+		a.star AS "star",
+		a.status AS "status",
+		a.create_date AS "createDate",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy"
+	</sql>
+	
+	<sql id="orderCommentJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderComment" >
+		SELECT 
+			<include refid="orderCommentColumns"/>
+		FROM order_comment a
+		<include refid="orderCommentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderComment" >
+		SELECT 
+			<include refid="orderCommentColumns"/>
+		FROM order_comment a
+		<include refid="orderCommentJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="memberid != null and memberid != ''">
+				AND a.memberid = #{memberid}
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderComment" >
+		SELECT 
+			<include refid="orderCommentColumns"/>
+		FROM order_comment a
+		<include refid="orderCommentJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_comment(
+			memberid,
+			memberphoto,
+			name,
+			orderid,
+			order_no,
+			comment,
+			img,
+			star,
+			status,
+			create_date,
+			del_flag,
+			del_date,
+			del_by
+		) VALUES (
+			#{memberid},
+			#{memberphoto},
+			#{name},
+			#{orderid},
+			#{orderNo},
+			#{comment},
+			#{img},
+			#{star},
+			#{status},
+			#{createDate},
+			#{delFlag},
+			#{delDate},
+			#{delBy}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE order_comment SET 	
+			memberid = #{memberid},
+			memberphoto = #{memberphoto},
+			name = #{name},
+			orderid = #{orderid},
+			order_no = #{orderNo},
+			comment = #{comment},
+			img = #{img},
+			star = #{star},
+			status = #{status},
+			del_flag = #{delFlag},
+			del_date = #{delDate},
+			del_by = #{delBy}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_comment
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_comment SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderComment" statementType="STATEMENT">
+		select * FROM order_comment  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findOrderCommentList" resultType="OrderComment" >
+		SELECT 
+			a.id as "commentId",
+			a.memberid AS "memberId",
+			a.memberphoto AS "memberphoto",
+			a.name AS "memberName",
+			a.comment AS "comment",
+			a.img AS "img",
+			a.star AS "star",
+			a.create_date AS "commentDate"
+		FROM order_comment a
+		where a.status=1 and a.del_flag=0 and a.orderId=#{orderid}
+		
+	</select>
+</mapper>

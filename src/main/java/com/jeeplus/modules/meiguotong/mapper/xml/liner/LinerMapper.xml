@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.liner.LinerMapper">
+    
+	<sql id="linerColumns">
+		a.id AS "id",
+		a.liner_no AS "linerNo",
+		a.name AS "name",
+		a.company AS "company",
+		a.status AS "status",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.length AS "length",
+		a.width AS "width",
+		a.heigth AS "heigth",
+		a.weight AS   "weight",
+		a.passengers_num AS "passengersNum",
+		a.start_date AS "startDate",
+		a.agentid as "agentid"
+	</sql>
+	
+	<sql id="linerJoins">
+		
+	</sql>
+	
+	<!-- 根据语言获取可用邮轮公司（未删除，未禁用） -->
+    <select id="getCompany" resultType="LinerCompany" >
+		SELECT 
+			a.id AS "id",
+			a.name as "name"
+		FROM liner_company a
+		WHERE a.language_id = #{languageId} and a.del_flag=0 and a.status=1
+	</select>
+	
+	<!-- 根据语言获取未删除邮轮公司 -->
+    <select id="getCompanyNoDel" resultType="LinerCompany" >
+		SELECT 
+			a.id AS "id",
+			a.name as "name"
+		FROM liner_company a
+		WHERE a.language_id = #{languageId} and a.del_flag=0 
+	</select>
+	<!-- 根据语言获取可用邮轮（未删除，未禁用） -->
+    <select id="getLinerBylanguage" resultType="Liner" >
+		SELECT 
+			a.id as "id",
+			a.name AS "name"
+		FROM liner a
+		WHERE a.language_id = #{languageId}
+		and a.del_flag = 0 and a.status=3
+		<if test="agentid != null and agentid != ''">
+			and a.agentid = #{agentid}
+		</if>
+	</select>
+	<!-- 接口获取游轮信息 -->
+    <select id="getLiner" resultType="Liner" >
+		SELECT 
+			a.name AS "name",
+			a.company AS "company",
+			lc.name AS "companyName",
+			a.length AS "length",
+			a.width AS "width",
+			a.heigth AS "heigth",
+			a.weight AS   "weight",
+			a.passengers_num AS "passengersNum",
+			a.start_date AS "startDate"
+		FROM liner a
+		left join liner_company lc on lc.id=a.company
+		WHERE a.id = #{id}
+	</select>
+	<select id="get" resultType="Liner" >
+		SELECT 
+			<include refid="linerColumns"/>
+		FROM liner a
+		<include refid="linerJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Liner" >
+		SELECT 
+			<include refid="linerColumns"/>,
+			cl.content as "languageName",
+			lc.name as "companyName"
+			<if test="agentid != null and agentid != ''">
+				,#{agentid} as "loginAgentid"
+			</if>
+		FROM liner a
+		<include refid="linerJoins"/>
+		left join com_language cl on cl.id=a.language_id
+		left join liner_company lc on lc.id=a.company
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status =#{status}
+			</if>
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id =#{languageId}
+			</if>
+			<if test="agentid != null and agentid != ''">
+				AND a.agentid =#{agentid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Liner" >
+		SELECT 
+			<include refid="linerColumns"/>
+		FROM liner a
+		<include refid="linerJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 查找邮轮 -->
+	<select id="findCruisename" resultType="Liner"> 
+	SELECT 
+			<include refid="linerColumns"/>
+	from liner a
+	</select>		
+	<insert id="insert">
+		INSERT INTO liner(
+			liner_no,
+			name,
+			company,
+			status,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			length,
+			width,
+			heigth,
+			weight,
+			passengers_num,
+			start_date,
+			agentid
+		) VALUES (
+			#{linerNo},
+			#{name},
+			#{company},
+			#{status},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{length},
+			#{width},
+			#{heigth},
+			#{weight},
+			#{passengersNum},
+			#{startDate},
+			#{agentid}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE liner SET 	
+			liner_no = #{linerNo},
+			name = #{name},
+			company = #{company},
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			length=#{length},
+			width=#{width},
+			heigth=#{heigth},
+			weight=#{weight},
+			passengers_num=#{passengersNum},
+			start_date=#{startDate}
+		WHERE id = #{id}
+	</update>
+	<!--修改状态-->
+	<update id="status">
+		UPDATE liner SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM liner
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE liner SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Liner" statementType="STATEMENT">
+		select * FROM liner  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

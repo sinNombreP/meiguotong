@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.comcitytravel.ComCityTravelMapper">
+    
+	<sql id="comCityTravelColumns">
+		a.id AS "id",
+		a.cityid AS "cityid",
+		a.classname AS "classname",
+		a.travelid AS "travelid",
+		a.creat_date AS "creatDate"
+	</sql>
+	
+	<sql id="comCityTravelJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComCityTravel" >
+		SELECT 
+			<include refid="comCityTravelColumns"/>
+		FROM com_city_travel a
+		<include refid="comCityTravelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ComCityTravel" >
+		SELECT 
+			<include refid="comCityTravelColumns"/>
+		FROM com_city_travel a
+		<include refid="comCityTravelJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="cityid != null and cityid != ''">
+				AND a.cityid = #{cityid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComCityTravel" >
+		SELECT 
+			<include refid="comCityTravelColumns"/>
+		FROM com_city_travel a
+		<include refid="comCityTravelJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_city_travel(
+			cityid,
+			classname,
+			travelid,
+			creat_date
+		) VALUES (
+			#{cityid},
+			#{classname},
+			#{travelid},
+			#{creatDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_city_travel SET 	
+			cityid = #{cityid},
+			classname = #{classname},
+			travelid = #{travelid},
+			creat_date = #{creatDate}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_city_travel
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_city_travel SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComCityTravel" statementType="STATEMENT">
+		select * FROM com_city_travel  where ${propertyName} = '${value}'
+	</select>
+	
+	<!--根据城市ID物理删除-->
+	<update id="deleteComCityTravelByCityId">
+		DELETE FROM com_city_travel
+		WHERE cityid = #{cityid}
+	</update>
+	
+	<!--根据城市ID查询定制列表-->
+	<select id="findComCityTravelByCityId" resultType="ComCityTravel" >
+		select id,className,travelid 
+		from com_city_travel 
+		where cityid=#{cityid}
+	</select>
+	
+		<select id="findComCityTravelByCityId2"  resultMap="travelList">
+    select id,className,travelid 
+		from com_city_travel 
+		where cityid=#{cityid}
+	</select>
+	
+	<!--根据城市ID查询定制列表-->
+	<resultMap id="travelList" type="ComCityTravel">
+	    <id column="id"  property="id" />
+	    <result column="className"  property="classname" />
+	    <result column="travelid" property="travelid" />
+	    <collection column="travelid" property="travel" ofType="TravelCustomization" select="getTravelDetail" > 
+	    </collection>
+	</resultMap>
+	
+	<select id="getTravelDetail"  resultType="TravelCustomization">
+    select id, name
+		from travel_customization
+		where find_in_set(id,#{travelid})>0 
+</select>
+
+	<!-- 目的地旅游定制 -->
+	<select id="findComCityTravelByCityId3"  resultMap="travelList2">
+    select id,className,travelid 
+		from com_city_travel 
+		where cityid=#{cityid}
+	</select>
+	
+	<resultMap id="travelList2" type="ComCityTravel">
+	    <id column="id"  property="id" />
+	    <result column="className"  property="classname" />
+	    <result column="travelid" property="travelid" />
+	    <collection column="travelid" property="travel" ofType="TravelCustomization" select="getTravelCustomization" > 
+	    </collection>
+	</resultMap>
+	
+	<select id="getTravelCustomization"  resultMap="travelDetailList">
+		select travel_customization.id,travel_customization.scenicNum,travel_customization.`name`
+		from travel_customization
+		where find_in_set(travel_customization.id,#{travelid})>0 
+		and status=1
+		and del_flag=0
+	</select>
+	
+	<resultMap id="travelDetailList" type="TravelCustomization">
+	    <id column="id"  property="id" />
+	    <result column="name"  property="name" />
+	    <result column="scenicNum"  property="scenicNum" />
+	    <collection column="id" property="travelDetailsList" ofType="TravelDetails" select="getDetailsList" > 
+	    </collection>
+	</resultMap>
+	
+	<select id="getDetailsList"  resultMap="detailsList">
+		SELECT id,scenic
+		from travel_details 
+		where travelid = #{id} 
+	</select>
+	
+	<resultMap id="detailsList" type="TravelDetails">
+		<id column="id"  property="id" />
+	    <collection column="scenic" property="scenicSpotList" ofType="ScenicSpot" select="getScenicSpot" > 
+	    </collection>
+	</resultMap>
+	
+	<select id="getScenicSpot"  resultType="ScenicSpot">
+		SELECT id,`name`
+		from scenic_spot 
+		where find_in_set(scenic_spot.id,#{scenic})>0 
+	</select>
+	
+</mapper>

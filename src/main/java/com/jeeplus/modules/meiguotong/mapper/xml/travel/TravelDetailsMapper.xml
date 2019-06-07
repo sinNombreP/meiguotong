@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.travel.TravelDetailsMapper">
+    
+	<sql id="travelDetailsColumns">
+		a.id AS "id",
+		a.travelid AS "travelid",
+		a.day AS "day",
+		a.sort AS "sort",
+		a.city AS "city",
+		a.scenic AS "scenic",
+		a.img AS "img",
+		b.city_name AS "cityName",
+		(SELECT  group_concat(b.name) FROM scenic_spot b WHERE FIND_IN_SET(b.id,a.scenic) > 0 ) AS "scenicContent"
+	</sql>
+	
+	<sql id="travelDetailsJoins">
+		LEFT JOIN com_city b ON a.city = b.id
+	</sql>
+	
+    
+	<select id="get" resultType="TravelDetails" >
+		SELECT 
+			<include refid="travelDetailsColumns"/>
+		FROM travel_details a
+		<include refid="travelDetailsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="TravelDetails" >
+		SELECT 
+			<include refid="travelDetailsColumns"/>
+		FROM travel_details a
+		<include refid="travelDetailsJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="travelid != null and travelid != ''">
+				AND a.travelid = #{travelid}
+			</if>
+			<if test="sort != null and sort != ''">
+				AND a.sort = #{sort}
+			</if>
+			<if test="city != null and city != ''">
+				AND a.city = #{city}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据定制ID查询详情 -->
+	<select id="getDataByTravelid" resultType="TravelDetails">
+		SELECT 
+			a.day AS "day",
+			a.travelid AS "travelid"
+		FROM travel_details a
+		<where>
+			a.travelid = #{travelid}
+		</where>
+		GROUP BY a.day,a.sort
+		ORDER BY a.day,a.sort
+	</select>
+	
+<!-- 	<resultMap type="TravelDetails" id="getDataByTravelidMap">
+		<result property="day" column="day"/>
+		<result property="travelid" column="travelid"/>
+	    <collection property="travelDetailsList" column="{travelid=travelid,day=day}" javaType="ArrayList"  ofType="TravelDetails" select="getDateByDay"/>
+	</resultMap> -->
+	
+	<!-- 查询每一天的详情 -->
+	<select id="getDateByDay" resultType="TravelDetails">
+		SELECT
+				<include refid="travelDetailsColumns"/>
+		FROM travel_details a
+			<include refid="travelDetailsJoins"/>
+		<where>
+			a.travelid = #{travelid} AND a.day = #{day}
+		</where>
+		ORDER BY a.day,a.sort
+	</select>
+	
+	<select id="findAllList" resultType="TravelDetails" >
+		SELECT 
+			<include refid="travelDetailsColumns"/>
+		FROM travel_details a
+		<include refid="travelDetailsJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO travel_details(
+			day,
+			travelid,
+			sort,
+			city,
+			scenic,
+			img
+		) VALUES (
+			#{day},
+			#{travelid},
+			#{sort},
+			#{city},
+			#{scenic},
+			#{img}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE travel_details SET 	
+			day = #{day},
+			travelid = #{travelid},
+			sort = #{sort},
+			city = #{city},
+			scenic = #{scenic},
+			img = #{img}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM travel_details
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 根据定制ID删除数据 -->
+	<update id="deleteByTravelCustomizationId">
+		DELETE FROM travel_details
+		WHERE travelid = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE travel_details SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="TravelDetails" statementType="STATEMENT">
+		select * FROM travel_details  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 根据定制ID查询详情 -->
+	<select id="getTravelDetails" resultMap="travelDetails">
+		SELECT 
+			a.day AS "day",
+			a.travelid AS "travelid"
+		FROM travel_details a
+		<where>
+			a.travelid = #{travelid}
+		</where>
+		GROUP BY a.day
+		ORDER BY a.day
+	</select>
+	
+	<resultMap type="TravelDetails" id="travelDetails">
+		<result property="day" column="day"/>
+		<result property="travelid" column="travelid"/>
+	    <collection property="travelDetails" column="{travelid=travelid,day=day}" javaType="ArrayList"  ofType="TravelDetails" select="getListByDay"/>
+	</resultMap>
+	<!-- 查询每一天的详情 -->
+	<select id="getListByDay" resultType="TravelDetails">
+		SELECT
+			a.city as "cityid",
+			a.scenic as "scenic",
+			b.city_name AS "cityName",
+			b.photo_url as "cityImg"
+		FROM travel_details a
+			LEFT JOIN com_city b ON a.city = b.id
+		<where>
+			a.travelid = #{travelid} AND a.day = #{day}
+		</where>
+		ORDER BY a.sort
+	</select>
+	
+</mapper>

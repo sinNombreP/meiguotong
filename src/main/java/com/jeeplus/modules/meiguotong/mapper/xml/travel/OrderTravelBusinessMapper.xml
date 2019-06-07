@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.travel.OrderTravelBusinessMapper">
+    
+	<sql id="orderTravelBusinessColumns">
+		a.id AS "id",
+		a.order_sys1 as "orderSys1",
+		a.order_sys2 as "orderSys2",
+		a.language_id AS "languageId",
+		a.order_no AS "orderNo",
+		a.name AS "name",
+		a.after_no AS "afterNo",
+		a.type AS "type",
+		a.city AS "city",
+		a.address AS "address",
+		a.start_date AS "startDate",
+		a.end_date AS "endDate",
+		a.adult_num AS "adultNum",
+		a.child_num AS "childNum",
+		a.bag_num AS "bagNum",
+		a.day_num AS "dayNum",
+		a.pay_way AS "payWay",
+		a.pay_date AS "payDate",
+		a.status AS "status",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.refund_info AS "refundInfo",
+		a.refund_reason AS "refundReason",
+		a.contacts_name AS "contactsName",
+		a.contacts_mobile AS "contactsMobile",
+		a.remark AS "remark",
+		a.member_id AS "memberId",
+		a.use_date AS "useDate",
+		a.price AS "price",
+		a.refundDate AS "refundDate",
+		a.pay_no AS "payNo",
+		b.city_name AS "cityName",
+		c.mobile AS "mobile"
+	</sql>
+	
+	<sql id="orderTravelBusinessJoins">
+		LEFT JOIN com_city b ON a.city = b.id 
+		LEFT JOIN member c ON a.member_id = c.id
+		LEFT JOIN member_information d ON a.member_id = d.memberid
+	</sql>
+	
+    
+	<select id="get" resultType="OrderTravelBusiness" >
+		SELECT 
+			<include refid="orderTravelBusinessColumns"/>,
+			os.remark as "orderRemark"
+		FROM order_travel_business a
+		<include refid="orderTravelBusinessJoins"/>
+		left join order_sys os on a.order_sys1=os.id
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderTravelBusiness" >
+		SELECT 
+			<include refid="orderTravelBusinessColumns"/>,
+			if(c.type=1,d.nick_name,e.company_name) AS "nickName",
+			c.type as "memberType"
+		FROM order_travel_business a
+		<include refid="orderTravelBusinessJoins"/>
+		left join member_travel e on a.member_id = e.memberid
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="orderType==1">
+				AND a.status &lt;= 6
+			</if>
+			<if test="orderType==2">
+				AND a.status &gt;=7
+			</if>
+			<if test="dataFlag==1">
+				AND to_days(a.create_date)= to_days(now())
+			</if>
+			<if test="dataFlag==2">
+				AND to_days(a.start_date)= to_days(now())
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND (a.order_no LIKE concat('%',#{searchContent},'%')
+				OR a.name LIKE concat('%',#{searchContent},'%')
+				OR a.member_id =#{searchContent})
+			</if>
+			<if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+				AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(a.start_date, '%Y-%m-%d')
+				and DATE_FORMAT(a.start_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+			</if>
+			<if test="memberType != null and memberType!=''">
+				AND c.type = #{memberType}
+			</if>
+			<if test="nickName != null and nickName!=''">
+				AND if(c.type=1,d.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderTravelBusiness" >
+		SELECT 
+			<include refid="orderTravelBusinessColumns"/>
+		FROM order_travel_business a
+		<include refid="orderTravelBusinessJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_travel_business(
+			language_id,
+			order_no,
+			name,
+			after_no,
+			type,
+			city,
+			address,
+			start_date,
+			end_date,
+			adult_num,
+			child_num,
+			bag_num,
+			day_num,
+			pay_way,
+			pay_date,
+			status,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			refund_info,
+			refund_reason,
+			contacts_name,
+			contacts_mobile,
+			remark,
+			member_id,
+			use_date,
+			price,
+			refundDate,
+			pay_no,
+			order_sys1,
+			order_sys2
+		) VALUES (
+			#{languageId},
+			#{orderNo},
+			#{name},
+			#{afterNo},
+			#{type},
+			#{city},
+			#{address},
+			#{startDate},
+			#{endDate},
+			#{adultNum},
+			#{childNum},
+			#{bagNum},
+			#{dayNum},
+			#{payWay},
+			#{payDate},
+			#{status},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{refundInfo},
+			#{refundReason},
+			#{contactsName},
+			#{contactsMobile},
+			#{remark},
+			#{memberId},
+			#{useDate},
+			#{price},
+			#{refundDate},
+			#{payNo},
+			#{orderSys1},
+			#{orderSys2}
+		)
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+			select LAST_INSERT_ID() as id
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE order_travel_business SET 	
+			language_id = #{languageId},
+			order_no = #{orderNo},
+			name = #{name},
+			after_no = #{afterNo},
+			type = #{type},
+			city = #{city},
+			address = #{address},
+			start_date = #{startDate},
+			end_date = #{endDate},
+			adult_num = #{adultNum},
+			child_num = #{childNum},
+			bag_num = #{bagNum},
+			day_num = #{dayNum},
+			pay_way = #{payWay},
+			pay_date = #{payDate},
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			refund_info = #{refundInfo},
+			refund_reason = #{refundReason},
+			contacts_name = #{contactsName},
+			contacts_mobile = #{contactsMobile},
+			remark = #{remark},
+			member_id = #{memberId},
+			use_date = #{useDate},
+			price = #{price},
+			refundDate = #{refundDate},
+			pay_no = #{payNo},
+			order_sys1 = #{orderSys1},
+			order_sys2 = #{orderSys2}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="status">
+	 UPDATE order_travel_business SET 
+	 		status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+			WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_travel_business
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_travel_business SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderTravelBusiness" statementType="STATEMENT">
+		select * FROM order_travel_business  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<sql id="set_column">
+		<if test="orderSys1 != null ">
+			order_sys1 = #{orderSys1},
+		</if>
+		<if test="orderSys2 != null ">
+			order_sys2 = #{orderSys2},
+		</if>
+		<if test="languageId != null ">
+			language_id = #{languageId},
+		</if>
+		<if test="orderNo != null ">
+			order_no = #{orderNo},
+		</if>
+		<if test="name != null ">
+			name = #{name},
+		</if>
+		<if test="afterNo != null ">
+			after_no = #{afterNo},
+		</if>
+		<if test="type != null ">
+			type = #{type},
+		</if>
+		<if test="city != null ">
+			city = #{city},
+		</if>
+		<if test="address != null ">
+			address = #{address},
+		</if>
+		<if test="startDate != null ">
+			start_date = #{startDate},
+		</if>
+		<if test="endDate != null ">
+			end_date = #{endDate},
+		</if>
+		<if test="adultNum != null ">
+			adult_num = #{adultNum},
+		</if>
+		<if test="childNum != null ">
+			child_num = #{childNum},
+		</if>
+		<if test="bagNum != null ">
+			bag_num = #{bagNum},
+		</if>
+		<if test="dayNum != null ">
+			day_num = #{dayNum},
+		</if>
+		<if test="payWay != null ">
+			pay_way = #{payWay},
+		</if>
+		<if test="payDate != null ">
+			pay_date = #{payDate},
+		</if>
+		<if test="status != null ">
+			status = #{status},
+		</if>
+		<if test="updateDate != null ">
+			update_date = #{updateDate},
+		</if>
+		<if test="updateBy != null ">
+			update_by = #{updateBy.id},
+		</if>
+		<if test="delDate != null ">
+			del_date = #{delDate},
+		</if>
+		<if test="delBy != null ">
+			del_by = #{delBy},
+		</if>
+		<if test="refundInfo != null ">
+			refund_info = #{refundInfo},
+		</if>
+		<if test="refundReason != null ">
+			refund_reason = #{refundReason},
+		</if>
+		<if test="contactsName != null ">
+			contacts_name = #{contactsName},
+		</if>
+		<if test="contactsMobile != null ">
+			contacts_mobile = #{contactsMobile},
+		</if>
+		<if test="remark != null ">
+			remark = #{remark},
+		</if>
+		<if test="memberId != null ">
+			member_id = #{memberId},
+		</if>
+		<if test="useDate != null ">
+			use_date = #{useDate},
+		</if>
+		<if test="price != null ">
+			price = #{price},
+		</if>
+		<if test="refundDate != null ">
+			refundDate = #{refundDate},
+		</if>
+		<if test="payNo != null ">
+			pay_no = #{payNo}
+		</if>
+	</sql>
+	
+	
+	<update id="updateObject">
+		UPDATE order_travel_business 
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+	</update>
+	<update id="updateObject2">
+		UPDATE order_travel_business 
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+		<if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+		<if test="orderSys2 != null ">
+			and order_sys2 = #{orderSys2,jdbcType=INTEGER}
+		</if>
+	</update>
+	<update id="batchUpdateStatus">
+		update order_travel_business s
+		left join order_car a on s.order_sys1=a.order_sys1
+		left join order_guide b on s.order_sys1=b.order_sys1
+		left join order_hotel c on s.order_sys1=c.order_sys1
+		left join order_liner d on s.order_sys1=d.order_sys1
+		left join order_scenic_spot e on s.order_sys1=e.order_sys1
+		left join order_insurance f on s.order_sys1=f.order_sys1
+		left join order_route g on s.order_sys1=g.order_sys1
+		set s.status=6,a.status=6 ,b.status=6 ,c.status=6,
+		 d.status=6 ,e.status=6 ,f.status=6 ,g.status=6 
+		where s.order_sys1=#{orderSys1}
+	</update>
+	
+	<select id="findAffirm" resultType="OrderTravelBusiness" >
+		select a.type as 'business',if(m.type=1,d.nick_name,e.company_name) AS "nickName",a.status
+		from (
+		select CASE type
+			WHEN '1' THEN '包车租车' 
+			WHEN '2' THEN '短程接送' 
+			WHEN '3' THEN '接送机' 
+			WHEN '4' THEN '定制' 
+			else '' END as 'type',status,member_id,order_sys1
+		from order_car 
+		union all
+		select "导游" as "type",status,member_id,order_sys1 from order_guide
+		union all
+		select "酒店" as "type",status,member_id,order_sys1 from order_hotel
+		union all
+		select "邮轮" as "type",status,member_id,order_sys1 from order_liner
+		union all
+		select "景点" as "type",status,member_id,order_sys1 from order_scenic_spot
+		union all
+		select "保险" as "type",status,member_id,order_sys1 from order_insurance
+		union all
+		select if(type=1,"常规路线","当地参团") as "type",status,memberid,order_sys1 from order_route
+		) as a
+		LEFT JOIN member m ON a.member_id = m.id
+		LEFT JOIN member_information d ON a.member_id = d.memberid
+		left join member_travel e on a.member_id = e.memberid
+		where order_sys1=#{orderSys1}
+	</select>
+	
+	<select id="findTravelDetailByOrderSys2" resultType="OrderTravelBusiness" >
+		SELECT 
+			<include refid="orderTravelBusinessColumns"/>
+		FROM order_travel_business a
+		<include refid="orderTravelBusinessJoins"/>
+		WHERE a.order_sys2 = #{orderSys2}
+	</select>
+</mapper>

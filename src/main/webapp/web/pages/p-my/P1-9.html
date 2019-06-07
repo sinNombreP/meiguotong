@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>玩家认证</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/E-publc.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../vendor/calendar/calendar-pro.css">
+    <link rel="stylesheet" href="../../css/common.css" />
+</head>
+<body>
+<div id="app" v-cloak>
+        <ez-header></ez-header>
+        <ez-container></ez-container>
+<!--content-->
+
+<div class="container ez-container ez-user-content">
+    <ez-myinfo></ez-myinfo>
+    <div class="content-right">
+        <div class="panel-header">
+            <div class="pull-left panel-header-title">玩家认证</div>
+        </div>
+        <div class="content-panel">
+
+            <!--用户信息-->
+            <form class="form-horizontal wrap-account">
+
+                <div class="form-group">
+                    <span class="label-txt required">真实姓名</span>
+                    <div class="form-content" >
+                        <input class="form-control" type="text"  v-model.trim="list.realName" maxlength="20" placeholder="请输入真实姓名">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label-txt required">ID号</span>
+                    <div class="form-content" >
+                        <div class="select-group">
+                            <select class="form-control ez-mr-sm" v-model="list.codeType">
+                                <option value="1">身份证</option>
+                                <option value="2">护照</option>
+                                <option value="3">本地ID</option>
+                            </select>
+                            <div class=" col-md-8 col-sm-8">
+                                <input class="form-control" type="text" v-model.trim="list.code" maxlength="20" placeholder="请输入证件号码">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label-txt required">擅长</span>
+                    <div class="form-content-lg" >
+                        <ul class="skill-list list-inline">
+                            <li v-for="(tag, index) in comTagList" :key="index" @click="tagClick(index,tag.flag)">
+                                <a class="btn" :class="{'active':tag.flag}" >{{tag.content}}<i class="iconfont icon-yes"></i></a>
+                            </li>
+                        </ul>
+                        <p>当地玩家擅长区域，可以第多选</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label-txt required">当前地址</span>
+                    <div class="form-content" >
+                        <div class="select-group">
+                                    <select class="form-control ez-mr-sm" v-model="list.countryid" @change="countryChange">
+                                        <option value="" selected>请选择</option>
+                                        <option :value="country.countryid" v-for="(country, index) in countryList" :key="index">{{country.countryName}}</option>
+                                    </select>
+                                    <select class="form-control ez-mr-sm s" v-model="list.cityid">
+                                        <option value="" selected>请选择</option>
+                                        <option :value="city.cityid"  v-for="(city, index) in cityList" :key="index">{{city.cityName}}</option>
+                                    </select>
+                        </div>
+                        <div>
+                            <textarea class="ez-control-textarea" rows="10" cols="30" v-model.trim="list.address" maxlength="50"  placeholder="请输入详细地址"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label-txt required">背景图</span>
+                    <div class="form-content upload-plugin avatarImgUpload">
+                        <div class="upload-imgbox" style="width:100%;">
+                             <input type="file"  @change="imgChange('img')" id="img"  accept="image/*" v-show>
+                            <img onclick="{ $('#img').click();}" :src="list.img?list.img:'../../images/upload2.png'">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label-txt required">证件上传</span>
+                    <div class="form-content upload-plugin avatarImgUpload">
+                        <div class="upload-imgbox" style="width:100%;">
+                             <input type="file"  @change="imgChange('img0')" id="img0"  accept="image/*" v-show>
+                             <input type="file"  @change="imgChange('img1')" id="img1" accept="image/*" v-show>
+                            <img onclick="{ $('#img0').click();}" :src="list.img0?list.img0:'../../images/upload2.png'">
+                            <img onclick="{ $('#img1').click();}" :src="list.img1?list.img1:'../../images/upload2.png'">
+                        </div>
+                       <!-- <div class="upload-text-lg">
+                            <p>建议上传图片尺寸为500*500</p>
+                            <p>大小不超过20M</p> 
+                            <div class="ez-upload-btn ez-mt-10">
+                                <input type="file" title="上传封面" onchange="uploadAvatar()" id="avatarImgFile" accept="image/*"> 上传封面
+                            </div> 
+                        </div> -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label-txt">简介</span>
+                    <div class="form-content" >
+                        <div>
+                            <textarea class="ez-control-textarea" rows="10" cols="30" v-model.trim="list.introduction" maxlength="50"  placeholder="请输入详简介">简介</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label-txt">详情</span>
+                    <div class="form-content" >
+                        <div class="ez-ueditor-box" id="ez-Editor"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <span class="label-txt"></span>
+                    <div class="form-content" >
+                        <a class="btn btn-lg ez-btn-parmary ez-mr-md" @click="subData">编辑</a>
+                        <a class="btn btn-lg ez-btn">取消</a>
+                    </div>
+                </div>
+            </form>
+
+
+
+        </div>
+    </div>
+
+</div>
+
+
+
+<ez-footer></ez-footer>
+<ez-aside></ez-aside>
+
+</div>
+</body>
+</html>
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-pro.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script>
+        const app = new Vue({
+            el: "#app",
+            data: {
+                list:{},  //玩家认证信息
+                countryList:[],  //国家城市
+                comTagList:"", //玩家擅长属性
+                cityList:[],//城市List
+                um:"",  //百度编辑器对象
+            },
+            methods: {
+                //编辑更新数据
+                subData:function(){
+                    Vue.set(this.list,"deltails",this.um.getContent());
+                    Vue.set(this.list,"tagId",this.getLable());
+                    for (const [key,value] of Object.entries(this.list)) {
+                        if(value === "" || value == undefined || value == null){
+                            console.log(key);
+                            layerMsg("请完善数据");  
+                            return;
+                        }
+                    }
+                    Vue.set(this.list,"photoUrl",`${this.list.img0},${this.list.img1}`);
+                    console.log(`${this.list.img0},${this.list.img1}`);
+                    requestGet(addGuideUrl,this.list, function (data) {
+                        layerMsg("提交成功");
+                    });
+                },
+                //获取选中的标签
+                getLable:function(){
+                    let ids = [];
+                    for (const tag of Object.values(this.comTagList)) {
+                        if(tag.flag){
+                            ids.push(tag.tagid);
+                        }
+                    }
+                    if(ids){
+                        ids.join(",");
+                    }
+                    return ids.length === 0 ? "" : ids.toString();
+                },
+                //点击标签
+                tagClick:function(index,flag){
+                    Vue.set(this.comTagList[index],"flag",!flag); 
+                },
+                //玩家擅长属性初始化
+                lableInit:function(){
+                    if(this.list.tagId == undefined){
+                        Vue.set(this.list,"tagId","");
+                    }
+                    for (const tag of Object.values(this.comTagList)) {
+                        Vue.set(tag,"flag",false);  
+                        if(this.list.tagId.includes(tag.tagid)){
+                                Vue.set(tag,"flag",true);  
+                        }
+                    }
+                },
+                //国家改变
+                countryChange:function(){
+                    this.list.cityid = "";
+                    this.countryPd();
+                },
+                countryPd:function(){
+                    let flag = true;
+                    for(let k in this.countryList){
+                        if(this.countryList[k].countryid == this.list.countryid){
+                            this.cityList = this.countryList[k].cityList;
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if ( flag ) this.cityList = [];
+                },
+                //根据语言获取国家城市
+                getCountryCity:function () {
+                    requestGet(getCountryCityUrl, {
+                    }, function (data) {
+                        app.countryList = data.body.countryList;
+                        app.countryPd();
+                    });
+                },
+                //获取玩家认证信息
+                getData: function () {
+                    requestGet(getGuideInfoUrl, {
+                    }, function (data) {
+                        let list = data.body.guide;;
+                        if(list.photoUrl){
+                            Vue.set(list,'img0',list.photoUrl.split(',')[0]);
+                            Vue.set(list,'img1',list.photoUrl.split(',')[1]);
+                        }else{
+                            Vue.set(list,'img0',"");
+                            Vue.set(list,'img1',"");
+                        }
+                        Vue.delete(list,'photoUrl');
+                        app.list = list;
+                        app.getCountryCity();
+                        app.getLAbleData();
+                        //设置编辑器默认内容
+                        app.um.setContent(list.deltails);
+                    });
+                },
+                //获取玩家擅长属性
+                getLAbleData: function () {
+                    requestGet(getGuideLabelUrl, {
+                    }, function (data) {
+                        app.comTagList = data.body.comTagList;
+                        app.lableInit();
+                    });
+                },
+                //上传图片
+                imgChange: function (id) {
+                    var e = window.event || arguments.callee.caller.arguments[0];
+                    console.info(e.target.files[0]); //图片文件
+                    var file = e.target.files[0];
+                    var URL = window.URL || window.webkitURL;
+                    // 通过 file 生成目标 url
+                    var photo = URL.createObjectURL(file);
+                    var image = new Image();
+                    image.src = photo;
+                    image.onload = function () {
+                    var imgData = app.getImage(image);
+                    requestPost(imgUploadUrl, {
+                        "file": imgData,
+                    }, function (data) {
+                        //更新图片数据
+                        Vue.set(app.list,id,data.body.imgUrl);
+                    });
+                    }
+                },
+                //压缩图片
+                getImage: function (image) {
+                    var canvas = document.createElement("canvas");
+                    var width = 250;
+                    var height = 250;
+                    canvas.width = width; /*设置新的图片的宽度*/
+                    canvas.height = height; /*设置新的图片的长度*/
+                    var ctx = canvas.getContext("2d");
+                    ctx.drawImage(image, 0, 0, width, height); /*绘图*/
+                    var dataURL = canvas.toDataURL("image/jpeg", 0.6);
+                    return dataURL.replace("data:image/jpeg;base64,", "");
+                },
+            },
+            mounted () {
+                this.getData();
+                //实例化百度编辑器
+                // this.$nextTick(
+                    this.um = UM.getEditor('ez-Editor', {
+                    //自定义工具栏
+                    toolbar:[
+                        'bold','emotion image video'
+                    ]
+                    })
+              //  )
+
+            },
+        })
+
+ </script>

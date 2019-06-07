@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.comFeedback.ComFeedbackMapper">
+    
+	<sql id="comFeedbackColumns">
+		a.id AS "id",
+		a.memberid AS "memberid",
+		a.membername AS "membername",
+		a.mobile AS "mobile",
+		a.email AS "email",
+		a.content AS "content",
+		a.is_deal AS "isDeal",
+		a.remark AS "remark",
+		a.create_date AS "createDate",
+		a.deal_date AS "dealDate",
+		a.deal_by AS "dealBy",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.is_way AS "isWay"
+	</sql>
+	
+	<sql id="comFeedbackJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComFeedback" >
+		SELECT 
+			<include refid="comFeedbackColumns"/>
+		FROM com_feedback a
+		<include refid="comFeedbackJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ComFeedback" >
+		SELECT 
+			<include refid="comFeedbackColumns"/>
+		FROM com_feedback a
+		<include refid="comFeedbackJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="mobile != null and mobile != ''">
+				AND a.mobile LIKE 
+					<if test="dbName == 'oracle'">'%'||#{mobile}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{mobile}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{mobile},'%')</if>
+			</if>
+			<if test="content != null and content != ''">
+				AND a.content LIKE 
+					<if test="dbName == 'oracle'">'%'||#{content}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{content}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{content},'%')</if>
+			</if>
+			<if test="isDeal != null and isDeal != ''">
+				AND a.is_deal = #{isDeal}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComFeedback" >
+		SELECT 
+			<include refid="comFeedbackColumns"/>
+		FROM com_feedback a
+		<include refid="comFeedbackJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_feedback(
+			memberid,
+			membername,
+			mobile,
+			email,
+			content,
+			is_deal,
+			remark,
+			create_date,
+			deal_date,
+			deal_by,
+			del_date,
+			del_by,
+			del_flag,
+			is_way
+		) VALUES (
+			#{memberid},
+			#{membername},
+			#{mobile},
+			#{email},
+			#{content},
+			#{isDeal},
+			#{remark},
+			#{createDate},
+			#{dealDate},
+			#{dealBy},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{isWay}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_feedback SET 	
+			memberid = #{memberid},
+			membername = #{membername},
+			mobile = #{mobile},
+			email = #{email},
+			content = #{content},
+			is_deal = #{isDeal},
+			remark = #{remark},
+			deal_date = #{dealDate},
+			deal_by = #{dealBy},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			is_way = #{isWay}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_feedback
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_feedback SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComFeedback" statementType="STATEMENT">
+		select * FROM com_feedback  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

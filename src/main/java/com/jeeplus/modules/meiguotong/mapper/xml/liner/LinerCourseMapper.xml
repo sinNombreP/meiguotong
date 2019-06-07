@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.liner.LinerCourseMapper">
+    
+	<sql id="linerCourseColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.status AS "status",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy.id",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		cl.content as "languageName"
+	</sql>
+	
+	<sql id="linerCourseJoins">
+		left join com_language cl on cl.id=a.language_id 
+	</sql>
+	
+    
+	<select id="get" resultType="LinerCourse" >
+		SELECT 
+			<include refid="linerCourseColumns"/>
+		FROM liner_course a
+		<include refid="linerCourseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 根据语言获取游轮航区 -->
+	<select id="findCourseList" resultType="LinerCourse" >
+		SELECT 
+			a.id AS "id",
+			a.name AS "name"
+		FROM liner_course a
+		<where>
+			a.del_flag = 0 AND a.language_id = #{languageId}
+			and a.status=1
+		</where>
+	</select>
+	
+	<select id="findList" resultType="LinerCourse" >
+		SELECT 
+			<include refid="linerCourseColumns"/>
+		FROM liner_course a
+		<include refid="linerCourseJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id = #{languageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="LinerCourse" >
+		SELECT 
+			<include refid="linerCourseColumns"/>
+		FROM liner_course a
+		<include refid="linerCourseJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO liner_course(
+			name,
+			status,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id
+		) VALUES (
+			#{name},
+			1,
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy.id},
+			#{delFlag},
+			#{languageId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE liner_course SET 	
+			name = #{name},
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy.id},
+			language_id = #{languageId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM liner_course
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE liner_course SET 
+			del_flag = 1,
+			del_date = #{delDate},
+			del_by = #{delBy.id}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="LinerCourse" statementType="STATEMENT">
+		select * FROM liner_course  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

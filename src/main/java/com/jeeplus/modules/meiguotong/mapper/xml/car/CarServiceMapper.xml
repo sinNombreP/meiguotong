@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.car.CarServiceMapper">
+    
+	<sql id="carServiceColumns">
+		a.id AS "id",
+		a.language AS "language",
+		a.title AS "title",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.range AS "range",
+		a.radius AS "radius",
+		b.content AS "languageName"
+	</sql>
+	
+	<sql id="carServiceJoins">
+		LEFT JOIN com_language b ON b.id = a.language
+	</sql>
+	
+    
+	<select id="get" resultType="CarService" >
+		SELECT 
+			<include refid="carServiceColumns"/>
+		FROM car_service a
+		<include refid="carServiceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<!-- 获取车辆业务类型 -->
+	<select id="selectCarService" resultType="CarService" >
+		SELECT 
+			a.id AS "id",
+			a.title AS "title",
+			a.range AS "range",
+			a.radius AS "radius"
+		FROM car_service a
+		<where>
+			a.del_flag =0 AND a.language = #{language}
+		</where>
+		ORDER BY a.update_date DESC
+	</select>
+
+	<select id="findList" resultType="CarService" >
+		SELECT 
+			<include refid="carServiceColumns"/>
+		FROM car_service a
+		<include refid="carServiceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="language != null and language != ''">
+				AND a.language = #{language}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE
+				<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="range != null and range != ''">
+				AND a.range = #{range}
+			</if>
+			<if test="radius != null and radius != ''">
+				AND a.radius = #{radius}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 模态框获取标题数据 -->
+	<select id="getTitleData"  resultType="CarService" >
+		SELECT 
+			<include refid="carServiceColumns"/>
+		FROM car_service a
+			<include refid="carServiceJoins"/>
+		<where>
+			<if test="ids != null and ids != '' ">
+				AND find_in_set(a.id,#{ids}) = 0
+			</if>
+			<if test="language != null ">
+				AND a.language = #{language}
+			</if>
+			<if test="title != null and title != '' ">
+				AND a.title LIKE concat("%",#{title},"%")
+			</if>
+		</where> 
+	</select>
+	
+	<select id="findAllList" resultType="CarService" >
+		SELECT 
+			<include refid="carServiceColumns"/>
+		FROM car_service a
+		<include refid="carServiceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO car_service(
+			language,
+			title,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			del_date,
+			del_by,
+			`range`,
+			radius
+		) VALUES (
+			#{language},
+			#{title},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{delDate},
+			#{delBy},
+			#{range},
+			#{radius}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE car_service SET 	
+			language = #{language},
+			title = #{title},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			`range` = #{range},
+			`radius` = #{radius}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM car_service
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE car_service SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="CarService" statementType="STATEMENT">
+		select * FROM car_service  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

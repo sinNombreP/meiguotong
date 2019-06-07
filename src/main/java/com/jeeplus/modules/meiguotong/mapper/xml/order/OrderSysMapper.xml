@@ -1,0 +1,1024 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.order.OrderSysMapper">
+    
+	<sql id="orderSysColumns">
+		a.id AS "id",
+		a.order_no AS "orderNo" ,
+		a.after_no AS "afterNo" ,
+		a.agent AS "agent" ,
+		a.agentid AS "agentid" ,
+		a.type AS "type",
+		a.fatherid AS "fatherid",
+		a.orderid AS "orderid",
+		a.memberid as "memberid",
+		a.create_date as "createDate",
+		a.languageid as "languageid",
+		a.price as "price",
+		a.contacts_name as "contactsName",
+		a.contacts_mobile as "contactsMobile",
+		a.remark as "remark",
+		a.pay_way as "payWay",
+		a.pay_date as "payDate",
+		a.pay_no as "payNo",
+		a.bag_num as "bagNum",
+		a.title as "title",
+		a.adult_num AS "adultNum",
+		a.child_num AS "childNum",
+		a.one_num AS "oneNum",
+		a.two_num AS "twoNum",
+		a.three_num AS "threeNum",
+		a.four_num AS "fourNum",
+		a.arrange_num AS "arrangeNum",
+		a.begin_date as "beginDate",
+		a.end_date as "endDate",
+		a.image as "image",
+		a.status as "status",
+		a.price1 as "price1",
+		a.price2 as "price2",
+		a.price3 as "price3",
+		a.price4 as "price4",
+		a.pricea as "pricea",
+		a.start_city as "startCity",
+		a.start_address as "startAddress",
+		a.end_city as "endCity",
+		a.end_address as "endAddress",
+		a.port_name as "portName",
+		a.down_port_name as "downPortName",
+		a.finish_date as "finishDate",
+		a.extract as "extract",
+		a.pay_order_no as "payOrderNo"
+	</sql>
+	
+	<sql id="orderSysJoins">
+		
+	</sql>
+	<!-- 根据支付订单号获取支付列表 -->
+	<select id="getListByPayOrderNo" resultType="OrderSys" >
+		SELECT 
+			<include refid="orderSysColumns"/>
+		FROM order_sys a
+		<include refid="orderSysJoins"/>
+		WHERE a.pay_order_no = #{payOrderNo} and a.fatherid =0
+	</select>
+    
+	<select id="get" resultType="OrderSys" >
+		SELECT 
+			<include refid="orderSysColumns"/>
+		FROM order_sys a
+		<include refid="orderSysJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 查找保险数据 -->
+	<select id="findInsurance" resultType="OrderSys" >
+		SELECT 
+			<include refid="orderSysColumns"/>
+		FROM order_sys a
+		WHERE a.type = #{type} and a.orderid=#{orderid}		
+	</select>
+		<!-- 查找保险数据 -->
+	<select id="findInsurance1" resultType="OrderSys" >
+		SELECT 
+			<include refid="orderSysColumns"/>
+		FROM order_sys a
+		WHERE a.type = #{type} and a.fatherid=#{fatherid}		
+	</select>
+	<!--  获取我的订单接口 -->
+	<select id="myOrder" resultType="OrderSys" >
+		SELECT 
+	        <include refid="orderSysColumns"/>
+	 	FROM order_sys a
+		<where>
+			a.memberid=#{memberid} and a.languageid=#{languageid} and a.fatherid=0
+			<if test="status != null and status != '' and status!=0">
+				AND a.status = #{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				order by a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	<!--  获取我的售后订单接口 -->
+	<select id="myOrderAfter" resultType="OrderSys" >
+		SELECT 
+	        <include refid="orderSysColumns"/>
+	 	FROM order_sys a
+		<where>
+			a.memberid=#{memberid} and a.languageid=#{languageid} and a.fatherid=0
+			AND (a.status=7 or a.status=8 or a.status=9 or a.status=10)
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				order by a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	<!--  获取我的非定制订单接口 -->
+	<select id="getOrderSys" resultType="OrderSys" >
+		SELECT 
+		<include refid="orderSysColumns" />
+		FROM order_sys a
+		<where>
+			a.id=#{id}
+		</where>
+	</select>
+	<!--  获取我的定制订单接口 -->
+	<select id="getOrderSysList" resultType="OrderSys" >
+		SELECT 
+			a.orderid AS "orderid",
+			a.type AS "type",
+			a.begin_date as "beginDate",
+			a.end_date as "endDate",
+			a.contacts_name as "contactsName",
+			a.contacts_mobile as "contactsMobile",
+			a.remark as "remark",
+			a.pay_way as "payWay",
+			a.pay_date as "payDate",
+			a.pay_no as "payNO",
+			a.create_date as "createDate",
+			a.adult_num AS "adultNum",
+			a.child_num AS "childNum",
+			a.bag_num as "bagNum",
+			b.price as "price",
+			case when a.type=1 then concat(travel.name,car.name)
+				when a.type=7 then concat(travel.name,scenic.name)
+				when a.type=9 then concat(travel.name,hotel.name)
+				when a.type=12 then concat(travel.name,guide.name)
+				end
+			 as "title"
+		FROM order_sys a
+		left join order_sys b on b.id = a.fatherid
+		left join order_sys c on c.fatherid=a.fatherid and b.type=c.type
+		left join order_travel_business travel on travel.id=c.orderid
+		left join order_car car on car.id = a.orderid and a.type=1
+		left join order_scenic_spot scenic on scenic.id = a.orderid and a.type=7
+		left join order_hotel hotel on hotel.id = a.orderid and a.type=9
+		left join order_guide guide on guide.id = a.orderid and a.type=12
+		<where>
+			a.fatherid=#{id} and (a.type=1 or a.type=7 or a.type=9 or a.type=12)
+		</where>
+	</select>
+	<select id="findList" resultType="OrderSys" >
+		SELECT 
+			<include refid="orderSysColumns"/>,
+			b.nick_name AS "nickName",
+			b.photo AS "photo"
+		FROM order_sys a
+		LEFT JOIN member_information b ON a.memberid = b.memberid
+		<include refid="orderSysJoins"/>
+		<where>
+			${dataScope}
+			<if test="fatherid != null">
+				AND a.fatherid = #{fatherid}
+			</if>
+			<if test="languageid != null">
+				AND a.languageid = #{languageid}
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderSys" >
+		SELECT 
+			<include refid="orderSysColumns"/>
+		FROM order_sys a
+		<include refid="orderSysJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 查找orderId -->
+	<select id="findOrderId" resultType="OrderSys">
+	 select 
+	  <include refid="orderSysColumns"/>
+		FROM order_sys a
+		where a.type=#{type} and a.orderid=#{orderid}
+	</select>
+	<!-- 获取父ID类型 -->
+	<select id="getFathType" resultType="OrderSys">
+		SELECT 
+			c.orderid,
+			b.type
+		FROM order_sys a
+		INNER  JOIN order_sys b ON a.fatherid = b.id 
+		INNER  JOIN order_sys c ON a.fatherid = c.fatherid 
+		WHERE   a.orderid = #{id}  AND a.type=#{type} AND c.fatherid = b.id  AND c.type!=#{type} AND b.type = c.type
+	</select>
+	<!-- 获取父ID类型 -->
+	<select id="getFatherType" resultType="OrderSys">
+		SELECT 
+			c.orderid,
+			b.type
+		FROM order_sys a
+		INNER  JOIN order_sys b ON a.fatherid = b.id 
+		INNER  JOIN order_sys c ON a.fatherid = c.fatherid 
+		WHERE   a.orderid = #{id}  AND a.type=#{type} AND c.fatherid = b.id  AND c.type!=#{type} AND b.type = c.type
+	</select>	
+	<insert id="insert">
+		INSERT INTO order_sys(
+		  id ,
+		  order_no ,
+		  after_no ,
+		  agent ,
+		  agentid ,
+		  type ,
+		  fatherid ,
+		  orderid ,
+		  memberid ,
+		  create_date ,
+		  languageid ,
+		  price ,
+		  contacts_name ,
+		  contacts_mobile ,
+		  remark ,
+		  pay_way ,
+		  pay_date ,
+		  pay_no ,
+		  bag_num ,
+		  title ,
+		  adult_num ,
+		  child_num ,
+		  begin_date ,
+		  end_date ,
+		  one_num ,
+		  two_num ,
+		  three_num ,
+		  four_num ,
+		  arrange_num ,
+		  image ,
+		  status  ,
+		  price1 ,
+		  price2 ,
+		  price3 ,
+		  price4 ,
+		  pricea,
+		  start_city ,
+		  start_address,
+		  end_city,
+		  end_address,
+		  port_name,
+		  down_port_name,
+		  finish_date,
+		  extract,
+		  pay_order_no
+		) VALUES (
+		  #{id},
+		  #{orderNo},
+		  #{afterNo},
+		  #{agent},
+		  #{agentid},
+		  #{type},
+		  #{fatherid},
+		  #{orderid},
+		  #{memberid},
+		  #{createDate},
+		  #{languageid},
+		  #{price},
+		  #{contactsName},
+		  #{contactsMobile},
+		  #{remark},
+		  #{payWay},
+		  #{payDate},
+		  #{payNo},
+		  #{bagNum},
+		  #{title},
+		  #{adultNum},
+		  #{childNum},
+		  #{beginDate},
+		  #{endDate},
+		  #{oneNum},
+		  #{twoNum},
+		  #{threeNum},
+		  #{fourNum},
+		  #{arrangeNum},
+		  #{image},
+		  1,
+		  #{price1},
+		  #{price2},
+		  #{price3},
+		  #{price4},
+		  #{pricea},
+		  #{startCity},
+		  #{startAddress},
+		  #{endCity},
+		  #{endAddress},
+		  #{portName},
+		  #{downPortName},
+		  #{finishDate},
+		  1,
+		  #{payOrderNo}
+		)
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+			select LAST_INSERT_ID() as id
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE order_sys SET
+				order_no = #{orderNo,jdbcType=VARCHAR},
+			after_no = #{afterNo,jdbcType=VARCHAR},
+			agent = #{agent,jdbcType=VARCHAR},
+			agentid = #{agentid,jdbcType=INTEGER}, 	
+			type = #{type},
+			fatherid = #{fatherid},
+			orderid = #{orderid},
+			memberid = #{memberid},
+			create_date = #{createDate},
+			languageid = #{languageid},
+			price = #{price},
+			contacts_name = #{contactsName},
+			contacts_mobile = #{contactsMobile},
+			remark = #{remark},
+			pay_way = #{payWay},
+			pay_date = #{payDate},
+			pay_no = #{payNo},
+			bag_num = #{bagNum},
+			title = #{title},
+			adult_num = #{adultNum},
+			child_num = #{childNum},
+			one_num = #{oneNum},
+			two_num = #{twoNum},
+			three_num = #{threeNum},
+			four_num = #{fourNum},
+			arrange_num = #{arrangeNum},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			price1 = #{price1},
+			price2 = #{price2},
+			price3 = #{price3},
+			price4 = #{price4},
+            pricea = #{pricea},
+            start_city = #{startCity},
+			start_address = #{startAddress},
+			end_city = #{endCity},
+			end_address = #{endAddress},
+			port_name = #{portName},
+			down_port_name = #{downPortName},
+			finish_date=#{finishDate},
+		    extract=#{extract},
+		    pay_order_no=#{payOrderNo}
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateObj">
+		UPDATE order_sys
+		<set>
+			<if test="type != null ">
+				type = #{type},
+			</if>
+			<if test="fatherid != null ">
+				fatherid = #{fatherid},
+			</if>
+			<if test="orderid != null ">
+				orderid = #{orderid},
+			</if>
+			<if test="memberid != null ">
+				memberid = #{memberid},
+			</if>
+			<if test="createDate != null ">
+				create_date = #{createDate},
+			</if>
+			<if test="languageid != null ">
+				languageid = #{languageid},
+			</if>
+			<if test="price != null ">
+				price = #{price},
+			</if>
+			<if test="contactsName != null ">
+				contacts_name = #{contactsName},
+			</if>
+			<if test="contactsMobile != null ">
+				contacts_mobile = #{contactsMobile},
+			</if>
+			<if test="contactsMobile != null ">
+				contacts_mobile = #{contactsMobile},
+			</if>
+			<if test="remark != null ">
+				remark = #{remark},
+			</if>
+			<if test="payWay != null ">
+				pay_way = #{payWay},
+			</if>
+			<if test="payDate != null ">
+				pay_date = #{payDate},
+			</if>
+			<if test="payNo != null ">
+				pay_no = #{payNo},
+			</if>
+			<if test="bagNum != null ">
+				bag_num = #{bagNum},
+			</if>
+			<if test="title != null ">
+				title = #{title},
+			</if>
+			<if test="adultNum != null ">
+				adult_num = #{adultNum},
+			</if>
+			<if test="childNum != null ">
+				child_num = #{childNum},
+			</if>
+			<if test="oneNum != null ">
+				one_num = #{oneNum},
+			</if>
+			<if test="twoNum != null ">
+				two_num = #{twoNum},
+			</if>
+			<if test="threeNum != null ">
+				three_num = #{threeNum},
+			</if>
+			<if test="fourNum != null ">
+				four_num = #{fourNum},
+			</if>
+			<if test="arrangeNum != null ">
+				arrange_num = #{arrangeNum},
+			</if>
+			<if test="beginDate != null ">
+				begin_date = #{beginDate},
+			</if>
+			<if test="endDate != null ">
+				end_date = #{endDate},
+			</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_sys
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_sys SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderSys" statementType="STATEMENT">
+		select * FROM order_sys  where ${propertyName} = '${value}'
+	</select>
+	
+		<resultMap id="OrderSysResultMap" type="com.jeeplus.modules.meiguotong.entity.order.OrderSys">
+		<id property="id" column="id"  />
+				<result property="orderNo" column="order_no" />
+		<result property="afterNo" column="after_no" />
+		<result property="agent" column="agent" />
+		<result property="agentid" column="agentid" />
+		<result property="type" column="type" />
+		<result property="fatherid" column="fatherid" />
+		<result property="orderid" column="orderid" />
+		<result property="memberid" column="memberid" />
+		<result property="createDate" column="create_date" />
+		<result property="languageid" column="languageid" />
+		<result property="price" column="price" />
+		<result property="contactsName" column="contacts_name" />
+		<result property="contactsMobile" column="contacts_mobile" />
+		<result property="remark" column="remark" />
+		<result property="payWay" column="pay_way" />
+		<result property="payDate" column="pay_date" />
+		<result property="payNo" column="pay_no" />
+		<result property="bagNum" column="bag_num" />
+		<result property="title" column="title" />
+		<result property="adultNum" column="adult_num" />
+		<result property="childNum" column="child_num" />
+		<result property="beginDate" column="begin_date" />
+		<result property="endDate" column="end_date" />
+		<result property="oneNum" column="one_num" />
+		<result property="twoNum" column="two_num" />
+		<result property="threeNum" column="three_num" />
+		<result property="fourNum" column="four_num" />
+		<result property="arrangeNum" column="arrange_num" />
+		<result property="image" column="image" />
+		<result property="status" column="status" />
+		<result property="price1" column="price1" />
+		<result property="price2" column="price2" />
+		<result property="price3" column="price3" />
+		<result property="price4" column="price4" />
+		<result property="pricea" column="pricea" />
+		<result property="payOrderNo" column="pay_order_no" />
+	</resultMap>
+	
+	<!-- 设置语句 -->
+	<sql id="set_column">
+		<if test="id != null ">
+			id = #{id,jdbcType=INTEGER},
+		</if>
+		<if test="type != null ">
+			type = #{type,jdbcType=INTEGER},
+		</if>
+		<if test="fatherid != null ">
+			fatherid = #{fatherid,jdbcType=INTEGER},
+		</if>
+		<if test="orderid != null ">
+			orderid = #{orderid,jdbcType=INTEGER},
+		</if>
+		<if test="memberid != null ">
+			memberid = #{memberid,jdbcType=INTEGER},
+		</if>
+		<if test="createDate != null ">
+			create_date = #{createDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="languageid != null ">
+			languageid = #{languageid,jdbcType=INTEGER},
+		</if>
+		<if test="price != null ">
+			price = #{price,jdbcType=DECIMAL},
+		</if>
+		<if test="contactsName != null ">
+			contacts_name = #{contactsName,jdbcType=VARCHAR},
+		</if>
+		<if test="contactsMobile != null ">
+			contacts_mobile = #{contactsMobile,jdbcType=VARCHAR},
+		</if>
+		<if test="remark != null ">
+			remark = #{remark,jdbcType=VARCHAR},
+		</if>
+		<if test="payWay != null ">
+			pay_way = #{payWay,jdbcType=INTEGER},
+		</if>
+		<if test="payDate != null ">
+			pay_date = #{payDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="payNo != null ">
+			pay_no = #{payNo,jdbcType=TIMESTAMP},
+		</if>
+		<if test="bagNum != null ">
+			bag_num = #{bagNum,jdbcType=INTEGER},
+		</if>
+		<if test="title != null ">
+			title = #{title,jdbcType=VARCHAR},
+		</if>
+		<if test="adultNum != null ">
+			adult_num = #{adultNum,jdbcType=INTEGER},
+		</if>
+		<if test="childNum != null ">
+			child_num = #{childNum,jdbcType=INTEGER},
+		</if>
+		<if test="beginDate != null ">
+			begin_date = #{beginDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="endDate != null ">
+			end_date = #{endDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="oneNum != null ">
+			one_num = #{oneNum,jdbcType=INTEGER},
+		</if>
+		<if test="twoNum != null ">
+			two_num = #{twoNum,jdbcType=INTEGER},
+		</if>
+		<if test="threeNum != null ">
+			three_num = #{threeNum,jdbcType=INTEGER},
+		</if>
+		<if test="fourNum != null ">
+			four_num = #{fourNum,jdbcType=INTEGER},
+		</if>
+		<if test="arrangeNum != null ">
+			arrange_num = #{arrangeNum,jdbcType=INTEGER},
+		</if>
+		<if test="image != null ">
+			image = #{image,jdbcType=VARCHAR},
+		</if>
+		<if test="status != null ">
+			status = #{status,jdbcType=INTEGER},
+		</if>
+				<if test="price1 != null ">
+			price1 = #{price1,jdbcType=DECIMAL},
+		</if>
+		<if test="price2 != null ">
+			price2 = #{price2,jdbcType=DECIMAL},
+		</if>
+		<if test="price3 != null ">
+			price3 = #{price3,jdbcType=DECIMAL},
+		</if>
+		<if test="price4 != null ">
+			price4 = #{price4,jdbcType=DECIMAL},
+		</if>
+				<if test="pricea != null ">
+			pricea = #{pricea,jdbcType=DECIMAL},
+		</if>
+	</sql>
+	
+		<!-- 定义可重用的SQL代码段，可以包含在其他语句中 -->
+	<sql id="base_column">
+		 	 id ,order_no ,after_no ,agent ,agentid ,type ,fatherid ,orderid ,memberid ,create_date ,languageid ,price ,contacts_name ,contacts_mobile ,remark ,pay_way ,pay_date,pay_no ,bag_num ,title ,adult_num ,child_num ,begin_date ,end_date ,one_num ,two_num ,three_num ,four_num ,arrange_num ,image ,status  ,price1 ,price2 ,price3 ,price4 ,pricea
+	</sql>
+	
+	<sql id="base_value_column">
+		 		#{id},#{orderNo},#{afterNo},#{agent},#{agentid},#{type},#{fatherid},#{orderid},#{memberid},#{createDate},#{languageid},#{price},#{contactsName},#{contactsMobile},#{remark},#{payWay},#{payDate},#{payNo},#{bagNum},#{title},#{adultNum},#{childNum},#{beginDate},#{endDate},#{oneNum},#{twoNum},#{threeNum},#{fourNum},#{arrangeNum},#{image},#{status},#{price1},#{price2},#{price3},#{price4},#{pricea}
+	</sql>
+	
+		<!-- 修改 -->
+	<update id="updateOrderSys">
+		UPDATE	ORDER_SYS
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	ID = #{id,jdbcType=BIGINT}
+	</update>
+	
+		<!-- 修改 -->
+	<update id="updateObject">
+		UPDATE	ORDER_SYS
+		<set>
+			<include refid="set_column" />
+		</set>
+		where 
+		1=1
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+		
+		<if test="fatherid != null ">
+			AND fatherid = #{fatherid,jdbcType=INTEGER}
+		</if>
+		<if test="type != null and type != ''">
+			AND type = #{type}
+		</if>
+	</update>
+	
+	<!-- 分页查询-->
+   <select id="findListByPage"  resultMap="OrderSysResultMap" >
+		SELECT
+		<include refid="base_column" />
+		FROM ORDER_SYS
+		where 1=1
+	        
+		 <if test="fatheridIns != null  and fatheridIns.size > 0  ">
+			AND fatherid IN
+			<foreach item="fatherid" index="index" collection="fatheridIns" open="("
+				separator="," close=")">
+				#{fatherid}
+			</foreach>
+		</if>
+
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+	
+	     <if test="order != null and order != ''">
+		order by  ${order}
+	     </if>
+	     
+		<if test="pageNumber != null  and pageSize !=null ">
+			limit  #{pageNumber,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	     </if>
+	</select>
+	<!--  获取未处理订单数量 -->
+	<select id="findOrderNum" resultType="OrderSys" >
+		select 
+		(select count(id) from order_car where status=2 and type=1 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+		 )as "carNum",
+		(select count(id) from order_car where status=2 and type=2 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "sortNum",
+		(select count(id) from order_car where status=2 and type=3 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "airNum",
+		(select count(id) from order_car where status=2 and type=4 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "cusNum",
+		(select count(id) from order_route where status=2 and type=1 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "normalNum",
+		(select count(id) from order_route where status=2 and type=2 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "localNum",
+		(select count(id) from order_liner where status=2 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "linerNum",
+		(select count(id) from order_scenic_spot where status=2 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "scenicNum",
+		(select count(id) from order_guide where status=2 )as "guideNum",
+		(select count(id) from order_hotel where status=2 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "hotelNum",
+		(select count(id) from order_insurance where status=2 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "insuranceNum"
+	</select>
+	<!--  获取明日出行订单数量 -->
+	<select id="findToTravelNum" resultType="OrderSys" >
+		select 
+		(select count(id) from order_car where status=3 and type=1 
+		and TO_DAYS(begin_date)-TO_DAYS(now())=1
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+		 )as "carNum",
+		(select count(id) from order_car where status=3 and type=2 
+		and TO_DAYS(begin_date)-TO_DAYS(now())=1
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "sortNum",
+		(select count(id) from order_car where status=3 and type=3 
+		and TO_DAYS(begin_date)-TO_DAYS(now())=1
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "airNum",
+		(select count(id) from order_car where status=3 and type=4 
+		and TO_DAYS(begin_date)-TO_DAYS(now())=1
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "cusNum",
+		(select count(id) from order_route where status=3 and type=1 
+		and TO_DAYS(start_date)-TO_DAYS(now())=1
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "normalNum",
+		(select count(id) from order_route where status=3 and type=2 
+		and TO_DAYS(start_date)-TO_DAYS(now())=1
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "localNum",
+		(select count(id) from order_liner where status=3 
+		and TO_DAYS(start_date)-TO_DAYS(now())=1
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "linerNum",
+		(select count(id) from order_scenic_spot where status=3 
+		and TO_DAYS(start_date)-TO_DAYS(now())=1 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "scenicNum",
+		(select count(id) from order_guide where status=3 and TO_DAYS(begin_date)-TO_DAYS(now())=1)as "guideNum",
+		(select count(id) from order_hotel where status=3 
+		and TO_DAYS(start_date)-TO_DAYS(now())=1 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "hotelNum",
+		(select count(id) from order_insurance where status=3 
+		and TO_DAYS(start_date)-TO_DAYS(now())=1
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>)as "insuranceNum"
+	</select>
+	
+	<!--  获取时间段订单数量 -->
+	<select id="findOrderNumByDate" resultType="OrderSys" >
+		select 
+		(select count(id) from order_car where status!=1 and status!=6 and type=1 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>
+		 )as "carNum",
+		(select count(id) from order_car where status!=1 and status!=6 and type=2 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>)as "sortNum",
+		(select count(id) from order_car where status!=1 and status!=6 and type=3 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>)as "airNum",
+		(select count(id) from order_car where status!=1 and status!=6 and type=4 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>)as "cusNum",
+		(select count(id) from order_route where status!=1 and status!=6 and type=1 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>)as "normalNum",
+		(select count(id) from order_route where status!=1 and status!=6 and type=2 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>)as "localNum",
+		(select count(id) from order_liner where status!=1 and status!=6 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>)as "linerNum",
+		(select count(id) from order_scenic_spot where status!=1 and status!=6 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>)as "scenicNum",
+		(select count(id) from order_hotel where status!=1 and status!=6 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>)as "hotelNum",
+		(select count(id) from order_guide where status!=1 and status!=6 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>)as "guideNum",
+		(select count(id) from order_insurance where status!=1 and status!=6 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>)as "insuranceNum"
+	</select>
+	
+	<!--  获取时间段订单数量 -->
+	<select id="findOrderEDuByDate" resultType="OrderSys" >
+		select 
+		IFNULL((select sum(price) from order_car where status!=1 and status!=6 and type=1 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>
+		 ),0)as "carPrice",
+		IFNULL((select sum(price) from order_car where status!=1 and status!=6 and type=2 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>),0)as "sortPrice",
+		IFNULL((select sum(price) from order_car where status!=1 and status!=6 and type=3 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>),0)as "airPrice",
+		IFNULL((select sum(price) from order_car where status!=1 and status!=6 and type=4 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>),0)as "cusPrice",
+		IFNULL((select sum(price) from order_route where status!=1 and status!=6 and type=1 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>),0)as "normalPrice",
+		IFNULL((select sum(price) from order_route where status!=1 and status!=6 and type=2 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>),0)as "localPrice",
+		IFNULL((select sum(price) from order_liner where status!=1 and status!=6 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>),0)as "linerPrice",
+		IFNULL((select sum(price) from order_scenic_spot where status!=1 and status!=6 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>),0)as "scenicPrice",
+		IFNULL((select sum(price) from order_hotel where status!=1 and status!=6 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>),0)as "hotelPrice",
+			IFNULL((select sum(price) from order_guide where status!=1 and status!=6 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>),0)as "guidePrice",
+		IFNULL((select sum(price) from order_insurance where status!=1 and status!=6 
+		<if test="agentid != null and agentid != ''">
+			and agentid=#{agentid}
+	     </if>
+	     <if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(create_date, '%Y-%m-%d')
+			and DATE_FORMAT(create_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>),0) as "insurancePrice"
+	</select>
+	
+	<!-- 前端订单详情 -->
+	<select id="findDetailById" resultType="OrderSys" >
+		SELECT 
+			<include refid="orderSysColumns"/>
+		FROM order_sys a
+		<include refid="orderSysJoins"/>
+		WHERE a.fatherid = #{id}
+	</select>
+	
+	<select id="findOrderSysByExtract" resultType="OrderSys" >
+		SELECT 
+			<include refid="orderSysColumns"/>
+		FROM order_sys a
+		<include refid="orderSysJoins"/>
+		WHERE a.agentid = #{agentid} and !find_in_set(a.type,"11,13,14") and a.fatherid!=0 and extract=1 and finish_date is not null
+		<if test="type != null and type != ''">
+		and a.type=#{type}
+		</if>
+	</select>
+	
+	<select id="findOrderSysById_Extract" resultType="OrderSys" >
+		SELECT 
+			<include refid="orderSysColumns"/>
+		FROM order_sys a
+		<include refid="orderSysJoins"/>
+		WHERE find_in_set(a.id,#{orderIds})
+	</select>
+	
+	<update id="updateExtract">
+		UPDATE order_sys SET
+		    extract=#{0}
+		WHERE find_in_set(id,#{1})
+	</update>
+	
+	<select id="findSumPriceById" resultType="OrderSys" >
+		select sum(price) as "price" from order_sys where FIND_IN_SET(id,#{orderIds})
+	</select>
+	
+</mapper>

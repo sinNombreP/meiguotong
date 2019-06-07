@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.comlanguage.ComLanguageMapper">
+    
+	<sql id="comLanguageColumns">
+		a.id AS "id",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.number AS "number",
+		a.status AS "status",
+		a.content AS "content"
+	</sql>
+	
+	<sql id="comLanguageJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComLanguage" >
+		SELECT 
+			<include refid="comLanguageColumns"/>
+		FROM com_language a
+		<include refid="comLanguageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 获取语言接口 -->
+	<select id="getLanguage" resultType="ComLanguage">
+	select
+		a.id AS "languageid",
+		a.number AS "number",
+		a.content AS "content"
+		FROM com_language a
+		where 
+		a.del_flag=0 and  a.status=1
+	</select>
+	<!-- 获取语言列表接口 -->
+	<select id="findLanguageList" resultType="ComLanguage">
+	select
+		a.id AS "id",
+		a.create_date AS "createDate",
+		a.number AS "number",
+		a.status AS "status",
+		a.content AS "content"
+		FROM com_language a
+		where 
+		a.del_flag=0
+	</select>
+	<select id="findList" resultType="ComLanguage" >
+		SELECT 
+			<include refid="comLanguageColumns"/>
+		FROM com_language a
+		<include refid="comLanguageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="number != null and number != ''">
+				AND a.number = #{number}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComLanguage" >
+		SELECT 
+			<include refid="comLanguageColumns"/>
+		FROM com_language a
+		<include refid="comLanguageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 查找语言 -->
+	<select id="findLanguage" resultType="ComLanguage">
+	select
+	a.id AS "id",
+	a.content AS "content"
+	from com_language a
+	where 
+	a.del_flag=0 and
+	a.status=1
+	</select>
+	<insert id="insert">
+		INSERT INTO com_language(
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			number,
+			status,
+			content
+		) VALUES (
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{number},
+			1,
+			#{content}
+		)
+		<selectKey keyProperty="id" order="AFTER" resultType="String">
+			select LAST_INSERT_ID() as id
+		</selectKey>
+	</insert>
+	<!--修改状态-->
+	<update id="status">
+		UPDATE com_language SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	<update id="update">
+		UPDATE com_language SET 	
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			number = #{number},
+			status = #{status},
+			content=#{content}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_language
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_language SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComLanguage" statementType="STATEMENT">
+		select * FROM com_language  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

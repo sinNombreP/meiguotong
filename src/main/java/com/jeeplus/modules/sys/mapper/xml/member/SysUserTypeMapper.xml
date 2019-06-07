@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.member.SysUserTypeMapper">
+    
+	<sql id="sysUserTypeColumns">
+		a.id AS "id",
+		a.content AS "content",
+		a.userType AS "userType",
+		a.type AS "type",
+		a.discount AS "discount",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.agentid AS "agentid",
+		a.ststus AS "ststus",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate"
+	</sql>
+	
+	<sql id="sysUserTypeJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="SysUserType" >
+		SELECT 
+			<include refid="sysUserTypeColumns"/>
+		FROM sys_user_type a
+		<include refid="sysUserTypeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysUserType" >
+		SELECT 
+			<include refid="sysUserTypeColumns"/>
+		FROM sys_user_type a
+		<include refid="sysUserTypeJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="agentid != null and agentid != ''">
+				AND a.agentid = #{agentid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <!--删除原来的供应商类型-->
+    <delete id="delRole">
+        DELETE
+        FROM sys_user_type
+        WHERE agentid = #{agentid} AND userType = 1
+    </delete>
+
+	<!--查询是否有这个供应商类型-->
+	<select id="getUserType" resultType="SysUserType">
+		SELECT
+			<include refid="sysUserTypeColumns"/>
+		FROM sys_user_type a
+			<include refid="sysUserTypeJoins"/>
+		WHERE  a.userType = 1 AND a.ststus = 1 AND a.type = #{type} AND a.agentid = #{agentid} LIMIT 1
+	</select>
+
+	<!-- 根据供应商ID查询供应商类型 -->
+	<select id="findListByAgentid" resultType="SysUserType" >
+		SELECT
+			a.id AS "roleid",
+		    a.name AS "roleName",
+		    a.user_type AS "type",
+		(SELECT b.discount FROM sys_user_type b
+		WHERE a.user_type = b.type AND b.userType = 1 AND b.ststus = 1 AND b.agentid = #{agentid} ) AS "discount",
+		IF((SELECT b.discount FROM sys_user_type b
+        WHERE a.user_type = b.type AND b.userType = 1 AND b.ststus = 1 AND b.agentid = #{agentid} ),1,2) AS ststus
+		FROM sys_role a
+		<where>
+ 			a.type = 2 AND a.del_flag = 0 AND a.useable = 1  AND a.user_type IS NOT NULL
+		</where>
+			ORDER BY a.user_type
+	</select>
+	
+	<select id="findAllList" resultType="SysUserType" >
+		SELECT 
+			<include refid="sysUserTypeColumns"/>
+		FROM sys_user_type a
+		<include refid="sysUserTypeJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_user_type(
+			userType,
+			content,
+			type,
+			discount,
+			create_date,
+			create_by,
+			agentid,
+			ststus,
+			update_by,
+			update_date
+		) VALUES (
+			#{userType},
+			#{content},
+			#{type},
+			#{discount},
+			now(),
+			#{createBy.id},
+			#{agentid},
+			1,
+			#{updateBy.id},
+			#{updateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user_type SET 	
+			userType = #{userType},
+			content = #{content},
+			type = #{type},
+			discount = #{discount},
+			agentid = #{agentid},
+			ststus = #{ststus},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+		<update id="uPdate">
+		UPDATE sys_user_type SET 	
+			discount = #{discount}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user_type
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user_type SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SysUserType" statementType="STATEMENT">
+		select * FROM sys_user_type  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

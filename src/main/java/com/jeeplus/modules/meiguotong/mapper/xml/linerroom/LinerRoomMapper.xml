@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.linerroom.LinerRoomMapper">
+    
+	<sql id="linerRoomColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.spec AS "spec",
+		a.floor AS "floor",
+		a.check_in_type AS "checkInType",
+		a.min_people_number AS "minPeopleNumber",
+		a.max_people_number AS "maxPeopleNumber",
+		a.people_number AS "peopleNumber",
+		a.price AS "price",
+		a.room_number AS "roomNumber",
+		a.img_url AS "imgUrl",
+		a.liner_line_id AS "linerLineId",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId"
+	</sql>
+	
+	<sql id="linerRoomJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="LinerRoom" >
+		SELECT 
+			<include refid="linerRoomColumns"/>
+		FROM liner_room a
+		<include refid="linerRoomJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 获取邮轮房间列表 -->
+	<select id="linerRoomList" resultType="LinerRoom" >
+		SELECT 
+			a.id AS "id",
+			a.name AS "name",
+			a.spec AS "spec",
+			a.floor AS "floor",
+			a.check_in_type AS "checkInType",
+			a.min_people_number AS "minPeopleNumber",
+			a.max_people_number AS "maxPeopleNumber",
+			a.people_number AS "peopleNumber",
+			a.price AS "price",
+			a.room_number AS "roomNumber",
+			a.img_url AS "imgUrl"
+		FROM liner_room a
+		WHERE a.liner_line_id = #{linerLineId} and a.del_flag=0
+	</select>
+	<!-- 邮轮房间列表接口 -->
+	<select id="findLinerRoomList" resultType="LinerRoom" >
+		SELECT 
+			<include refid="linerRoomColumns"/>
+		FROM liner_room a
+		WHERE a.liner_line_id = #{linerLineId}
+		 and a.del_flag=0
+	</select>
+	<select id="findList" resultType="LinerRoom" >
+		SELECT 
+			<include refid="linerRoomColumns"/>
+		FROM liner_room a
+		<include refid="linerRoomJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="LinerRoom" >
+		SELECT 
+			<include refid="linerRoomColumns"/>
+		FROM liner_room a
+		<include refid="linerRoomJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 查找房间的数据 -->
+	<select id="getLinerRoomList" resultType="LinerRoom">
+	  SELECT 
+			<include refid="linerRoomColumns"/>
+		FROM liner_room a
+		<include refid="linerRoomJoins"/>
+		WHERE a.liner_line_id = #{linerLineId} and a.del_flag=0
+	</select>
+	<insert id="insert">
+		INSERT INTO liner_room(
+			name,
+			spec,
+			floor,
+			check_in_type,
+			min_people_number,
+			max_people_number,
+			people_number,
+			price,
+			room_number,
+			img_url,
+			liner_line_id,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id
+		) VALUES (
+			#{name},
+			#{spec},
+			#{floor},
+			#{checkInType},
+			#{minPeopleNumber},
+			#{maxPeopleNumber},
+			#{peopleNumber},
+			#{price},
+			#{roomNumber},
+			#{imgUrl},
+			#{linerLineId},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE liner_room SET 	
+			name = #{name},
+			spec = #{spec},
+			floor = #{floor},
+			check_in_type = #{checkInType},
+			min_people_number = #{minPeopleNumber},
+			max_people_number = #{maxPeopleNumber},
+			people_number = #{peopleNumber},
+			price = #{price},
+			room_number = #{roomNumber},
+			img_url = #{imgUrl},
+			liner_line_id = #{linerLineId},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId}
+		WHERE id = #{id}
+	</update>
+		<update id="uPdate">
+		UPDATE liner_room SET 	
+			name = #{name},
+			spec = #{spec},
+			floor = #{floor},
+			check_in_type = #{checkInType},
+			min_people_number = #{minPeopleNumber},
+			max_people_number = #{maxPeopleNumber},
+			people_number = #{peopleNumber},
+			price = #{price},
+			room_number = #{roomNumber},
+			img_url = #{imgUrl},
+			liner_line_id = #{linerLineId},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId}
+		WHERE liner_line_id=#{linerLineId}
+	</update>
+	
+	<!--物理删除-->
+	<update id="deleteByLinerLineId">
+		DELETE FROM liner_room
+		WHERE liner_line_id = #{linerLineId}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM liner_room
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE liner_room SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="LinerRoom" statementType="STATEMENT">
+		select * FROM liner_room  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 查找房间的数据 -->
+	<select id="productCar_findLinerRoom" resultType="LinerRoom">
+	  SELECT 
+			<include refid="linerRoomColumns"/>
+		FROM liner_room a
+		<include refid="linerRoomJoins"/>
+		WHERE  FIND_IN_SET(a.id,#{id})
+	</select>
+</mapper>

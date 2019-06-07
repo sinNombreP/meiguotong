@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.product.RouteTimeMapper">
+    
+	<sql id="routeTimeColumns">
+		a.id AS "id",
+		a.routeid AS "routeid",
+		a.date_type AS "dateType",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.week_date AS "weekDate",
+		a.day_date AS "dayDate"
+	</sql>
+	
+	<sql id="routeTimeJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="RouteTime" >
+		SELECT 
+			<include refid="routeTimeColumns"/>
+		FROM route_time a
+		<include refid="routeTimeJoins"/>
+		WHERE a.routeid = #{id}
+	</select>
+	
+	<select id="findList" resultType="RouteTime" >
+		SELECT 
+			<include refid="routeTimeColumns"/>
+		FROM route_time a
+		<include refid="routeTimeJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="RouteTime" >
+		SELECT 
+			<include refid="routeTimeColumns"/>
+		FROM route_time a
+		<include refid="routeTimeJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO route_time(
+			routeid,
+			date_type,
+			begin_date,
+			end_date,
+			week_date,
+			day_date
+		) VALUES (
+			#{routeid},
+			#{dateType},
+			#{beginDate},
+			#{endDate},
+			#{weekDate},
+			#{dayDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE route_time SET 	
+			routeid = #{routeid},
+			date_type = #{dateType},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			week_date = #{weekDate},
+			day_date = #{dayDate}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM route_time
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE route_time SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="RouteTime" statementType="STATEMENT">
+		select * FROM route_time  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

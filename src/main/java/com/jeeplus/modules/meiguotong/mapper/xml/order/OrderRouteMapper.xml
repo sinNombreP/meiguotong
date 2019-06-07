@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.order.OrderRouteMapper">
+    
+	<sql id="orderRouteColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.order_sys1 AS "orderSys1",
+		a.order_sys2 AS "orderSys2",
+		
+		a.order_no AS "orderNo",
+		a.after_no AS "afterNo",
+		a.agentid AS "agentid",
+		a.routeid AS "routeid",
+		a.memberid AS "memberid",
+		a.start_city AS "startCity",
+		a.start_date AS "startDate",
+		a.adult_num AS "adultNum",
+		a.child_num AS "childNum",
+		a.one_num AS "oneNum",
+		a.two_num AS "twoNum",
+		a.three_num AS "threeNum",
+		a.four_num AS "fourNum",
+		a.arrange_num AS "arrangeNum",
+		a.price AS "price",
+		a.contacts_name AS "contactsName",
+		a.contacts_mobile AS "contactsMobile",
+		a.remark AS "remark",
+		a.pay_way AS "payWay",
+		a.pay_date AS "payDate",
+		a.pay_no AS "payNo",
+		a.status AS "status",
+		a.create_date AS "createDate",
+		a.refund_date AS "refundDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.refund_info AS "refundInfo",
+		a.refund_reason AS "refundReason",
+		a.type AS "type",
+		a.title AS "title",
+		a.subtitle AS "subtitle",
+		a.infor AS "infor",
+		a.no AS "no",
+		a.day AS "day",
+		a.company_name AS "companyName",
+		c.mobile AS "mobile",
+		if(c.type=1,d.nick_name,e.company_name) AS "nickName",
+		a.price1 as "price1",
+		a.price2 as "price2",
+		a.price3 as "price3",
+		a.price4 as "price4",
+				a.pricea as "pricea",
+		(SELECT city_name FROM com_city b WHERE a.start_city = b.id) AS "startCityName"
+	</sql>
+	
+	<sql id="orderRouteJoins">
+		LEFT JOIN member c ON a.memberid = c.id
+		LEFT JOIN member_information d ON a.memberid = d.memberid
+		left join member_travel e on a.memberid = e.memberid
+	</sql>
+	
+    
+	<select id="get" resultType="OrderRoute" >
+		SELECT 
+			<include refid="orderRouteColumns"/>
+		FROM order_route a
+		<include refid="orderRouteJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderRoute" >
+		SELECT 
+			<include refid="orderRouteColumns"/>,
+			c.type as "memberType"
+		FROM order_route a
+		<include refid="orderRouteJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.type = #{type}
+			${dataScope}
+			<if test="agentid != null">
+				AND a.agentid = #{agentid}
+			</if>
+			<if test="orderType==1">
+				AND a.status &lt;= 6
+			</if>
+			<if test="orderType==2">
+				AND a.status &gt;=7
+			</if>
+			<if test="dataFlag==1">
+				AND to_days(a.create_date)= to_days(now())
+			</if>
+			<if test="dataFlag==2">
+				AND to_days(a.start_date)= to_days(now())
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND (a.order_no LIKE concat('%',#{searchContent},'%')
+				OR a.title LIKE concat('%',#{searchContent},'%')
+				OR a.memberid =#{searchContent}
+				OR a.routeid =#{searchContent})
+			</if>
+			<if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+				AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(a.start_date, '%Y-%m-%d')
+				and DATE_FORMAT(a.start_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+			</if>
+			<if test="memberType != null and memberType!=''">
+				AND c.type = #{memberType}
+			</if>
+			<if test="nickName != null and nickName!=''">
+				AND if(c.type=1,d.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderRoute" >
+		SELECT 
+			<include refid="orderRouteColumns"/>
+		FROM order_route a
+		<include refid="orderRouteJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+			ORDER BY a.update_date DESC
+	</select>
+
+	<insert id="insert">
+		INSERT INTO order_route(
+		order_sys1 ,
+		order_sys2,
+			title,
+			name,
+			subtitle,
+			infor,
+			pay_no,
+			refund_date,
+			order_no,
+			after_no,
+			agentid,
+			routeid,
+			memberid,
+			start_city,
+			start_date,
+			adult_num,
+			child_num,
+			one_num,
+			two_num,
+			three_num,
+			four_num,
+			arrange_num,
+			price,
+			contacts_name,
+			contacts_mobile,
+			remark,
+			pay_way,
+			pay_date,
+			status,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			refund_info,
+			refund_reason,
+			type,
+			no,
+			day,
+			company_name ,price1 ,price2 ,price3 ,price4 ,pricea
+		) VALUES (
+				#{orderSys1},
+		#{orderSys2},
+			#{title},
+			#{name},
+			#{subtitle},
+			#{infor},
+			#{payNo},
+			#{refundDate},
+			#{orderNo},
+			#{afterNo},
+			#{agentid},
+			#{routeid},
+			#{memberid},
+			#{startCity},
+			#{startDate},
+			#{adultNum},
+			#{childNum},
+			#{oneNum},
+			#{twoNum},
+			#{threeNum},
+			#{fourNum},
+			#{arrangeNum},
+			#{price},
+			#{contactsName},
+			#{contactsMobile},
+			#{remark},
+			#{payWay},
+			#{payDate},
+			#{status},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{refundInfo},
+			#{refundReason},
+			#{type},
+			#{no},
+			#{day},
+			#{companyName},#{price1},#{price2},#{price3},#{price4},#{pricea}
+		)
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+			select LAST_INSERT_ID() as id
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE order_route SET 	
+			pay_no = #{payNo},
+			name = #{name},
+			refund_date = #{refundDate},
+			order_no = #{orderNo},
+			title = #{title},
+			subtitle = #{subtitle},
+			infor = #{infor},
+			after_no = #{afterNo},
+			agentid = #{agentid},
+			routeid = #{routeid},
+			memberid = #{memberid},
+			start_city = #{startCity},
+			start_date = #{startDate},
+			adult_num = #{adultNum},
+			child_num = #{childNum},
+			one_num = #{oneNum},
+			two_num = #{twoNum},
+			three_num = #{threeNum},
+			four_num = #{fourNum},
+			arrange_num = #{arrangeNum},
+			price = #{price},
+			contacts_name = #{contactsName},
+			contacts_mobile = #{contactsMobile},
+			remark = #{remark},
+			pay_way = #{payWay},
+			pay_date = #{payDate},
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			refund_info = #{refundInfo},
+			refund_reason = #{refundReason},
+			type=#{type},
+			no=#{no},
+			day=#{day},
+			company_name=#{companyName},
+			price1 = #{price1},
+			price2 = #{price2},
+			price3 = #{price3},
+			price4 = #{price4}
+		WHERE id = #{id}
+	</update>
+	<update id="status">
+	UPDATE order_route SET 
+		status = #{status}
+			WHERE id = #{id} and type=#{type}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_route
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_route SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderRoute" statementType="STATEMENT">
+		select * FROM order_route  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<resultMap id="OrderRouteResultMap" type="com.jeeplus.modules.meiguotong.entity.order.OrderRoute">
+		<id property="id" column="id"  />
+		<result property="type" column="type" />
+		<result property="name" column="name" />
+		<result property="orderNo" column="order_no" />
+		<result property="afterNo" column="after_no" />
+		<result property="agentid" column="agentid" />
+		<result property="routeid" column="routeid" />
+		<result property="memberid" column="memberid" />
+		<result property="startCity" column="start_city" />
+		<result property="startDate" column="start_date" />
+		<result property="adultNum" column="adult_num" />
+		<result property="childNum" column="child_num" />
+		<result property="oneNum" column="one_num" />
+		<result property="twoNum" column="two_num" />
+		<result property="threeNum" column="three_num" />
+		<result property="fourNum" column="four_num" />
+		<result property="arrangeNum" column="arrange_num" />
+		<result property="price" column="price" />
+		<result property="contactsName" column="contacts_name" />
+		<result property="contactsMobile" column="contacts_mobile" />
+		<result property="remark" column="remark" />
+		<result property="payWay" column="pay_way" />
+		<result property="payDate" column="pay_date" />
+		<result property="payNo" column="pay_no" />
+		<result property="status" column="status" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />
+		<result property="delDate" column="del_date" />
+		<result property="delBy" column="del_by" />
+		<result property="delFlag" column="del_flag" />
+		<result property="languageId" column="language_id" />
+		<result property="refundInfo" column="refund_info" />
+		<result property="refundReason" column="refund_reason" />
+		<result property="refundDate" column="refund_date" />
+		<result property="useDate" column="use_date" />
+		<result property="title" column="title" />
+		<result property="subtitle" column="subtitle" />
+		<result property="infor" column="infor" />
+		<result property="no" column="no" />
+		<result property="companyName" column="company_name" />
+		<result property="day" column="day" />
+		<result property="price1" column="price1" />
+		<result property="price2" column="price2" />
+		<result property="price3" column="price3" />
+		<result property="price4" column="price4" />
+		<result property="pricea" column="pricea" />
+	</resultMap>
+
+	<!-- 定义可重用的SQL代码段，可以包含在其他语句中 -->
+	<sql id="base_column">
+		 id ,order_sys1 ,order_sys2 ,type ,name ,order_no ,after_no ,agentid ,routeid ,memberid ,start_city ,start_date ,adult_num ,child_num ,one_num ,two_num ,three_num ,four_num ,arrange_num ,price ,contacts_name ,contacts_mobile ,remark ,pay_way ,pay_date ,pay_no ,status ,create_date  ,update_date  ,del_date ,del_by ,del_flag ,language_id ,refund_info ,refund_reason ,refund_date ,use_date ,title ,subtitle ,infor ,no ,company_name ,day  ,price1 ,price2 ,price3 ,price4 ,pricea
+	</sql>
+	
+	<sql id="base_value_column">
+		  #{id},#{orderSys1},#{orderSys2},#{type},#{name},#{orderNo},#{afterNo},#{agentid},#{routeid},#{memberid},#{startCity},#{startDate},#{adultNum},#{childNum},#{oneNum},#{twoNum},#{threeNum},#{fourNum},#{arrangeNum},#{price},#{contactsName},#{contactsMobile},#{remark},#{payWay},#{payDate},#{payNo},#{status},#{createDate},#{updateDate},#{delDate},#{delBy},#{delFlag},#{languageId},#{refundInfo},#{refundReason},#{refundDate},#{useDate},#{title},#{subtitle},#{infor},#{no},#{companyName},#{day},#{price1},#{price2},#{price3},#{price4},#{pricea}
+	</sql>
+
+
+	<!-- 设置语句 -->
+	<sql id="set_column">
+		<if test="id != null ">
+			id = #{id,jdbcType=INTEGER},
+		</if>
+		<if test="orderSys1 != null ">
+			order_sys1 = #{orderSys1,jdbcType=INTEGER} ,
+		</if>
+		<if test="orderSys2 != null ">
+			order_sys2 = #{orderSys2,jdbcType=INTEGER} ,
+		</if>
+		<if test="type != null ">
+			type = #{type,jdbcType=INTEGER},
+		</if>
+		<if test="name != null ">
+			name = #{name,jdbcType=VARCHAR},
+		</if>
+		<if test="orderNo != null ">
+			order_no = #{orderNo,jdbcType=VARCHAR},
+		</if>
+		<if test="afterNo != null ">
+			after_no = #{afterNo,jdbcType=VARCHAR},
+		</if>
+		<if test="agentid != null ">
+			agentid = #{agentid,jdbcType=INTEGER},
+		</if>
+		<if test="routeid != null ">
+			routeid = #{routeid,jdbcType=INTEGER},
+		</if>
+		<if test="memberid != null ">
+			memberid = #{memberid,jdbcType=INTEGER},
+		</if>
+		<if test="startCity != null ">
+			start_city = #{startCity,jdbcType=VARCHAR},
+		</if>
+		<if test="startDate != null ">
+			start_date = #{startDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="adultNum != null ">
+			adult_num = #{adultNum,jdbcType=INTEGER},
+		</if>
+		<if test="childNum != null ">
+			child_num = #{childNum,jdbcType=INTEGER},
+		</if>
+		<if test="oneNum != null ">
+			one_num = #{oneNum,jdbcType=INTEGER},
+		</if>
+		<if test="twoNum != null ">
+			two_num = #{twoNum,jdbcType=INTEGER},
+		</if>
+		<if test="threeNum != null ">
+			three_num = #{threeNum,jdbcType=INTEGER},
+		</if>
+		<if test="fourNum != null ">
+			four_num = #{fourNum,jdbcType=INTEGER},
+		</if>
+		<if test="arrangeNum != null ">
+			arrange_num = #{arrangeNum,jdbcType=INTEGER},
+		</if>
+		<if test="price != null ">
+			price = #{price,jdbcType=DECIMAL},
+		</if>
+		<if test="contactsName != null ">
+			contacts_name = #{contactsName,jdbcType=VARCHAR},
+		</if>
+		<if test="contactsMobile != null ">
+			contacts_mobile = #{contactsMobile,jdbcType=VARCHAR},
+		</if>
+		<if test="remark != null ">
+			remark = #{remark,jdbcType=VARCHAR},
+		</if>
+		<if test="payWay != null ">
+			pay_way = #{payWay,jdbcType=INTEGER},
+		</if>
+		<if test="payDate != null ">
+			pay_date = #{payDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="payNo != null ">
+			pay_no = #{payNo,jdbcType=VARCHAR},
+		</if>
+		<if test="status != null ">
+			status = #{status,jdbcType=VARCHAR},
+		</if>
+		<if test="createDate != null ">
+			create_date = #{createDate,jdbcType=TIMESTAMP},
+		</if>
+	
+		<if test="updateDate != null ">
+			update_date = #{updateDate,jdbcType=TIMESTAMP},
+		</if>
+		
+		<if test="delDate != null ">
+			del_date = #{delDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="delBy != null ">
+			del_by = #{delBy,jdbcType=VARCHAR},
+		</if>
+		<if test="delFlag != null ">
+			del_flag = #{delFlag,jdbcType=INTEGER},
+		</if>
+		<if test="languageId != null ">
+			language_id = #{languageId,jdbcType=INTEGER},
+		</if>
+		<if test="refundInfo != null ">
+			refund_info = #{refundInfo,jdbcType=VARCHAR},
+		</if>
+		<if test="refundReason != null ">
+			refund_reason = #{refundReason,jdbcType=VARCHAR},
+		</if>
+		<if test="refundDate != null ">
+			refund_date = #{refundDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="useDate != null ">
+			use_date = #{useDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="title != null ">
+			title = #{title,jdbcType=VARCHAR},
+		</if>
+		<if test="subtitle != null ">
+			subtitle = #{subtitle,jdbcType=VARCHAR},
+		</if>
+		<if test="infor != null ">
+			infor = #{infor,jdbcType=VARCHAR},
+		</if>
+		<if test="no != null ">
+			no = #{no,jdbcType=VARCHAR},
+		</if>
+		<if test="companyName != null ">
+			company_name = #{companyName,jdbcType=VARCHAR},
+		</if>
+		<if test="day != null ">
+			day = #{day,jdbcType=INTEGER},
+		</if>
+				<if test="price1 != null ">
+			price1 = #{price1,jdbcType=DECIMAL},
+		</if>
+		<if test="price2 != null ">
+			price2 = #{price2,jdbcType=DECIMAL},
+		</if>
+		<if test="price3 != null ">
+			price3 = #{price3,jdbcType=DECIMAL},
+		</if>
+		<if test="price4 != null ">
+			price4 = #{price4,jdbcType=DECIMAL},
+		</if>
+				<if test="pricea != null ">
+			pricea = #{pricea,jdbcType=DECIMAL},
+		</if>
+	</sql>
+
+		<!-- 修改 -->
+	<update id="updateObject" parameterType="com.jeeplus.modules.meiguotong.entity.order.OrderRoute">
+		UPDATE	ORDER_ROUTE
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+		
+	</update>
+
+
+		<!-- 修改 -->
+	<update id="updateObject2" parameterType="com.jeeplus.modules.meiguotong.entity.order.OrderRoute">
+		UPDATE	ORDER_ROUTE
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+
+		<if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+		<if test="orderSys2 != null ">
+			and order_sys2 = #{orderSys2,jdbcType=INTEGER}
+		</if>
+
+	</update>
+	 <!-- 分页查询-->
+   <select id="findListByPage" resultMap="OrderRouteResultMap">
+		SELECT
+		<include refid="base_column" />
+		FROM ORDER_ROUTE
+		where  1=1
+
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+
+		<if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+	     
+	     <if test="order != null and order != ''">
+		order by  ${order}
+	     </if>
+
+		<if test="pageNumber != null  and pageSize !=null ">
+			limit  #{pageNumber,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	     </if>
+	</select>
+	
+	
+	<select id="findRouteDetailByOrderSys2" resultType="OrderRoute" >
+		SELECT 
+			<include refid="orderRouteColumns"/>
+		FROM order_route a
+		<include refid="orderRouteJoins"/>
+		WHERE a.order_sys2=#{orderSys2}
+	</select>
+	
+	
+	
+</mapper>

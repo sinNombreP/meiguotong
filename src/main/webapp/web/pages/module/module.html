@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/bootstrap-modal.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="./css/iconfont.css" />
+    <title>模块管理</title>
+    <style>
+        body{
+            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        }
+        .head{ 
+            text-align: center;
+            background-color:#f2f2f2;
+            height: 40px;
+            line-height: 40px;
+        }
+        .title{
+            height:30px;
+            line-height: 30px;
+            padding-left: 20px;
+        }
+        .content{
+            height:30px;
+            line-height: 30px;
+            padding-left: 40px;
+        }
+        .active{
+            color: blue;
+        }
+        .active > .active{
+            color: blue;
+        }
+        .overflow-y .modal-dialog { 
+            position: absolute; 
+            top: 0; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+        } 
+
+        .overflow-y .modal-content { 
+            position: absolute; 
+            top: 0; 
+            bottom: 0; 
+            width: 100%; 
+        } 
+
+        .overflow-y .modal-body { 
+            overflow-y: scroll; 
+            position: absolute; 
+            top: 55px; 
+            bottom: 65px; 
+            width: 100%; 
+        } 
+        .overflow-y .modal-header .close {margin-right: 15px;} 
+        .overflow-y .modal-footer {
+            position: absolute; 
+            width: 100%; 
+            bottom: 0; 
+        }
+        .skill-list > li {
+            margin-bottom: 10px;
+        }
+        .skill-list > li > a {
+            position: relative;
+            width: 110px;
+            height: 36px;
+            line-height: 36px;
+            padding: 0 18px;
+            background: #f6f8f9;
+            border-radius: 0;
+        }
+        .skill-list > li > a > .iconfont {
+            position: absolute;
+            right: 0px;
+            top: -10px;
+            color: #f6f8f9;
+        }
+        .skill-list > li > a.active {
+            background: #63a6ff;
+            color: #fff;
+        }
+        .skill-list > li > a.active > .iconfont {
+            color: #fff;
+        }
+        .required:after {
+            content: '*';
+            color: #f03;
+        }
+        /* .modal-stack{
+            background:none !important;
+        } */
+        .upload_def{
+            height: 90px;
+            width:90px;
+        }
+        tr > th {
+            text-align:center;
+        }
+         tr > .active {
+            text-align: center;
+        }
+        tr > .active > a{
+            color: blue;
+        }
+        .relative{
+            position: relative;
+        }
+        .relative > i{
+            position: absolute;
+            right: 0px;
+            top: -10px;
+            color: #f6f8f9;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">语言：</label>
+                <div class="col-sm-2">
+                    <select class="form-control" v-model="languageId" @change="languageChange">
+                        <option :value="list.languageid" v-for="(list, index) in languageList" :key="index">{{list.content}}</option>
+                    </select>
+                </div>
+            </div>
+            <!-- <button class="btn btn-primary" @click="addModuleClick">添加模块</button> -->
+        </div>
+        <div class="col-md-2">
+            <h4 class="head">网站页面</h4>
+            <div v-for="(lists, index1) in moduleHtmlList" :key="index1">
+                <div class="title" :class="{'active':index1==htmlIndex1}" @click="titleClick(index1)">{{lists.htmlName}}</div>
+                <div v-if="lists.htmlShow">
+                    <div class="content" :class="{'active':index2==htmlIndex2}" v-for="(list, index2) in lists.moduleHtmlList"
+                        :key="index2" @click="moduleHtmlClick(index1,index2)">{{list.htmlSeal}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <h4 class="head">已添加模块</h4>
+            <div v-if="htmlIndex2 != null">
+                <ul class="list-group">
+                    <li class="list-group-item" v-for="(list, index) in moduleHtmlNameList" :key="index">
+                        <span class="badge btn" style="background-color: red;"  @click.stop="deleteModuleInit(list.id)">删除</span>
+                        <!-- <span class="badge btn" @click.stop="getMdouleInfo(list.id)">编辑</span> -->
+                        <i class="iconfont icon-bottom pull-right" @click.stop="updateSort(list.id,1)"></i>
+                        <i class="iconfont icon-top pull-right" @click.stop="updateSort(list.id,2)"></i>
+                        {{list.moduleName}}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <h4 class="head">可添加模块</h4>
+            <ul class="skill-list list-inline">
+                <li v-for="(list, index) in moduleNameList" :key="index" v-show="list.show">
+                    <a class="btn" :class="{'active':index == moduleNameIndex}" @click="moduleNameIndexClick(index)">
+                        {{list.moduleName}}<i class="iconfont icon-yes"></i></a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 选择数据模块（Modal） -->
+        <div class="modal fade overflow-y" id="addModuleModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title" id="myModalLabel">
+                            添加模块
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 1">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>车辆编号</th>
+                                    <th>车辆名称</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in carList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.carNo"></td>
+                                    <td>{{list.carNo}}</td>
+                                    <td>{{list.carName}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 2">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>评论ID</th>
+                                    <th>评论内容</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in comCommentList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.content}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 3">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>城市ID</th>
+                                    <th>城市名称</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in comCityList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.cityName}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 4">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>景点ID</th>
+                                    <th>景点名称</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in scenicSpotList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.name}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 5">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>邮轮路线ID</th>
+                                    <th>邮轮路线名称/th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in linertLineList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.name}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 6">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>订单ID</th>
+                                    <th>订单标题</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in orderSysList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.title}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 8">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>定制ID</th>
+                                    <th>定制名称</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in travelCustomizationList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.name}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 9">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>攻略ID</th>
+                                    <th>攻略标题</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in cityStrategyList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.title}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 10">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>导游路线ID</th>
+                                    <th>导游路线标题</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in guideRouteList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.title}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 11">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>导游ID</th>
+                                    <th>导游名称</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in guideList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.realName}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 12">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>常规路线编号</th>
+                                    <th>常规路线标题</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in route1List" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.no"></td>
+                                    <td>{{list.no}}</td>
+                                    <td>{{list.title}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 13">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>资讯ID</th>
+                                    <th>资讯标题</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in comArticle2List" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.title}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 14">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>供应商ID</th>
+                                    <th>供应商名称</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in sysUserList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.name}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 15">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>当地参团编号</th>
+                                    <th>当地参团标题</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in route2List" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.no"></td>
+                                    <td>{{list.no}}</td>
+                                    <td>{{list.title}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 16">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>景点门票ID</th>
+                                    <th>景点门票名称</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in scenicSpotTicketList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.name}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 17">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>网站文章ID</th>
+                                    <th>网站文章标题</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in comArticle1List" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.title}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-bordered" v-if="moduleNameIndexContent.type == 18">
+                            <thead>
+                                <tr>
+                                    <th> </th>
+                                    <th>广告ID</th>
+                                    <th>广告标题</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in advertList" :key="index">
+                                    <td><input type="radio" v-model="typeidFlag" :value="list.id"></td>
+                                    <td>{{list.id}}</td>
+                                    <td>{{list.title}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                        </button>
+                        <button type="button" class="btn btn-primary" @click="addCarConfirm">确定</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+        <!-- 选择数据模块（Modal） -->
+
+        <!-- 添加模块内容（Modal） -->
+        <div class="modal fade" id="addModuleContentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title" id="myModalLabel">
+                            {{moduleNameIndexContent.moduleName}}
+                            （{{moduleNameIndexContent.moduleSize}}-
+                            {{moduleNameIndexContent.moduleType |moduleTypeVc}}）
+                        </h4>
+                    </div>
+                    <div class="modal-body" v-if="moduleNameIndexContent.moduleType ==1 || moduleNameIndexContent.moduleType ==2
+                       || moduleNameIndexContent.moduleType ==5 || moduleNameIndexContent.moduleType ==6">
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label required">名称<i></span>
+                            <div class="col-sm-7">
+                                <input class="form-control" type="text" v-model.trim="moduleContent.name">
+                            </div>
+                        </div>
+                        <div class="form-group clearfix" v-if="moduleNameIndexContent.type != 7">
+                            <span class="col-sm-3 control-label required">{{moduleNameIndexContent.type | typeVc}}<i></span>
+                            <div class="col-sm-7">
+                                <button class="btn btn-primary" @click.stop="addCarClick">添加{{moduleNameIndexContent.type
+                                    | typeVc}}</button>
+                            </div>
+                        </div>
+                        <div class="form-group clearfix" v-if="moduleNameIndexContent.type == 7">
+                            <span class="col-sm-3 control-label required">图片<i></span>
+                            <div class="col-sm-7">
+                                <input type="file" @change="uploadImg(1,'img')" id="img" accept="image/*" v-show>
+                                <img :src="moduleContent.img?moduleContent.img:'./img/imgUpload.png'" onclick="{ $('#img').click();}"
+                                    class="upload_def" />
+                            </div>
+                        </div>
+                        <div class="form-group clearfix" v-if="moduleNameIndexContent.type == 7">
+                            <span class="col-sm-3 control-label required">链接<i></span>
+                            <div class="col-sm-7">
+                                <input class="form-control" type="text" v-model.trim="moduleContent.url">
+                            </div>
+                        </div>
+                        <ul class="skill-list list-inline">
+                            <li v-for="(list, index) in moduleContent.typeid" :key="index">
+                                <a class="btn active"> {{list}}
+                                    <i class="iconfont icon-shanchu" @click="delModuleContent(index)"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="modal-body" v-if="moduleNameIndexContent.moduleType == 4">
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label">第一级页脚</span>
+                            <div class="col-sm-3">
+                                <select class="form-control" v-model="moduleContent.oneFooterShow">
+                                    <option value="1">显示</option>
+                                    <option value="0">隐藏</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label"><i></span>
+                            <div class="col-sm-9">
+                                <input type="file" @change="uploadImg(2,'oneFooter')" id="oneFooter" accept="image/*"
+                                    v-show>
+                                <div v-for="(list, index) in moduleContent.oneFooter" :key="index" class="upload_def relative pull-left">
+                                    <img class="upload_def" :src="list" />
+                                    <i class="iconfont icon-shanchu" @click="delImg(index,'oneFooter')"></i>
+                                </div>
+                                <img class="upload_def pull-left" src="./img/imgUpload.png" onclick="{ $('#oneFooter').click();}">
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label">第二级页脚</span>
+                            <div class="col-sm-3">
+                                <select class="form-control" v-model="moduleContent.twoFooterShow">
+                                    <option value="1">显示</option>
+                                    <option value="0">隐藏</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label"></span>
+                            <div class="col-sm-9">
+                                <input type="file" @change="uploadImg(2,'twoFooter')" id="twoFooter" accept="image/*"
+                                    v-show>
+                                <div v-for="(list, index) in moduleContent.twoFooter" :key="index" class="upload_def relative pull-left">
+                                    <img class="upload_def" :src="list" />
+                                    <i class="iconfont icon-shanchu" @click="delImg(index,'twoFooter')"></i>></i>
+                                </div>
+                                <img class="upload_def pull-left" src="./img/imgUpload.png" onclick="{ $('#twoFooter').click();}">
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label">第三级页脚<i></span>
+                            <div class="col-sm-3">
+                                <select class="form-control" v-model="moduleContent.threeFooterShow">
+                                    <option value="1">显示</option>
+                                    <option value="0">隐藏</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label"><i></span>
+                            <div class="col-sm-9">
+                                <input type="file" @change="uploadImg(2,'threeFooter')" id="threeFooter" accept="image/*"
+                                    v-show>
+                                <div v-for="(list, index) in moduleContent.threeFooter" :key="index" class="upload_def relative pull-left">
+                                    <img class="upload_def" :src="list" />
+                                    <i class="iconfont icon-shanchu" @click="delImg(index,'threeFooter')"></i>></i>
+                                </div>
+                                <img class="upload_def " src="./img/imgUpload.png" onclick="{ $('#threeFooter').click();}">
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>一级分类</th>
+                                        <th>文章ID</th>
+                                        <th>标题</th>
+                                        <th>链接</th>
+                                        <th>编辑</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(list, index) in moduleContent.moduleDetails" :key="index">
+                                        <td class="text-center">{{list.firstTypeContent}}</td>
+                                        <td>{{list.desid}}</td>
+                                        <td>{{list.title}}</td>
+                                        <td>{{list.link}}</td>
+                                        <td class="active"><a @click="choiceModalEdit(index)">编辑</a>丨<a @click="choiceModalDel(index)">删除</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="active" @click.stop="addArticleClick"><a>添加</a></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-body" v-if="moduleNameIndexContent.moduleType == 3">
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label required">名称<i></span>
+                            <div class="col-sm-7">
+                                <input class="form-control" type="text" v-model.trim="moduleContent.name">
+                            </div>
+                        </div>
+                        <div class="form-group clearfix" v-if="moduleNameIndexContent.type != 7 && moduleNameIndexContent.type != 14">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>二级分类</th>
+                                        <th>{{moduleNameIndexContent.type | typeVc}}</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(list, index) in moduleContent.moduleDetails" :key="index">
+                                        <td class="text-center">{{list.firstTypeContent}}</td>
+                                        <td>{{list.desid}}</td>
+                                        <td class="active"><a @click="choiceModalEdit(index)">编辑</a>丨<a @click="choiceModalDel(index)">删除</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="active" @click.stop="addArticleClick"><a>添加</a></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div v-if="moduleNameIndexContent.type == 7" v-for="(list, index) in imgList" :key="index">
+                            <div class="form-group clearfix">
+                                <span class="col-sm-3 control-label required">图片{{index+1}}<i></span>
+                                <div class="col-sm-7">
+                                    <input type="file" @change.stop="uploadImg(3,index)" :id="'imgd'+index" accept="image/*"
+                                        v-show>
+                                    <img :src="list.img?list.img:'./img/imgUpload.png'" @click.stop="fileClickByImg($event)"
+                                        class="upload_def" />
+                                </div>
+                            </div>
+                            <div class="form-group clearfix">
+                                <span class="col-sm-3 control-label required">链接{{index+1}}<i></span>
+                                <div class="col-sm-7">
+                                    <input class="form-control" type="text" v-model.trim="list.url">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group clearfix" v-if="moduleNameIndexContent.type == 14">
+                            <span class="col-sm-3 control-label required">{{moduleNameIndexContent.type | typeVc}}<i></span>
+                            <div class="col-sm-7">
+                                <button class="btn btn-primary" @click.stop="addCarClick">添加{{moduleNameIndexContent.type
+                                    | typeVc}}</button>
+                            </div>
+                        </div>
+                        <ul class="skill-list list-inline" v-if="moduleNameIndexContent.type == 14">
+                            <li v-for="(list, index) in moduleContent.typeid" :key="index">
+                                <a class="btn active"> {{list}}
+                                    <i class="iconfont icon-shanchu" @click="delModuleContent(index)"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭
+                        </button>
+                        <button type="button" class="btn btn-primary" @click="addModuleContentConfirm">确定</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+        <!-- 添加模块内容（Modal） -->
+
+        <!-- 选择分类模块（Modal） -->
+        <div class="modal fade" id="choiceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title" id="myModalLabel">
+                            添加
+                        </h4>
+                    </div>
+                    <div class="modal-body" v-if="moduleNameIndexContent.moduleType == 4">
+                        <div class="form-group clearfix">
+                            <label class="col-sm-3 control-label"></label>
+                            <div class="col-sm-7">
+                                <select class="form-control" v-model="moduleDetailsClass" @change="moduleDetailsClassChange">
+                                    <option value="1" v-if="moduleDetailsIndex === ''">一级分类</option>
+                                    <option value="2" v-if="moduleDetailsTypeList.length > 0">二级分类</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group clearfix" v-if="moduleDetailsClass == 2">
+                            <label class="col-sm-3 control-label">一级分类：</label>
+                            <div class="col-sm-7">
+                                <select class="form-control" v-model="firstTypeContent">
+                                    <option :value="item" v-for="(item, index) in moduleDetailsTypeList" :key="index">{{item}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label required">{{moduleDetailsClass | moduleDetailsClassVc}}<i></span>
+                            <div class="col-sm-7" v-if="moduleDetailsClass == 1">
+                                <input class="form-control" type="text" v-model.trim="typeidFlag">
+                            </div>
+                            <div class="col-sm-7" v-if="moduleDetailsClass == 2">
+                                <input class="form-control" type="text" v-model.trim="typeidFlag" @click="moduleDetailsClassClick"
+                                    readonly>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body" v-if="moduleNameIndexContent.moduleType == 3">
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label required">二级分类名称<i></span>
+                            <div class="col-sm-7">
+                                <input class="form-control" type="text" v-model.trim="firstTypeContent">
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <span class="col-sm-3 control-label required">{{moduleNameIndexContent.type | typeVc}}<i></span>
+                            <div class="col-sm-9">
+                                <button class="btn btn-primary" @click.stop="addCarClick">添加{{moduleNameIndexContent.type
+                                    | typeVc}}</button>
+                            </div>
+                        </div>
+                        <ul class="skill-list list-inline">
+                            <li v-for="(list, index) in moduleContent.typeid" :key="index">
+                                <a class="btn active"> {{list}}
+                                    <i class="iconfont icon-shanchu" @click="delModuleContent(index)"></i></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                        </button>
+                        <button type="button" class="btn btn-primary" @click="choiceModalConfirm">确定</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal -->
+        </div>
+        <!-- 选择分类模块（Modal） -->
+
+    </div>
+</body>
+
+</html>
+<script type="text/javascript" src="./js/jquery-3.3.1.js"></script>
+<!-- <script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script> -->
+<script type="text/javascript" src="./js/bootstrap.min.js"></script>
+<script type="text/javascript" src="./js/bootstrap-modalmanager.js"></script>
+<script type="text/javascript" src="./js/bootstrap-modal.js"></script>
+<script type="text/javascript" src="../../js/import/vue.min.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="./js/request.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="./js/ajax.js"></script>
+<script>
+
+    $(document).ready(function () {
+        // 通过该方法来为每次弹出的模态框设置最新的zIndex值，从而使最新的modal显示在最前面
+        $(document).on('show.bs.modal', '.modal', function () {
+            var zIndex = 1040 + (10 * $('.modal:visible').length);
+            $(this).css('z-index', zIndex);
+            setTimeout(function () {
+                $('.modal-backdrop').not('.modal-stack').css('z-index', zIndex - 1).addClass('modal-stack');
+            }, 0);
+        });
+    });
+
+
+    const app = new Vue({
+        el: "#app",
+        data: {
+            moduleHtmlList: [],  //前端页面集合
+            moduleNameListAll: [], //所有的可添加模块
+            languageList: [],   //语言集合
+            languageId: "", //选择的语言
+            htmlIndex1: null,  //选择的页面下标
+            htmlIndex2: null,  //选择的页面下标
+            moduleNameIndex: null,  //选择的模板下标
+            moduleHtmlNameList: [],  //关联的模块
+            carList: [], //车辆列表
+            comCommentList: [], //评论列表
+            comCityList: [], //城市列表
+            scenicSpotList: [], //景点列表
+            linertLineList: [], //邮轮列表
+            orderSysList: [], //订单列表
+            travelCustomizationList: [], //定制列表
+            cityStrategyList: [], //攻略列表
+            guideRouteList: [], //导游路线列表
+            guideList: [], //导游列表
+            route1List: [], //常规路线列表
+            route2List: [], //当地参团列表
+            comArticle1List: [], //网站文章列表
+            advertList:[], //广告列表
+            comArticle2List: [], //资讯列表
+            sysUserList: [], //租车供应商列表
+            scenicSpotTicketList: [], //景点门票列表
+            typeidFlag: "",   //选择的车辆编号及其他类型编号或ID
+            typeidsFlag: "",   //选择的车辆编号及其他类型编号或ID
+            moduleContent: {
+                id: "",
+                name: "",  //模块名称
+                typeid: [],   //添加的车辆编号及其他类型编号或ID
+                orderType: "",  //排序类型
+                oneFooterShow: "",		// 页脚是否显示
+                oneFooter: [],		// 页脚图片（多个用逗号区分）
+                twoFooterShow: "",		// two_footer_show
+                twoFooter: [],		// two_footer
+                threeFooterShow: "",		// three_footer_show
+                threeFooter: [],		// three_footer
+                img: "",		// 图片（多个用逗号隔开）
+                url: "",		// 链接
+                moduleDetails: [],  //模块详情
+            },
+            moduleDetailsClass: 1,  //1一级分类 2二级分类
+            firstTypeContent: "", //分类名称
+            moduleDetailsTypeList: [],  //可选的一级分类
+            moduleDetailsIndex: "",  //编辑页脚的下标
+            imgList: [{ img: "", url: "1" }, { img: "", url: "2" }, { img: "", url: "3" },],  //图片链接
+        },
+        computed: {
+            //可以选择的一级分类
+            // moduleDetailsTypeList(){
+            //     let array = [];
+            //     this.moduleContent.moduleDetails.forEach(element => {
+            //         if(!array.includes(element.firstTypeContent))
+            //         array.push(element.firstTypeContent);
+            //     });
+            //     if(array.length > 0)
+            //     this.firstTypeContent = array[0];
+            //     return array;
+            // },
+            //选择的模块内容
+            moduleNameIndexContent() {
+                if (this.moduleNameList.length <= 0 || this.moduleNameIndex == null) return {};
+                return this.moduleNameList[this.moduleNameIndex];
+            },
+            //要显示的模板
+            moduleNameList() {
+                if (this.htmlIndex1 == null || this.htmlIndex2 == null) return [];
+                const htmlSeal = this.moduleHtmlList[this.htmlIndex1].moduleHtmlList[this.htmlIndex2].htmlSeal;
+                const moduleNameList = this.moduleNameListAll;
+                moduleNameList.map(element => element.show = false);
+                if (htmlSeal == "内容模块") {
+                    moduleNameList.forEach(element => {
+                        if (element.moduleType == 3 || element.moduleType == 2 || element.moduleType == 5)
+                            Vue.set(element, "show", true);
+                    });
+                } else if (htmlSeal == "底部导航栏") {
+                    moduleNameList.forEach(element => {
+                        if (element.moduleType == 4)
+                            Vue.set(element, "show", true);
+                    });
+                } else if (htmlSeal == "广告模块") {
+                    moduleNameList.forEach(element => {
+                        if (element.moduleType == 6)
+                            Vue.set(element, "show", true);
+                    });
+                }
+                console.log(moduleNameList);
+                return moduleNameList;
+            }
+        },
+        watch: {
+            // //监测类型改变
+            // moduleDetailsClass(){
+            //     this.typeidFlag = "";
+            // },
+        },
+        methods: {
+            deleteModuleInit(id){
+                layer.open({
+                content: '是否确定删除?'
+                ,btn: ['确定', '取消']
+                ,yes: function(index, layero){
+                    app.deleteModule(id);
+                }
+                });
+            },
+            //删除模块
+            async deleteModule(id){
+                if(!id) return;
+                const flag = await ajax(deleteModuleUrl, { id: id });
+                if(flag){
+                   layerMsg("删除成功");
+                   this.getModuleHtmlNameList();
+               }
+            },
+            //模块详情
+            async getMdouleInfo(id) {
+                let list = await ajax(getModuleContentByIdUrl, { id: id });
+                console.log(list);
+                this.emptyData();
+                this.moduleNameIndex = "";
+                for (const [key, value] of Object.entries(this.moduleNameList)) {
+                    if (value.id == list.moduleNameId)
+                        this.moduleNameIndex = key;
+                }
+                if (this.moduleNameIndex === "")
+                    throw new Error("参数错误");
+             //   this.moduleContent = list;
+                if(this.moduleNameIndexContent.moduleType == 1){
+                    
+                }
+                $('#addModuleContentModal').modal('show');
+            },
+            //排序
+            async updateSort(id, type) {
+                if (!id || !type || this.moduleHtmlNameList.length == 1) return;
+                if(await ajax(updateSortUrl, { id: id, sort: type, })){
+                    layerMsg("排序成功");
+                    this.getModuleHtmlNameList();
+                }
+            },
+            //点击图片弹窗
+            fileClickByImg(event) {
+                $(event.target).prev().click();
+            },
+            //分类改变
+            moduleDetailsClassChange() {
+                this.typeidFlag = "";
+            },
+            //编辑页脚内容
+            choiceModalEdit(index) {
+                this.moduleDetailsIndex = index;
+                this.moduleDetailsClass = 2;
+                this.firstTypeContent = this.moduleContent.moduleDetails[index].firstTypeContent;
+                if (this.moduleNameIndexContent.moduleType == 4) {
+                    this.typeidFlag = this.moduleContent.moduleDetails[index].desid;
+                } else if (this.moduleNameIndexContent.moduleType == 3) {
+                    this.moduleContent.typeid = this.moduleContent.moduleDetails[index].desid.split(",");
+                }
+                $("#choiceModal").modal("show");
+            },
+            //页脚删除数据
+            choiceModalDel(index) {
+                if (index < 0 || index >= this.moduleContent.moduleDetails.length)
+                    throw new Error("数据错误");
+                Vue.delete(this.moduleContent.moduleDetails, index);
+            },
+            //选择模块确定
+            choiceModalConfirm() {
+                let size = this.countModuleSize(this.moduleNameIndexContent.moduleSize);
+                if (this.moduleNameIndexContent.moduleType == 4) {
+                    if (this.typeidFlag == null || this.typeidFlag === "") {
+                        layerMsg("请完善数据");
+                        return;
+                    }
+                    if (this.moduleDetailsClass == 2) {
+                        let map = {};
+                        if (this.moduleDetailsTypeList.length <= 0) throw new Error("一级分类为空");
+                        map.firstTypeContent = this.firstTypeContent;
+                        this.comArticle1List.forEach((element, index) => {
+                            if (this.typeidFlag == element.id) {
+                                map.desid = element.id;
+                                map.title = element.title;
+                                map.link = element.link;
+                            }
+                        });
+                        if (!map.desid)
+                            throw new Error("不合法参数");
+                        if (this.moduleDetailsIndex === "")
+                            this.moduleContent.moduleDetails.push(map);
+                        else
+                            Vue.set(this.moduleContent.moduleDetails, this.moduleDetailsIndex, map);
+                    } else {
+                        if (this.moduleDetailsTypeList.includes(this.typeidFlag)) {
+                            layerMsg("一级分类名称重复");
+                            return;
+                        }
+                        this.moduleDetailsTypeList.push(this.typeidFlag);
+                        this.firstTypeContent = this.moduleDetailsTypeList[0];
+                    }
+                } else if (this.moduleNameIndexContent.moduleType == 3) {
+                    if (!this.firstTypeContent) {
+                        layerMsg("请输入名称");
+                        return;
+                    }
+                    if (this.moduleNameIndexContent.type != 7 && this.moduleContent.typeid.length == 0) {
+                        layerMsg("至少添加一个");
+                        return;
+                    }
+                    if (this.moduleNameIndexContent.type != 7 && this.moduleContent.typeid.length > size) {
+                        layerMsg("大于最大添加数据");
+                        return;
+                    }
+                    let map = {};
+                    map.firstTypeContent = this.firstTypeContent;
+                    map.desid = this.moduleContent.typeid.toString();
+                    if (!map.firstTypeContent || !map.desid) {
+                        throw new Error("不合法参数");
+                    }
+                    if (this.moduleDetailsIndex === "")
+                        this.moduleContent.moduleDetails.push(map);
+                    else
+                        Vue.set(this.moduleContent.moduleDetails, this.moduleDetailsIndex, map);
+                    this.firstTypeContent = "";
+                    this.moduleContent.typeid = [];
+                }
+                $("#choiceModal").modal("hide");
+            },
+            //点击分类输入框
+            moduleDetailsClassClick() {
+                if (this.moduleDetailsClass == 2)
+                    $("#addModuleModal").modal("show");
+            },
+            //点击添加资讯
+            addArticleClick() {
+                this.typeidFlag = "";
+                this.moduleDetailsIndex = "";
+                if (this.moduleNameIndexContent.moduleType == 4) {
+                    this.moduleDetailsClass = 1;
+                }
+                else if (this.moduleNameIndexContent.moduleType == 3) {
+                    this.moduleDetailsClass = 2;
+                }
+                $("#choiceModal").modal("show");
+            },
+            //删除图片
+            delImg(index, element) {
+                Vue.delete(this.moduleContent[element], index);
+            },
+            //添加模板内容
+            async addModuleContent() {
+                let param = this.moduleContent;
+                param.oneFooter = param.oneFooter.toString();
+                param.twoFooter = param.twoFooter.toString();
+                param.threeFooter = param.threeFooter.toString();
+                param.typeid = param.typeid.toString();
+                param.languageId = this.languageId;
+                param.moduleHtmlId = this.moduleHtmlList[this.htmlIndex1].moduleHtmlList[this.htmlIndex2].id;
+                param.moduleNameId = this.moduleNameIndexContent.id;
+                param.moduleDetails = JSON.stringify(param.moduleDetails);
+                console.log(param);
+                //  await ajax(addModuleContentUrl, param);
+                requestGet(addModuleContentUrl, param, function (data) {
+                    app.getModuleHtmlNameList();
+                });
+            },
+            //删除模板内容
+            delModuleContent(index) {
+                Vue.delete(this.moduleContent.typeid, index);
+            },
+            //确定添加模板内容
+            addModuleContentConfirm() {
+                let match = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
+                let size = this.countModuleSize(this.moduleNameIndexContent.moduleSize);
+                if (this.moduleNameIndexContent.moduleType == 1 || this.moduleNameIndexContent.moduleType == 2) {
+                    if (!this.moduleContent.name) {
+                        layerMsg("请输入名称");
+                        return;
+                    }
+                    if (this.moduleNameIndexContent.type != 7 && this.moduleContent.typeid.length == 0) {
+                        layerMsg("至少添加一个");
+                        return;
+                    }
+                    if (this.moduleNameIndexContent.type != 7 && this.moduleContent.typeid.length > size) {
+                        layerMsg("大于最大添加数据");
+                        return;
+                    }
+                    if (this.moduleNameIndexContent.type == 7 && !match.test(this.moduleContent.url)) {
+                        layerMsg("请输入正确的链接");
+                        return;
+                    }
+                } else if (this.moduleNameIndexContent.moduleType == 3) {
+                    if (!this.moduleContent.name) {
+                        layerMsg("请输入名称");
+                        return;
+                    }
+                    if (this.moduleNameIndexContent.type == 7) {
+                        let img = [];
+                        let url = [];
+                        for (const key of Object.keys(this.imgList)) {
+                            for (const key1 of Object.keys(this.imgList[key])) {
+                                if (this.imgList[key][key1] === "") {
+                                    layerMsg("请完善数据");
+                                    return;
+                                }
+                                if (key1 == "url" && !match.test(this.imgList[key][key1])) {
+                                    layerMsg("请输入正确的链接");
+                                    return;
+                                }
+                                if (key1 == "img") img.push(this.imgList[key][key1]);
+                                if (key1 == "url") url.push(this.imgList[key][key1]);
+                            }
+                        }
+                        this.moduleContent.img = img.toString();
+                        this.moduleContent.url = url.toString();
+                    }
+                }
+                $('#addModuleContentModal').modal('hide');
+                this.addModuleContent();
+            },
+            //确定添加车辆编号
+            addCarConfirm() {
+                if (this.typeidFlag == "") {
+                    layerMsg("请选择一条数据");
+                    return;
+                }
+                this.moduleContent.typeid.push(this.typeidFlag);
+                $('#addModuleModal').modal('hide');
+            },
+            //点击添加车辆编号
+            addCarClick() {
+                this.typeidFlag = "";
+                $('#addModuleModal').modal('show');
+            },
+            //点击添加模块
+            addModuleClick() {
+                if (this.htmlIndex1 == null || this.htmlIndex2 == null) {
+                    layerMsg("请选择页面");
+                    return;
+                }
+                if (this.moduleNameIndex == null) {
+                    layerMsg("请选择要添加的模块");
+                    return;
+                }
+                this.emptyData();
+                $('#addModuleContentModal').modal('show');
+            },
+            //清空数据
+            emptyData() {
+                for (const key of Object.keys(this.moduleContent)) {
+                    if (key == "typeid") this.moduleContent[key] = [];
+                    else if (key == "oneFooter") this.moduleContent[key] = [];
+                    else if (key == "twoFooter") this.moduleContent[key] = [];
+                    else if (key == "threeFooter") this.moduleContent[key] = [];
+                    else if (key == "moduleDetails") this.moduleContent[key] = [];
+                    else if (key == "oneFooterShow" && this.moduleNameIndexContent.moduleType == 3 && this.moduleNameIndexContent.type == 7) this.moduleContent[key] = 1;
+                    else if (key == "twoFooterShow" && this.moduleNameIndexContent.moduleType == 3 && this.moduleNameIndexContent.type == 7) this.moduleContent[key] = 1;
+                    else if (key == "threeFooterShow" && this.moduleNameIndexContent.moduleType == 3 && this.moduleNameIndexContent.type == 7) this.moduleContent[key] = 1;
+                    else this.moduleContent[key] = "";
+                }
+                for (const key of Object.keys(this.imgList)) {
+                    for (const key1 of Object.keys(this.imgList[key])) {
+                        this.imgList[key][key1] = "";
+                    }
+                }
+                console.log(this.imgList);
+            },
+            //选择模块下标
+            moduleNameIndexClick(index) {
+                this.moduleNameIndex = index;
+                this.addModuleClick();
+            },
+            //点击网站页面
+            moduleHtmlClick(index1, index2) {
+                if (index2 != this.htmlIndex2)
+                    this.moduleNameIndex = null;
+                this.htmlIndex1 = index1;
+                this.htmlIndex2 = index2;
+                this.getModuleHtmlNameList();
+            },
+            //点击标题
+            titleClick(index) {
+                this.moduleHtmlList.map(element => Vue.set(element, "htmlShow", false));
+                Vue.set(this.moduleHtmlList[index], "htmlShow", !this.moduleHtmlList[index].htmlShow);
+                this.htmlIndex1 = index;
+                this.htmlIndex2 = null;
+                this.moduleNameIndex = null;
+            },
+            //语言改变
+            languageChange() {
+                this.initData();
+                this.moduleHtmlNameList = [];
+                this.htmlIndex1 = null;
+                this.htmlIndex2 = null;
+                this.moduleNameIndex = null;
+            },
+            //上传图片
+            uploadImg(type, element) {
+                var e = window.event || arguments.callee.caller.arguments[0];
+                console.info(e.target.files[0]); //图片文件
+                var file = e.target.files[0];
+                var URL = window.URL || window.webkitURL;
+                // 通过 file 生成目标 url
+                var photo = URL.createObjectURL(file);
+                var image = new Image();
+                image.src = photo;
+                image.onload = async function () {
+                    var imgData = app.getImage(image);
+                    requestPost(imgUploadUrl, {
+                        "file": imgData,
+                    }, function (data) {
+                        //更新图片数据
+                        console.log(data);
+                        if (type == 1)
+                            Vue.set(app.moduleContent, element, data.body.imgUrl);
+                        else if (type == 2)
+                            app.moduleContent[element].push(data.body.imgUrl);
+                        else if (type == 3)
+                            Vue.set(app.imgList[element], "img", data.body.imgUrl);
+                    });
+                }
+            },
+            //压缩图片
+            getImage: function (image) {
+                var canvas = document.createElement("canvas");
+                var width = 250;
+                var height = 250;
+                canvas.width = width; /*设置新的图片的宽度*/
+                canvas.height = height; /*设置新的图片的长度*/
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(image, 0, 0, width, height); /*绘图*/
+                var dataURL = canvas.toDataURL("image/jpeg", 0.6);
+                return dataURL.replace("data:image/jpeg;base64,", "");
+            },
+            //计算可添加最大的广告个数
+            countModuleSize(moduleSize) {
+                let length = 0;
+                let moduleSize1 = moduleSize.split("*");
+                let moduleSize2 = moduleSize.split("+");
+                if (moduleSize1.length === 2)
+                    length = parseInt(moduleSize1[0]) * parseInt(moduleSize1[1]);
+                else if (moduleSize2.length === 2)
+                    length = parseInt(moduleSize2[0]) + parseInt(moduleSize2[1]);
+                else if (moduleSize2.length === 3)
+                    length = parseInt(moduleSize2[0]) + parseInt(moduleSize2[1]) + parseInt(moduleSize2[2]);
+                return length;
+            },
+            //获取关联模块
+            async getModuleHtmlNameList() {
+                this.moduleHtmlNameList = [];
+                const param = {
+                    languageId: this.languageId,
+                    moduleHtmlId: this.moduleHtmlList[this.htmlIndex1].moduleHtmlList[this.htmlIndex2].id,
+                };
+                this.moduleHtmlNameList = await ajax(getModuleHtmlNameListUrl, param);
+                console.log(this.moduleHtmlNameList);
+            },
+            async initData() {
+                let param = { languageId: this.languageId };
+                ajax(getCarListUrl, param).then( res => { this.carList = res});
+                ajax(getComCommentListUrl, param).then( res => { this.comCommentList = res});
+                ajax(getComCityListUrl, param).then( res => { this.comCityList = res});
+                ajax(getScenicSpotListUrl, param).then( res => { this.scenicSpotList = res});
+                ajax(getlinertLineListUrl, param).then( res => { this.linertLineList = res});
+                ajax(getOrderSysListUrl, param).then( res => { this.orderSysList = res});
+                ajax(getTravelCustomizationListUrl, param).then( res => { this.travelCustomizationList = res});
+                ajax(getCityStrategyListUrl, param).then( res => { this.cityStrategyList = res});
+                ajax(getGuideRouteListUrl, param).then( res => { this.guideRouteList = res});
+                ajax(getGuideListUrl, param).then( res => { this.guideList = res});
+                ajax(getRoute1ListUrl, param).then( res => { this.route1List = res});
+                ajax(getRoute2ListUrl, param).then( res => { this.route2List = res});
+                ajax(getComArticle1ListUrl, param).then( res => { this.comArticle1List = res});
+                ajax(getComArticle2ListUrl, param).then( res => { this.comArticle2List = res});
+                ajax(getSysUserListUrl, param).then( res => { this.sysUserList = res});
+                ajax(getScenicSpotTicketListUrl, param).then( res => { this.scenicSpotTicketList = res});
+                ajax(getAdvertListUrl, param).then( res => { this.advertList = res});
+            },
+        },
+        async created() {
+            ajax(getModuleHtmlListUrl).then( res => { this.moduleHtmlList = res});
+            ajax(getModuleNameListUrl).then( res => { this.moduleNameListAll = res});
+            await ajax(getLanguageUrl).then( res => {
+                this.languageList = res
+                this.languageId = this.languageList[0].languageid;
+            });
+            this.initData();
+        },
+        filters: {
+            //模块规格
+            moduleSizeVc(value) {
+                switch (parseInt(value)) {
+                    case 1: return "1*1";
+                    case 2: return "1+2";
+                    case 3: return "1+1+3";
+                    case 4: return "1*3";
+                    case 5: return "1*4";
+                    case 6: return "1*5";
+                    case 7: return "1*6";
+                    case 8: return "2+3";
+                    case 9: return "2*3";
+                    case 10: return "2*4";
+                    case 11: return "3*1";
+                    case 12: return "3*4";
+                    case 13: return "4*2";
+                }
+            },
+            //模块位置
+            moduleTypeVc(value) {
+                switch (parseInt(value)) {
+                    case 1: return "左侧广告";
+                    case 2: return "右侧广告";
+                    case 3: return "内容";
+                    case 4: return "页脚";
+                    case 5: return "中间广告";
+                    case 6: return "广告";
+                }
+            },
+            //类型判断
+            typeVc(value) {
+                switch (parseInt(value)) {
+                    case 1: return "车辆编号";
+                    case 2: return "评论ID";
+                    case 3: return "城市ID";
+                    case 4: return "景点ID";
+                    case 5: return "游轮路线ID";
+                    case 6: return "订单ID";
+                    case 8: return "定制ID";
+                    case 9: return "攻略ID";
+                    case 10: return "导游路线ID";
+                    case 11: return "导游ID";
+                    case 12: return "常规路线编号";
+                    case 13: return "资讯ID";
+                    case 14: return "供应商ID";
+                    case 15: return "当地参团编号";
+                    case 16: return "景点门票";
+                }
+            },
+            //页脚分类
+            moduleDetailsClassVc(value) {
+                switch (parseInt(value)) {
+                    case 1: return "分类名称";
+                    case 2: return "文章ID";
+                }
+            },
+        },
+    })
+
+
+</script>

@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.citystrategy.CityStrategyMapper">
+    
+	<sql id="cityStrategyColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.content AS "content",
+		a.img_url AS "imgUrl",
+		a.member_id AS "memberId",
+		a.status AS "status",
+		a.is_essence AS "isEssence",
+		a.language_id AS "languageId",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.city_id AS "cityId",
+		a.dig_num as "digNum",
+		a.comment_num as "commentNum",
+		a.star as "star"
+	</sql>
+	
+	<sql id="cityStrategyJoins">
+		
+	</sql>
+	
+	<!-- 获取攻略列表 -->
+	<select id="getCityStrategyList" resultType="CityStrategy">
+		SELECT
+			<include refid="cityStrategyColumns"/>,
+			b.nick_name AS "nickName",
+			b.photo AS "photo"
+		FROM city_strategy a
+		LEFT JOIN member_information b ON a.member_id = b.memberid
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="status != null">
+				AND a.status =#{status}
+			</if>
+			<if test="languageId != null">
+				AND a.language_id =#{languageId}
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where> 
+		ORDER BY a.create_date DESC
+	</select>
+    <!-- 获取城市攻略列表 -->
+	<select id="findStrategyList" resultType="CityStrategy">
+		SELECT
+			<include refid="cityStrategyColumns"/>,
+			if(me.type=1,b.nick_name,mt.company_name) AS "nickName",
+			if(me.type=1,b.photo,mt.company_logo) AS "photo",
+			<choose>
+			<when test="memberId != null and memberId != ''">
+				if((select count(b.id) from com_dig b 
+				where b.type=2 and b.type_id=a.id
+				and b.member_id=#{memberId})>0,1,2) as "digFlag"
+			</when>
+			<otherwise>
+				2 as "digFlag"
+			</otherwise>
+		</choose>
+		FROM city_strategy a
+		left join member me on me.id=a.member_id
+		LEFT JOIN member_information b ON a.member_id = b.memberid
+		left join member_travel mt on mt.memberid=a.member_id
+		<where>
+			a.del_flag = 0 AND a.status = 1 AND a.language_id =#{languageId}
+			and a.city_id =#{cityId}
+		</where> 
+		ORDER BY a.create_date DESC
+	</select>
+	<select id="get" resultType="CityStrategy" >
+		SELECT 
+			<include refid="cityStrategyColumns"/>,
+			if(me.type=1,b.nick_name,mt.company_name) AS "nickName",
+			if(me.type=1,b.photo,mt.company_logo) AS "photo",
+			<choose>
+				<when test="memberId != null and memberId != ''">
+					if((select count(b.id) from com_dig b 
+					where b.type=2 and b.type_id=a.id
+					and b.member_id=#{memberId})>0,1,2) as "digFlag"
+				</when>
+				<otherwise>
+					2 as "digFlag"
+				</otherwise>
+			</choose>
+		FROM city_strategy a
+		<include refid="cityStrategyJoins"/>
+		left join member me on me.id=a.member_id
+		LEFT JOIN member_information b ON a.member_id = b.memberid
+		left join member_travel mt on mt.memberid=a.member_id
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CityStrategy" >
+		SELECT 
+			<include refid="cityStrategyColumns"/>,
+			mi.nick_name AS "nickName",
+			m.mobile AS "mobile", 
+			(select group_concat(b.secnic_info) from city_strategy_son b where b.strategy_id=a.id) AS "secnicInfo"
+		FROM city_strategy a
+		left join member m on m.id=a.member_id
+		left join member_information mi on mi.memberid=a.member_id
+		<include refid="cityStrategyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE concat('%',#{title},'%')
+			</if>
+			<if test="cityId != null and cityId != ''">
+				AND a.city_id =#{cityId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CityStrategy" >
+		SELECT 
+			<include refid="cityStrategyColumns"/>
+		FROM city_strategy a
+		<include refid="cityStrategyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!--修改状态-->
+	<update id="status">
+		UPDATE city_strategy SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	<!--设置精华状态-->
+	<update id="isEssence">
+		UPDATE city_strategy SET 	
+			is_essence = #{isEssence},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	<insert id="insert">
+	<selectKey resultType="String" order="AFTER" keyProperty="id">  
+	          SELECT LAST_INSERT_ID() AS ID    
+	</selectKey> 
+		INSERT INTO city_strategy(
+			title,
+			content,
+			img_url,
+			member_id,
+			status,
+			is_essence,
+			language_id,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			city_id,
+			dig_num,
+			comment_num,
+			star
+		) VALUES (
+			#{title},
+			#{content},
+			#{imgUrl},
+			#{memberId},
+			#{status},
+			#{isEssence},
+			#{languageId},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{cityId},
+			0,
+			0,
+			5
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE city_strategy SET 	
+			title = #{title},
+			content = #{content},
+			img_url = #{imgUrl},
+			member_id = #{memberId},
+			status = #{status},
+			is_essence = #{isEssence},
+			language_id = #{languageId},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			city_id = #{cityId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM city_strategy
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE city_strategy SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="CityStrategy" statementType="STATEMENT">
+		select * FROM city_strategy  where ${propertyName} = '${value}'
+	</select>
+	
+	<!--修改星级、评论数-->
+	<update id="changeCommnetNum">
+		UPDATE city_strategy SET 	
+			star=(select truncate(sum(level)/count(id),1) from com_comment where type=13 and type_id=#{id}),
+			comment_num=comment_num+1
+		WHERE id = #{id}
+	</update>
+	
+	<!--修改点赞数-->
+	<update id="changeDigNum">
+		UPDATE city_strategy SET 	
+			dig_num=dig_num+#{digNum} 
+		WHERE id = #{id}
+	</update>
+</mapper>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.common.ComTripartiteLoginMapper">
+    
+	<sql id="comTripartiteLoginColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.type_id AS "typeId",
+		a.supplement AS "supplement",
+		a.login_date AS "loginDate",
+		a.login_type AS "loginType",
+		a.login_name AS "loginName",
+		a.login_photo AS "loginPhoto",
+		a.login_ip AS "loginIp",
+		a.is_bang AS "isBang",
+		a.memberid as "memberid"
+	</sql>
+	
+	<sql id="comTripartiteLoginJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComTripartiteLogin" >
+		SELECT 
+			<include refid="comTripartiteLoginColumns"/>
+		FROM com_tripartite_login a
+		<include refid="comTripartiteLoginJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findAPI" resultType="ComTripartiteLogin" >
+		SELECT 
+			<include refid="comTripartiteLoginColumns"/>
+		FROM com_tripartite_login a
+		<include refid="comTripartiteLoginJoins"/>
+		WHERE a.type_Id = #{typeId}
+	</select>
+	
+	<select id="findByMember" resultType="ComTripartiteLogin" >
+		SELECT 
+			<include refid="comTripartiteLoginColumns"/>
+		FROM com_tripartite_login a
+		<include refid="comTripartiteLoginJoins"/>
+		WHERE a.memberid = #{memberid}
+	</select>
+	
+	<select id="findList" resultType="ComTripartiteLogin" >
+		SELECT 
+			<include refid="comTripartiteLoginColumns"/>
+		FROM com_tripartite_login a
+		<include refid="comTripartiteLoginJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComTripartiteLogin" >
+		SELECT 
+			<include refid="comTripartiteLoginColumns"/>
+		FROM com_tripartite_login a
+		<include refid="comTripartiteLoginJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_tripartite_login(
+			type,
+			type_id,
+			supplement,
+			login_date,
+			login_type,
+			login_name,
+			login_photo,
+			login_ip,
+			is_bang,
+			memberid
+		) VALUES (
+			#{type},
+			#{typeId},
+			#{supplement},
+			#{loginDate},
+			#{loginType},
+			#{loginName},
+			#{loginPhoto},
+			#{loginIp},
+			#{isBang},
+			#{memberid}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_tripartite_login SET 	
+			type = #{type},
+			type_id = #{typeId},
+			supplement = #{supplement},
+			login_date = #{loginDate},
+			login_type = #{loginType},
+			login_name = #{loginName},
+			login_photo = #{loginPhoto},
+			login_ip = #{loginIp},
+			is_bang = #{isBang}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateBang">
+		UPDATE com_tripartite_login SET 
+			is_bang = 1
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_tripartite_login
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_tripartite_login SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComTripartiteLogin" statementType="STATEMENT">
+		select * FROM com_tripartite_login  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

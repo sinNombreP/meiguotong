@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.comadd.ComAdMapper">
+    
+	<sql id="comAdColumns">
+		a.id AS "id",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.display_type AS "displayType",
+		a.position_type AS "positionType",
+		a.img_url AS "imgUrl",
+		a.title AS "title",
+		a.link AS "link",
+		a.language_id AS "languageId",
+		a.sort AS "sort"
+	</sql>
+	
+	<sql id="comAdJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComAd" >
+		SELECT 
+			<include refid="comAdColumns"/>,
+			cl.content as "languageName"
+		FROM com_ad a
+		<include refid="comAdJoins"/>
+		left join com_language cl on cl.id=a.language_id
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ComAd" >
+		SELECT 
+			<include refid="comAdColumns"/>,
+			cl.content as "languageName"
+		FROM com_ad a
+		<include refid="comAdJoins"/>
+		left join com_language cl on cl.id=a.language_id
+		<where>
+			a.del_flag = 0
+			${dataScope}
+			<if test="positionType != null and positionType != ''">
+				AND a.position_type = #{positionType}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				 ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 根据语言获取广告 -->
+	<select id="getAdvertList" resultType="ComAd" >
+		SELECT 
+			<include refid="comAdColumns"/>
+		FROM com_ad a
+		<include refid="comAdJoins"/>
+		<where>
+			a.del_flag = 0 and a.language_id=#{languageId}
+		</where>
+		  ORDER BY a.update_date DESC
+	</select>
+	
+	<!-- 根据id获取广告 -->
+	<select id="getAdvertListById" resultType="ComAd" >
+		SELECT 
+			<include refid="comAdColumns"/>
+		FROM com_ad a
+		<include refid="comAdJoins"/>
+		<where>
+			a.del_flag = 0 and FIND_IN_SET(a.id,#{ids})>0
+		</where>
+		  ORDER BY a.update_date DESC
+	</select>
+	<!-- 广告列表接口 -->
+		<select id="findComAdList" resultType="ComAd" >
+		SELECT 
+		a.id AS "id",
+		a.create_date AS "createDate",
+		a.display_type AS "displayType",
+		a.position_type AS "positionType",
+		a.img_url AS "imgUrl",
+		a.title AS "title",
+		a.link AS "link",
+		a.language_id AS "languageId",
+		a.sort AS "sort"
+		FROM com_ad a
+		<where>
+			a.del_flag =0
+			${dataScope}
+			<if test="imgUrl != null and imgUrl != ''">
+				AND a.img_url = #{imgUrl}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 广告详情接口 -->
+	<select id="getComAd" resultType="ComAd" >
+		SELECT 
+		a.create_date AS "createDate",
+		a.display_type AS "displayType",
+		a.position_type AS "positionType",
+		a.img_url AS "imgUrl",
+		a.title AS "title",
+		a.link AS "link",
+		a.language_id AS "languageId",
+		a.sort AS "sort"
+		FROM com_ad a
+		where
+		a.id=#{id} and a.del_flag=0
+	</select>	
+	
+	<select id="findAllList" resultType="ComAd" >
+		SELECT 
+			<include refid="comAdColumns"/>
+		FROM com_ad a
+		<include refid="comAdJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_ad(
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			display_type,
+			position_type,
+			img_url,
+			title,
+			link,
+			language_id,
+			sort
+		) VALUES (
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{displayType},
+			#{positionType},
+			#{imgUrl},
+			#{title},
+			#{link},
+			#{languageId},
+			#{sort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_ad SET 	
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			display_type = #{displayType},
+			position_type = #{positionType},
+			img_url = #{imgUrl},
+			title = #{title},
+			link = #{link},
+			language_id = #{languageId},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_ad
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_ad SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComAd" statementType="STATEMENT">
+		select * FROM com_ad  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

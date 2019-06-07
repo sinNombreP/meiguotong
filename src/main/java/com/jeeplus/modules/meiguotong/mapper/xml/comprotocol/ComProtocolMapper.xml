@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.comprotocol.ComProtocolMapper">
+    
+	<sql id="comProtocolColumns">
+		a.id AS "id",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.language_id AS "languageid",
+		a.pc_logo AS "pcLogo",
+		a.logo_link AS "logoLink",
+		a.img AS "img",
+		a.phone AS "phone",
+		a.default_img AS "defaultImg",
+		a.default_photo AS "defaultPhoto",
+		a.foot_content AS "footContent",
+		a.title AS "title"
+	</sql>
+	
+	<sql id="comProtocolJoins">
+		
+	</sql>
+	
+ 
+	
+	<select id="get" resultType="ComProtocol" >
+		SELECT 
+			<include refid="comProtocolColumns"/>
+		FROM com_protocol a
+		<include refid="comProtocolJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getComProtocol" resultType="ComProtocol" >
+		SELECT 
+			<include refid="comProtocolColumns"/>
+		FROM com_protocol a
+		<include refid="comProtocolJoins"/>
+		where a.del_flag = 0
+		<if test="languageid != null and languageid != ''">
+				AND a.language_id=#{languageid}
+		</if>
+		and a.language_id in 
+		(select b.id from com_language b where b.del_flag=0 and b.status=1 )
+		limit 1
+	</select>
+	
+	<!-- 根据语言获取基本参数 -->
+	<select id="getProtocol" resultType="ComProtocol" >
+		SELECT 
+			a.pc_logo AS "pcLogo",
+			a.logo_link AS "logoLink",
+			a.img AS "img",
+			a.phone AS "phone",
+			a.default_img AS "defaultImg",
+			a.default_photo AS "defaultPhoto",
+			a.foot_content AS "footContent",
+			a.title AS "title"
+		FROM com_protocol a
+		where a.del_flag = 0 and a.language_id=#{languageid}
+	</select>
+	<select id="findList" resultType="ComProtocol" >
+		SELECT 
+			<include refid="comProtocolColumns"/>
+		FROM com_protocol a
+		<include refid="comProtocolJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComProtocol" >
+		SELECT 
+			<include refid="comProtocolColumns"/>
+		FROM com_protocol a
+		<include refid="comProtocolJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<insert id="insert">
+		INSERT INTO com_protocol(
+			update_by,
+			update_date,
+			create_date,
+			create_by,
+			del_flag,
+			del_date,
+			del_by,
+			language_id,
+			pc_logo,
+			logo_link,
+			img,
+			phone,
+			default_img,
+			default_photo,
+			foot_content,
+			title
+		) VALUES (
+			#{updateBy.id},
+			#{updateDate},
+			#{createDate},
+			#{createBy.id},
+			#{delFlag},
+			#{delDate},
+			#{delBy},
+			#{languageid},
+			#{pcLogo},
+			#{logoLink},
+			#{img},
+			#{phone},
+			#{defaultImg},
+			#{defaultPhoto},
+			#{footContent},
+			#{title}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_protocol SET 
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			pc_logo = #{pcLogo},
+			logo_link = #{logoLink},
+			img = #{img},
+			phone = #{phone},
+			default_img = #{defaultImg},
+			default_photo = #{defaultPhoto},
+			foot_content = #{footContent},
+			title = #{title}
+		WHERE id = #{id}
+	</update>
+	<update id="update1">
+		UPDATE com_protocol SET 
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			pc_logo = #{pcLogo},
+			logo_link = #{logoLink},
+			img = #{img},
+			phone = #{phone},
+			title = #{title}
+		WHERE id = #{id}
+	</update>
+	<update id="update2">
+		UPDATE com_protocol SET 
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			default_img = #{defaultImg},
+			default_photo = #{defaultPhoto}
+		WHERE id = #{id}
+	</update>
+	<update id="update3">
+		UPDATE com_protocol SET 
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			foot_content = #{footContent}
+		WHERE id = #{id}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_protocol
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_protocol SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComProtocol" statementType="STATEMENT">
+		select * FROM com_protocol  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

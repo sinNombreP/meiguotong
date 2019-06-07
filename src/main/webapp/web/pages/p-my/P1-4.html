@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>个人信息</title>
+    <link rel="icon" href="../../images/favicon.ico" />
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/E-publc.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../vendor/calendar/calendar-pro.css">
+    <link rel="stylesheet" href="../../css/common.css" />
+</head>
+
+<body> 
+    <div id="app" v-cloak>
+        <ez-header></ez-header>
+        <ez-container></ez-container>
+        <!--content-->
+
+        <div class="container ez-container ez-user-content">
+            <ez-myinfo></ez-myinfo>
+            <!--<div class="aside-left">-->
+                <!--&lt;!&ndash;用户信息&ndash;&gt;-->
+                <!--<div class="aside-userinfo text-center">-->
+                    <!--<div class="aside-avatar">-->
+                        <!--<img  :src="member.photo?member.photo:'../../images/avatar-1.png'" class="center-block">-->
+                    <!--</div>-->
+                    <!--<h4 class="username-text">{{member.nickName}}</h4>-->
+                    <!--<h5>手机号：{{member.phone}}</h5>-->
+                    <!--<h5><span class="ez-mr-sm">{{member.sex | sexVc}}</span><span>{{member.birthday}}</span></h5>-->
+                    <!--<div class="aside-userinfo-btn">-->
+                        <!--<a class="btn text-lightorange" href="./P1-4.html">编辑</a>-->
+                        <!--<a class="btn">退出登录</a>-->
+                    <!--</div>-->
+                <!--</div>-->
+
+                <!--&lt;!&ndash;个人中心&ndash;&gt;-->
+                <!--<div class="ez-aside-card">-->
+                    <!--<div class="aside-card-title bg-style4">-->
+                        <!--<h4 class="title">个人中心</h4>-->
+                    <!--</div>-->
+                    <!--<ul class="aside-user-list text-center">-->
+                        <!--<li><a href="#">我的订单</a><i></i></li>-->
+                        <!--<li><a href="#">售后订单</a><i></i></li>-->
+                        <!--<li><a href="#">我的收藏</a><i></i></li>-->
+                        <!--<li class="active"><a href="">个人信息</a><i></i></li>-->
+                        <!--<li><a href="./P1-5.html">消息中心</a><i></i></li>-->
+                        <!--<li><a href="#">我的草稿</a><i></i></li>-->
+                        <!--<li><a href="#">财务管理</a><i></i></li>-->
+                        <!--<li><a href="#">常用联系人</a><i></i></li>-->
+                    <!--</ul>-->
+                <!--</div>-->
+
+                <!--<div class="ez-aside-card">-->
+                    <!--<div class="aside-card-title bg-style4">-->
+                        <!--<h4 class="title">玩家中心</h4>-->
+                    <!--</div>-->
+                    <!--<ul class="aside-user-list text-center">-->
+                        <!--<li><a href="#">玩家认证</a><i></i></li>-->
+                        <!--<li><a href="#">路线规划</a><i></i></li>-->
+                        <!--<li><a href="#">我的收藏</a><i></i></li>-->
+                        <!--<li><a href="#">价格设置</a><i></i></li>-->
+                        <!--<li><a href="#">玩家订单管理</a><i></i></li>-->
+                        <!--<li><a href="#">玩家时间管理</a><i></i></li>-->
+                    <!--</ul>-->
+                <!--</div>-->
+
+                <!--<div class="ez-aside-card">-->
+                    <!--<div class="aside-card-title bg-style4">-->
+                        <!--<h4 class="title">公司账号信息</h4>-->
+                    <!--</div>-->
+                    <!--<ul class="aside-user-list text-center">-->
+                        <!--<li><a href="#">公司信息</a><i></i></li>-->
+                        <!--<li><a href="#">旅行社子账号管理</a><i></i></li>-->
+                    <!--</ul>-->
+                <!--</div>-->
+
+                <!--<div class="ez-aside-card">-->
+                    <!--<div class="aside-card-title bg-style4">-->
+                        <!--<h4 class="title">关于我们</h4>-->
+                    <!--</div>-->
+                    <!--<ul class="aside-user-list text-center">-->
+                        <!--<li><a href="#">关于我们</a><i></i></li>-->
+                    <!--</ul>-->
+                <!--</div>-->
+
+            <!--</div>-->
+            <div class="content-right">
+                <div class="panel-header">
+                    <div class="pull-left panel-header-title">公司信息</div>
+                </div>
+                <div class="content-panel">
+
+                    <!--用户信息-->
+                    <form class="form-horizontal wrap-account">
+
+                        <div class="form-group">
+                            <span class="label-txt required">昵称</span>
+                            <div class="form-content">
+                                <input class="form-control" type="text" maxlength="20"  v-model.trim="member.nickName" placeholder="请输入昵称">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="label-txt required">用户头像</span>
+                            <div class="form-content upload-plugin avatarImgUpload">
+                                <img class="upload-img" :src="member.photo?member.photo:defaultPhoto">
+                                <div class="upload-text">
+                                    <p>建议上传图片尺寸为500*500</p>
+                                    <p>大小不超过20M</p>
+                                    <!--<a class="btn ez-btn">上传封面</a>-->
+                                    <div class="ez-upload-btn ez-mt-10">
+                                        <input type="file" title="上传封面"  @change="imgChange" accept="image/*"> 上传封面
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="label-txt required">手机号</span>
+                            <div class="form-content">
+                                <input class="form-control" type="number" maxlength="20" v-model.trim="member.phone" placeholder="请输入手机号">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="label-txt required">邮箱</span>
+                            <div class="form-content">
+                                <a class="btn btn-md ez-btn" data-toggle="modal" data-target="#emailBind">绑定邮箱</a>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="label-txt required">性别</span>
+                            <div class="form-content">
+                                <span class="label-radio"><input type="radio" name="sex" value="1" v-model.trim="member.sex">男</span>
+                                <span class="label-radio"><input type="radio" name="sex" value="2" v-model.trim="member.sex">女</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="label-txt required">生日</span>
+                            <div class="form-content">
+                                <!-- <div class="select-group">
+                                    <select class="form-control ez-mr-sm">
+                                        <option value="1" selected>年</option>
+                                        <option value="2">1991</option>
+                                        <option value="3">1992</option>
+                                        <option value="3">19933</option>
+                                    </select>
+                                    <select class="form-control ez-mr-sm">
+                                        <option value="1" selected>月</option>
+                                        <option value="2">1</option>
+                                        <option value="3">2</option>
+                                        <option value="3">3</option>
+                                    </select>
+                                    <select class="form-control">
+                                        <option value="1" selected>日</option>
+                                        <option value="2">1</option>
+                                        <option value="3">2</option>
+                                        <option value="3">3</option>
+                                    </select>
+                                </div> -->
+                                <input class="form-control datetimepicker" type="date" v-model="member.birthday"  placeholder="请选择日期" >
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="label-txt required">我的地址</span>
+                            <div class="form-content">
+                                <div class="select-group">
+                                    <select class="form-control ez-mr-sm" v-model="member.countryid" @change="countryChange">
+                                        <option value="" selected>请选择</option>
+                                        <option :value="country.countryid" v-for="(country, index) in countryList" :key="index">{{country.countryName}}</option>
+                                    </select>
+                                    <select class="form-control ez-mr-sm s" v-model="member.cityid">
+                                        <option value="" selected>请选择</option>
+                                        <option :value="city.cityid"  v-for="(city, index) in cityList" :key="index">{{city.cityName}}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <textarea class="ez-control-textarea" rows="10" cols="30" v-model="member.address"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="label-txt"></span>
+                            <div class="form-content">
+                                <a class="btn btn-lg ez-btn-parmary ez-mr-md" @click.stop="updateMember">编辑</a>
+                                <a class="btn btn-lg ez-btn">取消</a>
+                            </div>
+                        </div>
+                    </form>
+
+
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 绑定邮箱弹出框（Modal） -->
+        <div class="modal fade emailBind ez-modal" id="emailBind" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <!--<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>-->
+                        <button type="button" class="modal-close" data-dismiss="modal" aria-hidden="true"><i class="iconfont icon-close"></i></button>
+                        <h4 class="modal-title text-center" id="myModalLabel">绑定邮箱</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-horizontal">
+                            <div class="form-group clearfix">
+                                <span class="col-sm-3 control-label">邮箱</span>
+                                <div class="col-sm-7">
+                                    <input class="form-control" type="text" maxlength="20"   v-model.trim ="member.email">
+                                    <div><a class="btn ez-btn btn-md ez-mt-10" @click.stop="getSendSms">获取验证码</a></div>
+                                </div>
+                            </div>
+
+                            <div class="form-group clearfix">
+                                <span class="col-sm-3 control-label ">验证码</span>
+                                <div class="col-sm-7">
+                                    <input class="form-control" type="number" maxlength="6"  v-model.trim="code" >
+                                </div>
+                            </div>
+
+                            <div class="form-group clearfix">
+                                <span class="col-sm-3"></span>
+                                <div class="col-sm-6">
+                                    <a class="btn btn-lg ez-btn-parmary ez-mr-md" style="border-radius: 4px" @click.stop="bindEmail">绑定</a>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="clearfix"></div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 绑定邮箱弹出框 /.modal -->
+
+        <ez-footer></ez-footer>
+        <ez-aside></ez-aside>
+
+    </div>
+</body>
+
+</html>
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-pro.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+<script>
+    //上传用户头像
+    function uploadAvatar() {
+        var avatarImgFile = document.getElementById("avatarImgFile").files[0];
+        console.log(avatarImgFile);
+        console.log("图片文件名称：" + avatarImgFile.name);
+        console.log("图片文件大小：" + avatarImgFile.size + " B");
+        console.log("图片文件类型：" + avatarImgFile.type);
+
+        var avatarImgUrl = '../../images/' + avatarImgFile.name;
+        console.log("图片文件路径：" + avatarImgUrl);
+
+        $('.avatarImgUpload .upload-img').attr('src', avatarImgUrl);//上传成功时；
+
+    }
+    const app = new Vue({
+        el: "#app",
+        data: {
+            member:{},  //会员信息
+            countryList:[],  //国家
+            cityList:[],  //城市
+            code:"", //验证码
+        },
+        methods: {
+            //国家改变
+            countryChange:function(){
+                this.member.cityid = "";
+                this.countryPd();
+            },
+            countryPd:function(){
+                let flag = true;
+                for(let k in this.countryList){
+                    if(this.countryList[k].countryid == this.member.countryid){
+                        this.cityList = this.countryList[k].cityList;
+                        flag = false;
+                        break;
+                    }
+                }
+                if ( flag ) this.cityList = [];
+            },
+            //获取会员信息
+            getMember: function () {
+                requestGet(myInforUrl, {
+                }, function (data) {
+                    app.member = data.body.member;
+                    app.getCountryCity();
+                });
+            },
+            //根据语言获取国家城市
+            getCountryCity:function () {
+                requestGet(getCountryCityUrl, {
+                }, function (data) {
+                    app.countryList = data.body.countryList;
+                    app.countryPd();
+                });
+            },
+            //上传图片
+            imgChange: function (e) {
+                console.info(e.target.files[0]); //图片文件
+                var file = e.target.files[0];
+                var URL = window.URL || window.webkitURL;
+                // 通过 file 生成目标 url
+                var photo = URL.createObjectURL(file);
+                var image = new Image();
+                image.src = photo;
+                image.onload = function () {
+                var imgData = app.getImage(image);
+                requestPost(imgUploadUrl, {
+                    "file": imgData,
+                }, function (data) {
+                    //更新图片数据
+                     Vue.set(app.member,"photo",data.body.imgUrl);
+                });
+                }
+            },
+            //压缩图片
+            getImage: function (image) {
+                var canvas = document.createElement("canvas");
+                var width = 250;
+                var height = 250;
+                canvas.width = width; /*设置新的图片的宽度*/
+                canvas.height = height; /*设置新的图片的长度*/
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(image, 0, 0, width, height); /*绘图*/
+                var dataURL = canvas.toDataURL("image/jpeg", 0.6);
+                return dataURL.replace("data:image/jpeg;base64,", "");
+            },
+            //获取验证码
+            getSendSms:function(){
+                if(this.member.email == "" || this.member.email == undefined){
+                    layerMsg("请输入邮箱");
+                    return;
+                }
+                requestGet(sendSmsUrl, {
+                    category:2,
+                    sendType:2,
+                    source:1,
+                    email:this.member.email,
+                }, function (data) {
+                    layerMsg("验证码发送成功，请注意查收");
+                });
+            },
+            //绑定邮箱
+            bindEmail:function(){
+                if(this.member.email == "" || this.member.email == undefined){
+                    layerMsg("请输入邮箱");
+                    return;
+                }
+                if(this.code == "" || this.code == null){
+                    layerMsg("请输入验证码");
+                    return;
+                }
+                requestGet(checkEmailUrl, {
+                    code:this.code,
+                    email:this.member.email,
+                }, function (data) {
+                    layerMsg("邮箱绑定成功");
+                    $("#emailBind").modal('hide');
+                });
+            },
+            //更新个人信息
+            updateMember:function(){
+                if(this.member.nickName == "" || this.member.nickName == undefined){
+                    layerMsg("请输入昵称");
+                    return;
+                }
+                if(this.member.photo == "" || this.member.photo == undefined){
+                    layerMsg("请上传照片");
+                    return;
+                }
+                if(this.member.phone == "" || this.member.phone == undefined){
+                    layerMsg("请输入手机号");
+                    return;
+                }
+                if(this.member.sex == "" || this.member.sex == undefined){
+                    layerMsg("请选择性别");
+                    return;
+                }
+                if(this.member.birthday == "" || this.member.birthday == undefined){
+                    layerMsg("请选择生日");
+                    return;
+                }
+                if(this.member.countryid == "" || this.member.countryid == undefined){
+                    layerMsg("请选择国家");
+                    return;
+                }
+                if(this.member.cityid == "" || this.member.cityid == undefined){
+                    layerMsg("请选择城市");
+                    return;
+                }
+                if(this.member.cityid == "" || this.member.cityid == undefined){
+                    layerMsg("请选择城市");
+                    return;
+                }
+                requestGet(updateMyUrl,this.member, function (data) {
+                    layerMsg("修改用户信息成功");
+                });
+            },
+        },
+        mounted () {
+            this.getMember();
+            // $('.datetimepicker').datetimepicker({
+            //         format: 'YYYY-MM-DD'
+            // });
+        },
+    })
+
+
+
+
+</script>

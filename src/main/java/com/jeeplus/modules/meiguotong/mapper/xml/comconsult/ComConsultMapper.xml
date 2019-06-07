@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.comconsult.ComConsultMapper">
+    
+	<sql id="comConsultColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.type_id AS "typeId",
+		a.content AS "content",
+		a.memberid AS "memberid",
+		a.content_retply AS "contentRetply",
+		a.status AS "status",
+		a.language_id AS "languageId",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.moblie AS "moblie",
+		if(c.create_type=1,c.mobile,c.email) AS "account",
+		b.nick_name AS "nickName"
+	</sql>
+	
+	<sql id="comConsultJoins">
+		LEFT JOIN member_information b ON a.memberid = b.memberid
+		LEFT JOIN member c ON b.memberid = c.id
+	</sql>
+	<!-- 根据类型获取产品咨询 -->
+    <select id="getRouteConsult" resultType="ComConsult" >
+		SELECT 
+			a.content AS "content",
+			a.content_retply AS "contentRetply",
+			a.create_date AS "createDate"
+		FROM com_consult a
+		<where>
+			a.del_flag = 0 AND a.type = #{type} AND a.type_id = #{typeId}
+			AND a.status = 1 and a.content_retply is not null
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="get" resultType="ComConsult" >
+		SELECT 
+			<include refid="comConsultColumns"/>
+		FROM com_consult a
+		<include refid="comConsultJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 用户资讯列表 -->
+	<select id="findComConsultList" resultType="ComConsult" >
+	SELECT 
+		a.id AS "id",
+		a.type AS "type",
+		a.type_id AS "typeId",
+		a.content AS "content",
+		a.memberid AS "memberid",
+		a.content_retply AS "contentRetply",
+		a.status AS "status",
+		a.language_id AS "languageId",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_flag AS "delFlag",
+		a.name AS "name",
+		a.moblie AS "moblie"
+	FROM com_consult a
+		WHERE a.type_id = #{typeId} and a.status=1 and a.del_flag=0
+	</select>
+	<select id="findList" resultType="ComConsult" >
+		SELECT 
+			<include refid="comConsultColumns"/>
+		FROM com_consult a
+		<include refid="comConsultJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="type != null">
+				AND a.type = #{type}
+			</if>
+			<if test="typeId != null">
+				AND a.type_id = #{typeId}
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if>
+			<if test="content != null and content != ''">
+				AND (a.content LIKE concat('%',#{content},'%') OR 
+				if(c.create_type=1,c.mobile,c.email)LIKE concat('%',#{content},'%'))
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 启用禁用 -->
+	<select id="updateStatus">
+		UPDATE com_consult
+		<set>
+			<if test="status==0">
+				status = 1
+			</if>
+			<if test="status==1">
+				status = 0
+			</if>
+		</set>
+		where id = #{id}
+	</select>
+	
+	<select id="findAllList" resultType="ComConsult" >
+		SELECT 
+			<include refid="comConsultColumns"/>
+		FROM com_consult a
+		<include refid="comConsultJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_consult(
+			type,
+			type_id,
+			content,
+			memberid,
+			content_retply,
+			status,
+			language_id,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_flag,
+			name,
+			moblie
+		) VALUES (
+			#{type},
+			#{typeId},
+			#{content},
+			#{memberid},
+			#{contentRetply},
+			#{status},
+			#{languageId},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delFlag},
+			#{name},
+			#{moblie}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_consult SET 	
+			type = #{type},
+			type_id = #{typeId},
+			content = #{content},
+			memberid = #{memberid},
+			content_retply = #{contentRetply},
+			status = #{status},
+			language_id = #{languageId},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			name = #{name},
+			moblie = #{moblie}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_consult
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_consult SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComConsult" statementType="STATEMENT">
+		select * FROM com_consult  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

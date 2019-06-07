@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.draft.ProductDraftHotelMapper">
+    
+	<sql id="productDraftHotelColumns">
+		a.id AS "id",
+		a.hotelid AS "hotelid",
+		a.day AS "day",
+		a.num AS "num",
+		a.roomid AS "roomid",
+		a.draftid AS "draftid"
+	</sql>
+	
+	<sql id="productDraftHotelJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ProductDraftHotel" >
+		SELECT 
+			<include refid="productDraftHotelColumns"/>
+		FROM product_draft_hotel a
+		<include refid="productDraftHotelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ProductDraftHotel" >
+		SELECT 
+			<include refid="productDraftHotelColumns"/>
+		FROM product_draft_hotel a
+		<include refid="productDraftHotelJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="day != null and day != ''">
+				AND a.day = #{day}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProductDraftHotel" >
+		SELECT 
+			<include refid="productDraftHotelColumns"/>
+		FROM product_draft_hotel a
+		<include refid="productDraftHotelJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO product_draft_hotel(
+			hotelid,
+			day,
+			num,
+			roomid,
+			draftid
+		) VALUES (
+			#{hotelid},
+			#{day},
+			#{num},
+			#{roomid},
+			#{draftid}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE product_draft_hotel SET 	
+			hotelid = #{hotelid},
+			day = #{day},
+			num = #{num},
+			roomid = #{roomid},
+			draftid = #{draftid}
+		WHERE id = #{id}
+	</update>
+	
+	<!--根据草稿id物理删除-->
+	<update id="deleteByDraftId">
+		DELETE FROM product_draft_hotel
+		WHERE draftid = #{id}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM product_draft_hotel
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE product_draft_hotel SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ProductDraftHotel" statementType="STATEMENT">
+		select * FROM product_draft_hotel  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

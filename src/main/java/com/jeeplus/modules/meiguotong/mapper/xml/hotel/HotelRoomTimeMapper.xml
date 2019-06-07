@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.hotel.HotelRoomTimeMapper">
+    
+	<sql id="hotelRoomTimeColumns">
+		a.id AS "id",
+		a.stock_all AS "stockAll",
+		a.money AS "money",
+		a.hotel_room_id AS "hotelRoomId",
+		a.date_type AS "dateType",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.week_date AS "weekDate",
+		a.day_date AS "dayDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy"
+	</sql>
+	
+	<sql id="hotelRoomTimeJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="HotelRoomTime" >
+		SELECT 
+			<include refid="hotelRoomTimeColumns"/>
+		FROM hotel_room_time a
+		<include refid="hotelRoomTimeJoins"/>
+		WHERE a.hotel_room_id = #{id}
+	</select>
+	
+	<select id="findList" resultType="HotelRoomTime" >
+		SELECT 
+			<include refid="hotelRoomTimeColumns"/>
+		FROM hotel_room_time a
+		<include refid="hotelRoomTimeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="HotelRoomTime" >
+		SELECT 
+			<include refid="hotelRoomTimeColumns"/>
+		FROM hotel_room_time a
+		<include refid="hotelRoomTimeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hotel_room_time(
+			stock_all,
+			money,
+			hotel_room_id,
+			date_type,
+			begin_date,
+			end_date,
+			week_date,
+			day_date,
+			update_by,
+			update_date,
+			create_date,
+			create_by,
+			del_flag,
+			del_date,
+			del_by
+		) VALUES (
+			#{stockAll},
+			#{money},
+			#{hotelRoomId},
+			#{dateType},
+			#{beginDate},
+			#{endDate},
+			#{weekDate},
+			#{dayDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{createDate},
+			#{createBy.id},
+			#{delFlag},
+			#{delDate},
+			#{delBy}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE hotel_room_time SET 	
+			stock_all = #{stockAll},
+			money = #{money},
+			hotel_room_id = #{hotelRoomId},
+			date_type = #{dateType},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			week_date = #{weekDate},
+			day_date = #{dayDate},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_date = #{delDate},
+			del_by = #{delBy}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hotel_room_time
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hotel_room_time SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="HotelRoomTime" statementType="STATEMENT">
+		select * FROM hotel_room_time  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

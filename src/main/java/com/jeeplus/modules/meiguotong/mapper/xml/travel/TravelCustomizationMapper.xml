@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.travel.TravelCustomizationMapper">
+    
+	<sql id="travelCustomizationColumns">
+		a.id AS "id",
+		a.language AS "language",
+		a.name AS "name",
+		a.city AS "city",
+		a.img AS "img",
+		a.day_num AS "dayNum",
+		a.status AS "status",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.lookNum AS "lookNum",
+		a.collectionNum AS "collectionNum",
+		a.cityNum AS 'cityNum',
+		a.scenicNum AS 'scenicNum',
+		b.city_name AS "cityName"
+	</sql>
+	
+	<sql id="travelCustomizationJoins">
+		LEFT JOIN com_city b ON a.city = b.id
+	</sql>
+	<!-- 获取后台配置的旅游定制的天数列表 -->
+    <select id="getTravelDay" resultType="Integer" >
+		SELECT 
+			a.day_num as "dayNum"
+		FROM travel_customization a
+		where a.del_flag = 0 AND a.language = #{language} and a.status=1
+		and a.city=#{city}
+		group by a.day_num
+		order by a.day_num
+	</select>
+	<select id="get" resultType="TravelCustomization" >
+		SELECT 
+			<include refid="travelCustomizationColumns"/>
+		FROM travel_customization a
+		<include refid="travelCustomizationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 根据旅游天数获取后台旅游定制列表 -->
+	<select id="getTravelByDay" resultType="TravelCustomization" >
+		SELECT 
+			a.id as "id",
+			a.scenicNum as "scenicNum",
+			a.cityNum as "cityNum",
+			a.name as "name",
+			a.img as "img",
+			a.day_num AS "dayNum"
+		FROM travel_customization a
+		where a.del_flag = 0 AND a.language = #{language}
+			and a.day_num = #{dayNum} and a.status=1 and city=#{city}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findList" resultType="TravelCustomization" >
+		SELECT 
+			<include refid="travelCustomizationColumns"/>
+		FROM travel_customization a
+		<include refid="travelCustomizationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="language != null">
+				AND a.language = #{language}
+			</if>
+			<if test="city != null">
+				AND a.city = #{city}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND (a.id = #{searchContent}
+				OR a.name LIKE concat('%',#{searchContent},'%') )
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="TravelCustomization" >
+		SELECT 
+			<include refid="travelCustomizationColumns"/>
+		FROM travel_customization a
+		<include refid="travelCustomizationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO travel_customization(
+			name,
+			language,
+			city,
+			img,
+			day_num,
+			status,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			del_date,
+			del_by,
+			cityNum,
+			lookNum,
+			collectionNum,
+			scenicNum
+		) VALUES (
+			#{name},
+			#{language},
+			#{city},
+			#{img},
+			#{dayNum},
+			1,
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{delDate},
+			#{delBy},
+			#{cityNum},
+			0,
+			0,
+			#{scenicNum}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE travel_customization SET 	
+			scenicNum = #{scenicNum},
+			cityNum = #{cityNum},
+			name = #{name},
+			language = #{language},
+			city = #{city},
+			img = #{img},
+			day_num = #{dayNum},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_date = #{delDate},
+			lookNum = #{lookNum},
+			collectionNum = #{collectionNum},
+			del_by = #{delBy}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM travel_customization
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE travel_customization SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="TravelCustomization" statementType="STATEMENT">
+		select * FROM travel_customization  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findTravelByCityId" resultType="TravelCustomization" >
+		select id,name,language,day_num 
+		from travel_customization 
+		where status=1 and del_flag=0 and city=#{city}
+		<if test="name != null and name != ''">
+		and name like concat('%',#{name},'%') 
+		</if>
+		<if test="travelIds != null and travelIds != ''">
+		and !find_in_set(id,#{travelIds})>0 
+		</if>
+	</select>
+	<select id="findTravelByComCityTravels" resultType="TravelCustomization" >
+		select id, name
+		from travel_customization
+		where find_in_set(id,#{travelIds})>0 
+	</select>
+	
+	<!--修改查看数量-->
+	<update id="changeLookNum">
+		update travel_customization set lookNum=lookNum+1 WHERE id=#{id}
+	</update>
+</mapper>

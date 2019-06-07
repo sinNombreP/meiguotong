@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.common.ComSmsLogMapper">
+    
+	<sql id="comSmsLogColumns">
+		a.id AS "id",
+		a.area AS "area",
+		a.phone AS "phone",
+		a.code AS "code",
+		a.type AS "type",
+		a.create_date AS "createDate",
+		a.content AS "content",
+		a.source AS "source",
+		a.email AS "email",
+		send_type AS "sendType"
+	</sql>
+	
+	<sql id="comSmsLogJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComSmsLog" >
+		SELECT 
+			<include refid="comSmsLogColumns"/>
+		FROM com_sms_log a
+		<include refid="comSmsLogJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ComSmsLog" >
+		SELECT 
+			<include refid="comSmsLogColumns"/>
+		FROM com_sms_log a
+		<include refid="comSmsLogJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 通过手机查找验证码 -->
+	<select id="findCodeByMobile" resultType="ComSmsLog" >
+	SELECT 
+	a.code AS "code",
+	a.create_date AS "createDate"
+	FROM com_sms_log a
+	<where>
+		a.phone = #{phone}
+		AND a.type = #{type}  AND a.source= #{source}
+	</where>
+	ORDER BY a.create_date desc  limit 1
+	</select>
+	<!-- 通过邮箱查找验证码 -->
+	<select id="findCodeByEmail" resultType="ComSmsLog" >
+	SELECT 
+	a.code AS "code",
+	a.create_date AS "createDate"
+	FROM com_sms_log a
+	<where>
+		a.email = #{email}
+		AND a.type = #{type}  AND a.source= #{source}
+	</where>
+	ORDER BY a.create_date desc  limit 1
+	</select>
+	<!-- 验证邮箱 -->
+	<select id="checkEmail" resultType="ComSmsLog" >
+	SELECT 
+	a.create_date AS "createDate"
+	FROM com_sms_log a
+	<where>
+		a.email = #{email}
+		AND a.code = #{code}
+	</where>
+	ORDER BY a.create_date desc  limit 1
+	</select>	
+	
+	<select id="findAllList" resultType="ComSmsLog" >
+		SELECT 
+			<include refid="comSmsLogColumns"/>
+		FROM com_sms_log a
+		<include refid="comSmsLogJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_sms_log(
+			area,
+			phone,
+			code,
+			type,
+			create_date,
+			content,
+			source,
+			email,
+			send_type   		
+		) VALUES (
+			#{area},
+			#{phone},
+			#{code},
+			#{type},
+			#{createDate},
+			#{content},
+			#{source},
+			#{email},
+			#{sendType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_sms_log SET 	
+			are = #{are},
+			phone = #{phone},
+			code = #{code},
+			type = #{type},
+			content = #{content},
+			source = #{source},
+			email = #{email},
+			send_type = #{sendType}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_sms_log
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_sms_log SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComSmsLog" statementType="STATEMENT">
+		select * FROM com_sms_log  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

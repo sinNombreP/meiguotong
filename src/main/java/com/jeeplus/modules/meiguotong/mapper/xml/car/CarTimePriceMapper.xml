@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.car.CarTimePriceMapper">
+    
+	<sql id="carTimePriceColumns">
+		a.id AS "id",
+		a.language AS "language",
+		a.type AS "type",
+		a.businessid AS "businessid",
+		a.busi_date AS "busiDate",
+		a.price AS "price",
+		a.start_price AS "startPrice",
+		a.head_price AS "headPrice",
+		a.food_price AS "foodPrice",
+		a.empty_price AS "emptyPrice",
+		a.begin_time AS "beginTime",
+		a.end_time AS "endTime",
+		a.serviceid AS "serviceid"
+	</sql>
+	
+	<sql id="carTimePriceJoins">
+		
+	</sql>
+	
+    <!-- 获取车辆某一天的价格 -->
+    <select id="getPrice" resultType="CarTimePrice" >
+		SELECT 
+			ctp.price AS "price",
+			ctp.start_price AS "startPrice",
+			ctp.head_price AS "headPrice",
+			ctp.food_price AS "foodPrice",
+			ctp.empty_price AS "emptyPrice"
+		FROM car_business a
+		left join car_time_price ctp on ctp.businessid=a.id and ctp.type=1
+		<if test="busiDate !=null and busiDate != ''">
+			and ctp.busi_date=#{busiDate}
+		</if>
+		WHERE a.carid = #{carid} and a.business_type=#{businessType}
+	</select>
+	<select id="get" resultType="CarTimePrice" >
+		SELECT 
+			<include refid="carTimePriceColumns"/>
+		FROM car_time_price a
+		<include refid="carTimePriceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CarTimePrice" >
+		SELECT 
+			<include refid="carTimePriceColumns"/>
+		FROM car_time_price a
+		<include refid="carTimePriceJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 获取汽车时间 -->
+	<select id="getDataByCarBusinessid" resultType="CarTimePrice" >
+		SELECT 
+			<include refid="carTimePriceColumns"/>,
+			b.range AS "range",
+			b.radius AS "radius",
+			b.title AS "title"
+		FROM car_time_price a
+		LEFT JOIN car_service b ON a.serviceid = b.id
+		<where>
+			a.businessid = #{id}
+		</where>
+	</select>
+	
+	<!-- 删除包车租车汽车时间表 -->
+	<delete id="deleteByCarid">
+		DELETE FROM car_time_price
+		WHERE businessid = #{id}
+	</delete>
+	
+	<select id="findAllList" resultType="CarTimePrice" >
+		SELECT 
+			<include refid="carTimePriceColumns"/>
+		FROM car_time_price a
+		<include refid="carTimePriceJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO car_time_price(
+			type,
+			language,
+			businessid,
+			busi_date,
+			price,
+			start_price,
+			head_price,
+			food_price,
+			empty_price,
+			begin_time,
+			end_time,
+			serviceid,
+			`range`,
+			radius
+		) VALUES (
+			#{type},
+			#{language},
+			#{businessid},
+			#{busiDate},
+			#{price},
+			#{startPrice},
+			#{headPrice},
+			#{foodPrice},
+			#{emptyPrice},
+			#{beginTime},
+			#{endTime},
+			#{serviceid},
+			#{range},
+			#{radius}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE car_time_price SET 	
+			type = #{type},
+			language = #{language},
+			businessid = #{businessid},
+			busi_date = #{busiDate},
+			price = #{price},
+			start_price = #{startPrice},
+			head_price = #{headPrice},
+			food_price = #{foodPrice},
+			empty_price = #{emptyPrice},
+			begin_time = #{beginTime},
+			end_time = #{endTime},
+			serviceid = #{serviceid},
+			range = #{range},
+			radius = #{radius}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM car_time_price
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE car_time_price SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="CarTimePrice" statementType="STATEMENT">
+		select * FROM car_time_price  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

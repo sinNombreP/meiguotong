@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.comAppstart.ComAppstartMapper">
+    
+	<sql id="comAppstartColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.img AS "img",
+		a.time AS "time",
+		a.link AS "link",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.lastupdate_date AS "lastupdateDate",
+		a.status AS "status",
+		a.type AS "type",
+		a.typeid AS "typeid",
+		a.content AS "content"
+	</sql>
+	
+	<sql id="comAppstartJoins">
+		
+	</sql>
+	
+	<!-- 查找版本号信息 -->
+	<select id="findVersion" resultType="ComVersion" >
+		SELECT a.version AS "version",a.froce AS "froce",
+		a.downloadUrl AS "downloadUrl",a.remark  AS "remark" 
+		FROM com_version a
+		where a.version=#{version}
+		AND a.terminal=#{source}
+	</select>
+	
+	<!-- 查找最新版本号信息 -->
+	<select id="findNewVersion" resultType="ComVersion" >
+	SELECT a.version AS "version",a.froce AS "froce",
+	a.downloadUrl AS "downloadUrl",a.remark  AS "remark" 
+	FROM com_version a
+	where a.terminal=#{source}
+	ORDER BY a.update_date desc,lastUpdate_date desc
+	limit 1
+	</select>
+    
+	<select id="get" resultType="ComAppstart" >
+		SELECT 
+			<include refid="comAppstartColumns"/>
+		FROM com_appstart a
+		<include refid="comAppstartJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ComAppstart" >
+		SELECT 
+			<include refid="comAppstartColumns"/>
+		FROM com_appstart a
+		<include refid="comAppstartJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComAppstart" >
+		SELECT 
+			<include refid="comAppstartColumns"/>
+		FROM com_appstart a
+		<include refid="comAppstartJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_appstart(
+			title,
+			img,
+			time,
+			link,
+			update_by,
+			update_date,
+			lastupdate_date,
+			status,
+			type,
+			typeid,
+			content
+		) VALUES (
+			#{title},
+			#{img},
+			#{time},
+			#{link},
+			#{updateBy.id},
+			#{updateDate},
+			#{lastupdateDate},
+			#{status},
+			#{type},
+			#{typeid},
+			#{content}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_appstart SET 	
+			title = #{title},
+			img = #{img},
+			time = #{time},
+			link = #{link},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			lastupdate_date = #{lastupdateDate},
+			status = #{status},
+			type = #{type},
+			typeid = #{typeid},
+			content = #{content}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_appstart
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_appstart SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComAppstart" statementType="STATEMENT">
+		select * FROM com_appstart  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

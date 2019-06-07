@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.draft.ProductDraftMapper">
+    
+	<sql id="productDraftColumns">
+		a.id AS "id",
+		a.memberid AS "memberid",
+		a.languageid AS "languageid",
+		a.title AS "title",
+		a.cityid AS "cityid",
+		a.address AS "address",
+		a.day_num AS "dayNum",
+		a.adult_num AS "adultNum",
+		a.child_num AS "childNum",
+		a.bag_num AS "bagNum",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.create_date AS "createDate"
+	</sql>
+	
+	<sql id="productDraftJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ProductDraft" >
+		SELECT 
+			<include refid="productDraftColumns"/>
+		FROM product_draft a
+		<include refid="productDraftJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="myDraft" resultType="ProductDraft" >
+		SELECT 
+			0 AS "flag",
+			a.id AS "id",
+			a.title AS "title",
+			cc.city_name as "city",
+			a.begin_date AS "beginDate",
+			a.create_date AS "createDate",
+			(select coc.photo_url from product_draft_details b 
+			left join com_city coc on coc.id = b.city
+			where b.draftid=a.id and b.day=1 order by b.sort limit 1 )
+			as "cityImg"
+		FROM product_draft a
+		left join com_city cc on cc.id = a.cityid
+		where a.memberid = #{memberid} and a.languageid = #{languageid} 
+		order by a.create_date desc
+	</select>
+	<select id="findList" resultType="ProductDraft" >
+		SELECT 
+			<include refid="productDraftColumns"/>
+		FROM product_draft a
+		<include refid="productDraftJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProductDraft" >
+		SELECT 
+			<include refid="productDraftColumns"/>
+		FROM product_draft a
+		<include refid="productDraftJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO product_draft(
+			memberid,
+			languageid,
+			title,
+			cityid,
+			address,
+			day_num,
+			adult_num,
+			child_num,
+			bag_num,
+			begin_date,
+			end_date,
+			create_date
+		) VALUES (
+			#{memberid},
+			#{languageid},
+			#{title},
+			#{cityid},
+			#{address},
+			#{dayNum},
+			#{adultNum},
+			#{childNum},
+			#{bagNum},
+			#{beginDate},
+			#{endDate},
+			#{createDate}
+		)
+		<selectKey keyProperty="id" order="AFTER" resultType="String">
+			SELECT LAST_INSERT_ID() as "id"
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE product_draft SET 	
+			memberid = #{memberid},
+			languageid = #{languageid},
+			title = #{title},
+			cityid = #{cityid},
+			address = #{address},
+			day_num = #{dayNum},
+			adult_num = #{adultNum},
+			child_num = #{childNum},
+			bag_num = #{bagNum},
+			begin_date = #{beginDate},
+			end_date = #{endDate}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM product_draft
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE product_draft SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ProductDraft" statementType="STATEMENT">
+		select * FROM product_draft  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

@@ -1,0 +1,24 @@
+1.支付通用
+统一包： com.jeeplus.modules.base.pay.controller
+银联配置路径：properties/path.properties
+微信配置路径：properties/pay.properties
+支付宝配置路径:properties/jeeplus.properties
+
+以下配置文档：properties/jeeplus.properties
+2.短信：com.jeeplus.modules.base.sms.SMSUtil
+
+3.图片、音频、视频：com.jeeplus.modules.base.storage.QiniuUtils
+
+4.环信：com.jeeplus.modules.base.chat.huanxin
+环信注册：
+Map<String,Object>param = new HashMap<String,Object>();
+param.put("username","139227111111");
+param.put("password","123456");
+TalkHttpUtils.request(_Global.URL_USER,_Global.HTTP_METHOD_POST,param,UserUtils.getHuanXinToken(),null);
+
+5.推送
+极光：com.jeeplus.modules.base.push.jiguang.JpushClientUtil
+
+友盟：com.jeeplus.modules.base.push.umeng.PushUtils
+android推送：pushUtils.sendAndroidBroadcast("通知消息", "你有一条新的通知内容", title, null,null);
+ios推送：pushUtils.sendIOSBroadcast(title, null,null);

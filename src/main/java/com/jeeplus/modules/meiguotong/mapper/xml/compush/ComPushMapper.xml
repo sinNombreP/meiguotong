@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.compush.ComPushMapper">
+    
+	<sql id="comPushColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.content AS "content",
+		a.send AS "send",
+		a.send_type AS "sendType",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id"
+	</sql>
+	
+	<sql id="comPushJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComPush" >
+		SELECT 
+			<include refid="comPushColumns"/>
+		FROM com_push a
+		<include refid="comPushJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ComPush" >
+		SELECT 
+			<include refid="comPushColumns"/>
+		FROM com_push a
+		<include refid="comPushJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="content != null and content != ''">
+				AND a.content LIKE 
+					<if test="dbName == 'oracle'">'%'||#{content}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{content}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{content},'%')</if>
+			</if><if test="send != null and send != ''">
+				AND a.send = #{send}
+			</if>
+		</where>
+		order by a.create_date desc
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComPush" >
+		SELECT 
+			<include refid="comPushColumns"/>
+		FROM com_push a
+		<include refid="comPushJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+	<selectKey resultType="java.lang.Integer" keyProperty="pushid" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+		INSERT INTO com_push(
+			title,
+			content,
+			send,
+			send_type,
+			create_date,
+			create_by
+		) VALUES (
+			#{title},
+			#{content},
+			#{send},
+			#{sendType},
+			#{createDate},
+			#{createBy.id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_push SET 	
+			title = #{title},
+			content = #{content},
+			send = #{send},
+			send_type = #{sendType}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_push
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_push SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComPush" statementType="STATEMENT">
+		select * FROM com_push  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 消息推送_查询用户 -->
+	<select id="findnumber" resultType="ComPush" >
+		 select * from 
+			 (
+			select m.id as "memberid",mi.nick_name as "nickName", 
+			case m.type when '2' then 3	 
+				else 
+					case g.memberid when m.id then 1 else 2 
+					end 
+				end as sendType, 
+			#1.当地玩家2.直客3.旅行社 
+			case m.create_type when '1' then m.mobile 
+			else m.email 
+			end as number 
+			#注册类型：1.电话2.邮箱 
+			from member m 
+			left join guide g on m.id=g.memberid 
+			left join member_information mi on mi.memberid = m.id 
+			) as gg
+			 where 1=1 
+			<if test="sendType != null and sendType != ''">
+			and find_in_set(sendType,#{sendType})>0
+			</if>
+			<if test="memberids != null and memberids != ''">
+			and !find_in_set(memberid,#{memberids})>0
+			</if>
+			<if test="number != null and number != ''">
+			and number like concat('%',#{number},'%')
+			</if>
+		 
+	</select>
+	<insert id="insertPushPeople">
+		INSERT INTO com_push_people(
+			memberid,
+			pushid,
+			is_look,
+			title,
+			content,
+			create_date
+		) VALUES (
+			#{memberid},
+			#{pushid},
+			1,
+			#{title},
+			#{content},
+			#{createDate}
+		)
+	</insert>
+	
+	<select id="findAllUserId" resultType="java.lang.Integer" >
+		select id from member where del_flag=0 and status=1
+	</select>
+	
+	<select id="findComPushPeople" resultType="ComPush" >
+		 select m.id as "memberid",mi.nick_name as "nickName", 
+			case m.type when '2' then "旅行社"	 
+				else 
+					case g.memberid when m.id then "当地游客" else "直客" 
+					end 
+				end as StrsendType, 
+			#1.当地玩家2.直客3.旅行社 
+			case m.create_type when '1' then m.mobile 
+			else m.email 
+			end as number 
+			#注册类型：1.电话2.邮箱 
+			from com_push cp left join com_push_people cpp on cp.id=cpp.pushid
+			 left join member m on cpp.memberid=m.id
+			left join guide g on m.id=g.memberid 
+			left join member_information mi on mi.memberid = m.id 
+			
+			where cp.id=#{pushid}
+		 
+	</select>
+</mapper>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.module.ModuleNameMapper">
+    
+	<sql id="moduleNameColumns">
+		a.id AS "id",
+		a.module_name AS "moduleName",
+		a.module_type AS "moduleType",
+		a.module_size AS "moduleSize",
+		a.type AS "type"
+	</sql>
+	
+	<sql id="moduleNameJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ModuleName" >
+		SELECT 
+			<include refid="moduleNameColumns"/>
+		FROM module_name a
+		<include refid="moduleNameJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ModuleName" >
+		SELECT 
+			<include refid="moduleNameColumns"/>
+		FROM module_name a
+		<include refid="moduleNameJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ModuleName" >
+		SELECT 
+			<include refid="moduleNameColumns"/>
+		FROM module_name a
+		<include refid="moduleNameJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO module_name(
+			module_name,
+			module_type,
+			module_size,
+			type
+		) VALUES (
+			#{moduleName},
+			#{moduleType},
+			#{moduleSize},
+			#{type}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE module_name SET 	
+			module_name = #{moduleName},
+			module_type = #{moduleType},
+			module_size = #{moduleSize},
+			type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM module_name
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE module_name SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ModuleName" statementType="STATEMENT">
+		select * FROM module_name  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

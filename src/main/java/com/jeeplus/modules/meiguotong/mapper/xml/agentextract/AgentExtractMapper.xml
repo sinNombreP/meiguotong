@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.agentextract.AgentExtractMapper">
+    
+	<sql id="agentExtractColumns">
+		a.id AS "id",
+		a.no AS "no",
+		a.count AS "count",
+		a.extract AS "extract",
+		a.people AS "people",
+		a.pay AS "pay",
+		a.rank AS "rank",
+		a.create_date AS "createDate",
+		a.status AS "status",
+		a.orderids AS "orderids",
+		a.agentid AS "agentid",
+		a.agent_name AS "agentName"
+	</sql>
+	
+	<sql id="agentExtractJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="AgentExtract" >
+		SELECT 
+			<include refid="agentExtractColumns"/>
+		FROM agent_extract a
+		<include refid="agentExtractJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="AgentExtract" >
+		SELECT 
+			<include refid="agentExtractColumns"/>
+		FROM agent_extract a
+		<include refid="agentExtractJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="AgentExtract" >
+		SELECT 
+			<include refid="agentExtractColumns"/>
+		FROM agent_extract a
+		<include refid="agentExtractJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO agent_extract(
+			no,
+			count,
+			extract,
+			people,
+			pay,
+			rank,
+			create_date,
+			status,
+			orderids,
+			agentid,
+			agent_name
+		) VALUES (
+			#{no},
+			#{count},
+			#{extract},
+			#{people},
+			#{pay},
+			#{rank},
+			#{createDate},
+			1,
+			#{orderids},
+			#{agentid},
+			#{agentName}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE agent_extract SET 	
+			no = #{no},
+			count = #{count},
+			extract = #{extract},
+			people = #{people},
+			pay = #{pay},
+			`rank` = #{rank},
+			status = #{status},
+			orderids = #{orderids},
+			agentid = #{agentid},
+			agent_name = #{agentName} 
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM agent_extract
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE agent_extract SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="AgentExtract" statementType="STATEMENT">
+		select * FROM agent_extract  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findAgentExtractByAgentId" resultType="AgentExtract" >
+		SELECT 
+			<include refid="agentExtractColumns"/>
+		FROM agent_extract a
+		<include refid="agentExtractJoins"/>
+		WHERE 1=1
+		<if test="agentid != null and agentid != '' ">
+		and a.agentid=#{agentid}
+		</if>
+		<if test="status != null and status != '' ">
+		and a.status=#{status}
+		</if>
+		<if test="no != null and no != '' ">
+		and a.no like concat('%',#{no},'%')
+		</if>
+	</select>
+</mapper>

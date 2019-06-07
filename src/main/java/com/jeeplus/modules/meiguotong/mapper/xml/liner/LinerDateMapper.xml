@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.liner.LinerDateMapper">
+    
+	<sql id="linerDateColumns">
+		a.id AS "id",
+		a.lineid AS "lineid",
+		a.start_date AS "startDate",
+		a.price AS "price"
+	</sql>
+	
+	<sql id="linerDateJoins">
+		
+	</sql>
+	
+    
+     <select id="getDateList" resultType="LinerDate" >
+		SELECT 
+			a.start_date AS "date",
+	    	a.price AS "price"	
+		FROM liner_date a
+		where DATE_FORMAT(a.start_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		and DATE_FORMAT(#{endDate}, '%Y-%m-%d')>DATE_FORMAT(a.start_date, '%Y-%m-%d')
+		and DATE_FORMAT(a.start_date, '%Y-%m-%d')>=DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+		and a.lineid=#{lineid}
+		order by a.start_date
+	</select>
+	<select id="get" resultType="LinerDate" >
+		SELECT 
+			<include refid="linerDateColumns"/>
+		FROM liner_date a
+		<include refid="linerDateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="LinerDate" >
+		SELECT 
+			<include refid="linerDateColumns"/>
+		FROM liner_date a
+		<include refid="linerDateJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="LinerDate" >
+		SELECT 
+			<include refid="linerDateColumns"/>
+		FROM liner_date a
+		<include refid="linerDateJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO liner_date(
+			lineid,
+			start_date,
+			price
+		) VALUES (
+			#{lineid},
+			#{startDate},
+			#{price}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE liner_date SET 	
+			lineid = #{lineid},
+			start_date = #{startDate},
+			price = #{price}
+		WHERE id = #{id}
+	</update>
+	
+	
+		<!--物理删除-->
+	<update id="deleteByLinerLineId">
+		DELETE FROM liner_date
+		WHERE lineid = #{lineid}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM liner_date
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE liner_date SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="LinerDate" statementType="STATEMENT">
+		select * FROM liner_date  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.hotel.OrderHotelMapper">
+    
+	<sql id="orderHotelColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.hotel_id AS "hotelId",
+		a.after_no AS "afterNo",
+		a.order_no AS "orderNo",
+		a.product_name AS "productName",
+		a.member_id AS "memberId",
+		a.price AS "price",
+		a.status AS "status",
+		a.contacts AS "contacts",
+		a.contact_mobile AS "contactMobile",
+		a.contact_remark AS "contactRemark",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.pay_way AS "payWay",
+		a.pay_date AS "payDate",
+		a.refund_info AS "refundInfo",
+		a.refund_reason AS "refundReason",
+		a.use_date AS "useDate",
+		a.agentid AS "agentid",
+		a.refund_price AS "refundPrice",
+		a.start_date AS "startDate",
+		a.city AS "city",
+		a.cityName AS "cityName",
+		a.order_sys1 AS "orderSys1",
+		a.order_sys2 AS "orderSys2",
+		a.pay_no AS "payNo",
+		c.company_name AS "companyName",
+		if(f.type=1,d.nick_name,e.company_name) AS "nickName",
+		c.mobile AS "mobile"
+		
+	</sql>
+	
+	<sql id="orderHotelJoins">
+		LEFT JOIN sys_user c ON a.agentid = c.agentid AND c.fatherid = 0
+		LEFT JOIN member f ON a.member_id = f.id
+		LEFT JOIN member_information d ON a.member_id = d.memberid
+		left join member_travel e on a.member_id = e.memberid
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderHotel" >
+		SELECT 
+			<include refid="orderHotelColumns"/>,
+			o.adult_num AS "adultNum",
+		o.child_num AS "childNum",
+		o.remark AS "remark",
+		h.hotelNo,h.img_url AS "hotelImgUrl",
+		h.name AS "hotelName",h.address AS "hotelAddress"
+		FROM order_hotel a
+		<include refid="orderHotelJoins"/>
+		left join order_sys o on a.order_sys1=o.id
+		left join hotel h on a.hotel_id=h.id
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderHotel" >
+		SELECT 
+			<include refid="orderHotelColumns"/>,
+			f.type as "memberType"
+			
+		FROM order_hotel a
+		<include refid="orderHotelJoins"/>
+		
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="agentid != null">
+				AND a.agentid = #{agentid}
+			</if>
+			<if test="type==1">
+				AND a.status &lt;= 6
+			</if>
+			<if test="type==2">
+				AND a.status &gt;=7
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND (
+				a.order_no LIKE concat('%',#{searchContent},'%')
+				OR a.product_name LIKE concat('%',#{searchContent},'%')
+				OR a.member_id =#{searchContent}
+				)
+			</if>
+			<if test="dataFlag==1">
+				AND to_days(a.create_date)= to_days(now())
+			</if>
+			<if test="dataFlag==2">
+				AND to_days(a.start_date)= to_days(now())
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+				AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(a.start_date, '%Y-%m-%d')
+				and DATE_FORMAT(a.start_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+			</if>
+			<if test="memberType != null and memberType!=''">
+				AND f.type = #{memberType}
+			</if>
+			<if test="nickName != null and nickName!=''">
+				AND if(f.type=1,d.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据订单Id和时间查询酒店 -->
+	<select id="getInforByDate" resultType="OrderHotel">
+		SELECT 
+			e.name AS "hotelName"
+		FROM order_sys a
+		INNER  JOIN order_sys b ON a.fatherid = b.id 
+		INNER  JOIN order_sys c ON a.fatherid = c.fatherid 
+		LEFT JOIN  order_hotel d ON c.orderid = d.id
+		LEFT JOIN hotel e ON d.hotel_id = e.id
+		WHERE   a.orderid = #{id}  AND a.type= 11 AND c.fatherid = b.id  AND c.type = 9 AND d.create_date = #{useDate} LIMIT 1
+	</select>
+	
+	<select id="findAllList" resultType="OrderHotel" >
+		SELECT 
+			<include refid="orderHotelColumns"/>
+		FROM order_hotel a
+		<include refid="orderHotelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_hotel(
+			hotel_id,
+			name,
+			after_no,
+			order_no,
+			product_name,
+			member_id,
+			price,
+			status,
+			contacts,
+			contact_mobile,
+			contact_remark,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			pay_way,
+			pay_date,
+			refund_info,
+			refund_reason,
+			use_date,
+			agentid,
+			refund_price
+		) VALUES (
+			#{hotelId},
+			#{name},
+			#{afterNo},
+			#{orderNo},
+			#{productName},
+			#{memberId},
+			#{price},
+			#{status},
+			#{contacts},
+			#{contactMobile},
+			#{contactRemark},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{payWay},
+			#{payDate},
+			#{refundInfo},
+			#{refundReason},
+			#{useDate},
+			#{agentid},
+			#{refundPrice}
+		)
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+			select LAST_INSERT_ID() as id
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE order_hotel SET 	
+			hotel_id = #{hotelId},
+			name = #{name},
+			after_no = #{afterNo},
+			order_no = #{orderNo},
+			product_name = #{productName},
+			member_id = #{memberId},
+			price = #{price},
+			status = #{status},
+			contacts = #{contacts},
+			contact_mobile = #{contactMobile},
+			contact_remark = #{contactRemark},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			pay_way = #{payWay},
+			pay_date = #{payDate},
+			refund_info = #{refundInfo},
+			refund_reason = #{refundReason},
+			use_date = #{useDate},
+			agentid = #{agentid},
+			refund_price = #{refundPrice}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_hotel
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_hotel SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderHotel" statementType="STATEMENT">
+		select * FROM order_hotel  where ${propertyName} = '${value}'
+	</select>
+	<sql id="set_column">
+		<if test="orderSys1 != null ">
+			order_sys1 = #{orderSys1} ,
+		</if>
+		<if test="orderSys2 != null ">
+			order_sys2 = #{orderSys2} ,
+		</if>
+		<if test="hotelId != null ">
+			hotel_id = #{hotelId},
+		</if>
+		<if test="name != null ">
+			name = #{name},
+		</if>
+		<if test="afterNo != null ">
+			after_no = #{afterNo},
+		</if>
+		<if test="orderNo != null ">
+			order_no = #{orderNo},
+		</if>
+		<if test="productName != null ">
+			product_name = #{productName},
+		</if>
+		<if test="memberId != null ">
+			member_id = #{memberId},
+		</if>
+		<if test="price != null ">
+			price = #{price},
+		</if>
+		<if test="status != null ">
+			status = #{status},
+		</if>
+		<if test="contacts != null ">
+			contacts = #{contacts},
+		</if>
+		<if test="contactMobile != null ">
+			contact_mobile = #{contactMobile},
+		</if>
+		<if test="contactRemark != null ">
+			contact_remark = #{contactRemark},
+		</if>
+		<if test="updateDate != null ">
+			update_date = #{updateDate},
+		</if>
+		<if test="updateBy != null ">
+			update_by = #{updateBy.id},
+		</if>
+		<if test="delDate != null ">
+			del_date = #{delDate},
+		</if>
+		<if test="delBy != null ">
+			del_by = #{delBy},
+		</if>
+		<if test="languageId != null ">
+			language_id = #{languageId},
+		</if>
+		<if test="payWay != null ">
+			pay_way = #{payWay},
+		</if>
+		<if test="payDate != null ">
+			pay_date = #{payDate},
+		</if>
+		<if test="payNo != null ">
+			pay_no = #{payNo},
+		</if>
+		<if test="refundInfo != null ">
+			refund_info = #{refundInfo},
+		</if>
+		<if test="refundReason != null ">
+			refund_reason = #{refundReason},
+		</if>
+		<if test="useDate != null ">
+			use_date = #{useDate},
+		</if>
+		<if test="agentid != null ">
+			agentid = #{agentid},
+		</if>
+		<if test="refundPrice != null ">
+			refund_price = #{refundPrice}
+		</if>
+	</sql>
+	
+	<update id="updateObject">
+		UPDATE order_hotel 
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+	</update>
+	
+	<select id="findhotelDetailByOrderSys2" resultType="OrderHotel" >
+		SELECT 
+			<include refid="orderHotelColumns"/>
+		FROM order_hotel a
+		<include refid="orderHotelJoins"/>
+		WHERE a.order_sys2 = #{orderSys2}
+	</select>
+	<update id="updateObject2">
+		UPDATE order_hotel 
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+		<if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+		<if test="orderSys2 != null ">
+			and order_sys2 = #{orderSys2,jdbcType=INTEGER}
+		</if>
+	</update>
+</mapper>

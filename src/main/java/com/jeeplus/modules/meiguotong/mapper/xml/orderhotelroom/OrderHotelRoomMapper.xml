@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.orderhotelroom.OrderHotelRoomMapper">
+    
+	<sql id="orderHotelRoomColumns">
+		a.id AS "id",
+		a.order_hotel_id AS "orderHotelId",
+		a.room_id AS "roomId",
+		a.room_name AS "roomName",
+		a.room_date AS "roomDate",
+		a.room_day AS "roomDay",
+		a.price AS "price",
+		a.hotel_id AS "hotelId",
+		a.name AS "name",
+		a.people AS "people",
+		a.img_url AS "imgUrl",
+		a.content AS "content",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy.id",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.agentid AS "agentid",
+		a.num AS "num"
+	</sql>
+	
+	<sql id="orderHotelRoomJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderHotelRoom" >
+		SELECT 
+			<include refid="orderHotelRoomColumns"/>
+		FROM order_hotel_room a
+		<include refid="orderHotelRoomJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderHotelRoom" >
+		SELECT 
+			<include refid="orderHotelRoomColumns"/>
+		FROM order_hotel_room a
+		<include refid="orderHotelRoomJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderHotelRoom" >
+		SELECT 
+			<include refid="orderHotelRoomColumns"/>
+		FROM order_hotel_room a
+		<include refid="orderHotelRoomJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_hotel_room(
+			order_hotel_id,
+			room_id,
+			room_name,
+			room_date,
+			room_day,
+			price,
+			hotel_id,
+			name,
+			people,
+			img_url,
+			content,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			agentid,
+			num
+		) VALUES (
+			#{orderHotelId},
+			#{roomId},
+			#{roomName},
+			#{roomDate},
+			#{roomDay},
+			#{price},
+			#{hotelId},
+			#{name},
+			#{people},
+			#{imgUrl},
+			#{content},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy.id},
+			#{delFlag},
+			#{languageId},
+			#{agentid},
+			#{num}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE order_hotel_room SET 	
+			order_hotel_id = #{orderHotelId},
+			room_id = #{roomId},
+			room_name = #{roomName},
+			room_date = #{roomDate},
+			room_day = #{roomDay},
+			price = #{price},
+			hotel_id = #{hotelId},
+			name = #{name},
+			people = #{people},
+			img_url = #{imgUrl},
+			content = #{content},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy.id},
+			language_id = #{languageId},
+			agentid = #{agentid},
+			num = #{num}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_hotel_room
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_hotel_room SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderHotelRoom" statementType="STATEMENT">
+		select * FROM order_hotel_room  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 根据orderhotelID获取信息 -->
+	<select id="findByOrderhotelID" resultType="OrderHotelRoom" >
+		SELECT 
+			<include refid="orderHotelRoomColumns"/>
+		FROM order_hotel_room a
+		<include refid="orderHotelRoomJoins"/>
+		WHERE a.order_hotel_id = #{orderHotelId}
+	</select>
+	<!-- 旅游定制查找酒店房间信息 -->
+	<select id="findHotelByOrderSys" resultType="OrderHotelRoom" >
+		select h.name as "hotelName",o.room_name as "roomName",o.num
+		from order_hotel a left join order_hotel_room o on a.id=o.order_hotel_id
+		left join hotel h on a.hotel_id=h.id 
+		where a.order_sys1=#{0} and date(a.create_date)=date(#{1})
+	</select>
+	
+	<!-- 获取酒店日程 -->
+	<select id="findHotelRoomByOrderHotelId" resultType="OrderHotelRoom" >
+	select a.room_date as "roomDate",a.name from  order_hotel_room a 
+		where a.order_hotel_id=#{orderHotelId} group by a.room_date,a.name order by a.room_date,a.name
+	</select>
+	<!-- 获取酒店日程详情 -->
+	<select id="findHotelRoomByRoomDate" resultType="OrderHotelRoom" >
+		SELECT 
+			<include refid="orderHotelRoomColumns"/>
+		FROM order_hotel_room a
+		<include refid="orderHotelRoomJoins"/>
+		WHERE a.order_hotel_id=#{id} and DATE_FORMAT(a.room_date, '%Y-%m-%d')=DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+	</select>
+	
+	
+</mapper>

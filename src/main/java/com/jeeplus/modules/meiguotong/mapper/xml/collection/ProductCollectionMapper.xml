@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.collection.ProductCollectionMapper">
+    
+	<sql id="productCollectionColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.typeid AS "typeid",
+		a.memberid AS "memberid",
+		a.languageid AS "languageid"
+	</sql>
+	
+	<sql id="productCollectionJoins">
+		
+	</sql>
+	
+    <select id="judgeCollection" resultType="Integer" >
+		SELECT 
+			count(a.id)
+		FROM product_collection a
+		WHERE a.type = #{type} and a.memberid = #{memberid}
+		and a.typeid = #{typeid}
+	</select>
+	<select id="get" resultType="ProductCollection" >
+		SELECT 
+			<include refid="productCollectionColumns"/>
+		FROM product_collection a
+		<include refid="productCollectionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取我的路线/参团收藏列表 -->
+	<select id="myCollectionRoute" resultType="ProductCollection" >
+		SELECT 
+			a.id as "id",
+			route.id as "routeid",
+			route.title as "name",
+			route.car_img as "img",
+			route.look_num as "lookNum",
+			route.collection_num as "collectionNum",
+			route.comment_num as "commentNum",
+			route.finish_num as "finishNum",
+			route.star as "star",
+			route.price as "price",
+			cc.city_name as "cityName",
+			ifnull((select GROUP_CONCAT(tag.content) from com_tag tag 
+				where FIND_IN_SET(tag.id,route.label_attrid)>0),"") as "tagContent"
+		FROM product_collection a
+		left join route route on route.id=a.typeid
+		left join com_city cc on cc.id=route.end_city
+		<where>
+			a.type = #{type} and a.memberid = #{memberid} and a.languageid = #{languageid} 
+			and route.del_flag=0
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				order by a.id desc
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 获取我的游轮收藏列表 -->
+	<select id="myCollectionLiner" resultType="ProductCollection" >
+		SELECT 
+			a.id as "id",
+			ll.id as "linerid",
+			ll.img_url as "img",
+			ll.name as "name",
+			ll.price as "price"
+		FROM product_collection a
+		left join liner_line ll on ll.id=a.typeid
+		<where>
+			a.type = 4 and a.memberid = #{memberid} and a.languageid = #{languageid} 
+			and ll.del_flag=0
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				order by a.id desc
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 获取我的当地玩家收藏列表 -->
+	<select id="myCollectionGuide" resultType="ProductCollection" >
+		SELECT 
+			a.id as "id",
+			guide.id as "guideid",
+			guide.real_name  as "name",
+			guide.introduction as "introduction",
+			gt.price as "price",
+			mi.photo as "img",
+			cc.city_name as "cityName",
+			country.title as "countryName"
+		FROM product_collection a
+		left join guide guide on guide.id=a.typeid
+		left join guide_time gt on gt.guideid=guide.id
+		left join member_information mi on mi.memberid=guide.memberid
+		left join com_city cc on cc.id=guide.cityid
+		left join country country on country.id=guide.countryid
+		<where>
+			a.type = 3 and a.memberid = #{memberid} and a.languageid = #{languageid} 
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				order by a.id desc
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 获取我的景点收藏列表 -->
+	<select id="myCollectionScenic" resultType="ProductCollection" >
+		SELECT 
+			a.id as "id",
+			scenic.id as "scenicid",
+			scenic.name  as "name",
+			scenic.img_url as "img",
+			scenic.look_num as "lookNum",
+			scenic.collection_num as "collectionNum",
+			scenic.comment_num as "commentNum",
+			scenic.finish_num as "finishNum",
+			scenic.star as "star"
+		FROM product_collection a
+		left join scenic_spot scenic on scenic.id=a.typeid
+		<where>
+			a.type = 5 and a.memberid = #{memberid} and a.languageid = #{languageid} 
+			and scenic.del_flag=0
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				order by a.id desc
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findList" resultType="ProductCollection" >
+		SELECT 
+			<include refid="productCollectionColumns"/>
+		FROM product_collection a
+		<include refid="productCollectionJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProductCollection" >
+		SELECT 
+			<include refid="productCollectionColumns"/>
+		FROM product_collection a
+		<include refid="productCollectionJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO product_collection(
+			type,
+			typeid,
+			memberid,
+			languageid
+		) VALUES (
+			#{type},
+			#{typeid},
+			#{memberid},
+			#{languageid}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE product_collection SET 	
+			type = #{type},
+			typeid = #{typeid},
+			memberid = #{memberid},
+			languageid = #{languageid}
+		WHERE id = #{id}
+	</update>
+	<!-- 取消收藏 （单个）-->
+	<update id="deleteCollection">
+		DELETE FROM product_collection
+		WHERE type = #{type} and memberid = #{memberid}
+				and typeid = #{typeid}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM product_collection
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE product_collection SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ProductCollection" statementType="STATEMENT">
+		select * FROM product_collection  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

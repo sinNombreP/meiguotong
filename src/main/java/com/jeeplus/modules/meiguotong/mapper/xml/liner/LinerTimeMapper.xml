@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.liner.LinerTimeMapper">
+    
+	<sql id="linerTimeColumns">
+		a.id AS "id",
+		a.lineid AS "lineid",
+		a.date_type AS "dateType",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.week_date AS "weekDate",
+		a.day_date AS "dayDate"
+	</sql>
+	
+	<sql id="linerTimeJoins">
+		
+	</sql>
+	
+    
+    <select id="getLinerTime" resultType="LinerTime" >
+		SELECT 
+			<include refid="linerTimeColumns"/>
+		FROM liner_time a
+		<include refid="linerTimeJoins"/>
+		WHERE a.lineid = #{lineid} order by a.id desc limit 1
+	</select>
+	<select id="get" resultType="LinerTime" >
+		SELECT 
+			<include refid="linerTimeColumns"/>
+		FROM liner_time a
+		<include refid="linerTimeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="LinerTime" >
+		SELECT 
+			<include refid="linerTimeColumns"/>
+		FROM liner_time a
+		<include refid="linerTimeJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="LinerTime" >
+		SELECT 
+			<include refid="linerTimeColumns"/>
+		FROM liner_time a
+		<include refid="linerTimeJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO liner_time(
+			lineid,
+			date_type,
+			begin_date,
+			end_date,
+			week_date,
+			day_date
+		) VALUES (
+			#{lineid},
+			#{dateType},
+			#{beginDate},
+			#{endDate},
+			#{weekDate},
+			#{dayDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE liner_time SET 	
+			lineid = #{lineid},
+			date_type = #{dateType},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			week_date = #{weekDate},
+			day_date = #{dayDate}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="deleteByLinerLineId">
+		DELETE FROM liner_time
+		WHERE lineid = #{lineid}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM liner_time
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE liner_time SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="LinerTime" statementType="STATEMENT">
+		select * FROM liner_time  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

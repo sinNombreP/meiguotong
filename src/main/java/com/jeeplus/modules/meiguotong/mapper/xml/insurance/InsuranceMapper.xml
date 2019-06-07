@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.insurance.InsuranceMapper">
+    
+	<sql id="insuranceColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.price AS "price",
+		a.status AS "status",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.content AS "content",
+		a.agentid AS "agentid"
+	</sql>
+	
+	<sql id="insuranceJoins">
+		
+	</sql>
+	
+    <!-- 根据语言供应商获取项目关联保险还未选择的保险列表 -->
+    <select id="getInsuranceRelationMod" resultType="Insurance" >
+		SELECT 
+			a.id AS "id",
+			a.name AS "name",
+			if(FIND_IN_SET(a.id,#{insuranceId})>0,1,2) as "checkedFlag"
+		FROM insurance a
+		WHERE a.language_id = #{languageId} and a.agentid = #{agentid}
+			and a.status = 3
+	</select>
+	
+	
+	<select id="get" resultType="Insurance" >
+		SELECT 
+			<include refid="insuranceColumns"/>
+		FROM insurance a
+		<include refid="insuranceJoins"/>
+		WHERE a.id = #{id} 
+	</select>
+	<!-- 查找保险的数据 -->
+	<select id="findByMemberid" resultType="Insurance" >
+		SELECT 
+			<include refid="insuranceColumns"/>
+		FROM insurance a
+		WHERE a.member_id = #{memberId}
+	</select>
+	<select id="findList" resultType="Insurance" >
+		SELECT 
+			<include refid="insuranceColumns"/>
+		FROM insurance a
+		<include refid="insuranceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="name != null and name != ''">
+				AND (a.name LIKE concat('%',#{name},'%') ON a.id=#{name} )
+			</if>
+			<if test="languageId != null">
+				AND a.language_id= #{languageId}
+			</if>
+			<if test="status != null">
+				AND a.status= #{status}
+			</if>
+			<if test="agentid != null">
+				AND a.agentid= #{agentid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据订单ID和type获取保险信息-->
+	<select id="getInfo" resultType="Insurance" >
+		SELECT 		
+				d.name AS "name",
+				d.price AS "price",
+				c.num AS "num"
+		FROM order_sys a 
+		INNER JOIN  order_sys b ON a.fatherid = b.fatherid 
+		LEFT JOIN order_insurance c ON b.orderid = c.id
+		LEFT JOIN insurance d ON c.insuranceid = d.id
+		WHERE   a.type=#{type}  AND b.type=#{toType}  
+		AND a.fatherid !=0 AND b.fatherid !=0 AND a.orderid=#{typeId}
+	</select>
+	
+	<select id="findAllList" resultType="Insurance" >
+		SELECT 
+			<include refid="insuranceColumns"/>
+		FROM insurance a
+		<include refid="insuranceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO insurance(
+			agentid,
+			name,
+			price,
+			status,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			content
+		) VALUES (
+			#{agentid},
+			#{name},
+			#{price},
+			1,
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{content}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE insurance SET 	
+			name = #{name},
+			price = #{price},
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			content = #{content}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM insurance
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE insurance SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Insurance" statementType="STATEMENT">
+		select * FROM insurance  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="productCar_findInsurance" resultType="Insurance" >
+		SELECT 
+			<include refid="insuranceColumns"/>
+		FROM insurance a
+		<include refid="insuranceJoins"/>
+		WHERE FIND_IN_SET(a.id,(select insurance_id from insurance_relation_mod where type=#{type}))
+	</select>
+	
+</mapper>

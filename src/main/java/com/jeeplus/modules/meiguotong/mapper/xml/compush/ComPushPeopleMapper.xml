@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.compush.ComPushPeopleMapper">
+    
+	<sql id="comPushPeopleColumns">
+		a.id AS "id",
+		a.memberid AS "memberid",
+		a.pushid AS "pushid",
+		a.is_look AS "isLook",
+		a.title AS "title",
+		a.content AS "content",
+		a.create_date AS "createDate"
+	</sql>
+	
+	<sql id="comPushPeopleJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComPushPeople" >
+		SELECT 
+			<include refid="comPushPeopleColumns"/>
+		FROM com_push_people a
+		<include refid="comPushPeopleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取消息中心系统消息接口 -->
+	<select id="getCompush" resultType="ComPushPeople" >
+		SELECT 
+			a.title AS "title",
+			a.content AS "content",
+			a.create_date AS "createDate"
+		FROM com_push_people a
+		<where>
+			a.memberid = #{memberid} 
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findList" resultType="ComPushPeople" >
+		SELECT 
+			<include refid="comPushPeopleColumns"/>
+		FROM com_push_people a
+		<include refid="comPushPeopleJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComPushPeople" >
+		SELECT 
+			<include refid="comPushPeopleColumns"/>
+		FROM com_push_people a
+		<include refid="comPushPeopleJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_push_people(
+			memberid,
+			pushid,
+			is_look,
+			title,
+			content,
+			create_date
+		) VALUES (
+			#{memberid},
+			#{pushid},
+			#{isLook},
+			#{title},
+			#{content},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_push_people SET 	
+			memberid = #{memberid},
+			pushid = #{pushid},
+			is_look = #{isLook},
+			title = #{title},
+			content = #{content}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_push_people
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_push_people SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComPushPeople" statementType="STATEMENT">
+		select * FROM com_push_people  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

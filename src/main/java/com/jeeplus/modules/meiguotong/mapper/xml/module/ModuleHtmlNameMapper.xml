@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.module.ModuleHtmlNameMapper">
+    
+	<sql id="moduleHtmlNameColumns">
+		a.id AS "id",
+		a.module_html_id AS "moduleHtmlId",
+		a.module_name_id AS "moduleNameId",
+		a.language_id AS "languageId",
+		a.sort AS "sort"
+	</sql>
+	
+	<sql id="moduleNameColumns">
+		b.module_name AS "moduleName",
+		b.module_type AS "moduleType",
+		b.module_size AS "moduleSize",
+		b.type AS "type"
+	</sql>
+	
+	<sql id="moduleHtmlNameJoins">
+		
+	</sql>
+	
+	<!-- 获取关联模块 -->
+    <select id="getModuleHtmlNameList" resultType="ModuleHtmlName" >
+		SELECT 
+			<include refid="moduleHtmlNameColumns"/>,
+			<include refid="moduleNameColumns"/>
+		FROM module_html_name a
+		LEFT JOIN module_name b ON a.module_name_id = b.id
+		WHERE a.language_id = #{languageId} AND a.module_html_id = #{moduleHtmlId}
+		ORDER By a.sort
+    </select>
+    
+	<select id="get" resultType="ModuleHtmlName" >
+		SELECT 
+			<include refid="moduleHtmlNameColumns"/>
+		FROM module_html_name a
+		<include refid="moduleHtmlNameJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ModuleHtmlName" >
+		SELECT 
+			<include refid="moduleHtmlNameColumns"/>
+		FROM module_html_name a
+		<include refid="moduleHtmlNameJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ModuleHtmlName" >
+		SELECT 
+			<include refid="moduleHtmlNameColumns"/>
+		FROM module_html_name a
+		<include refid="moduleHtmlNameJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO module_html_name(
+			module_html_id,
+			module_name_id,
+			language_id,
+			sort
+		) VALUES (
+			#{moduleHtmlId},
+			#{moduleNameId},
+			#{languageId},
+			#{sort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE module_html_name SET 	
+			module_html_id = #{moduleHtmlId},
+			module_name_id = #{moduleNameId},
+			language_id = #{languageId},
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM module_html_name
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE module_html_name SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ModuleHtmlName" statementType="STATEMENT">
+		select * FROM module_html_name  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

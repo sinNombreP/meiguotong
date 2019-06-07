@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.member.MemberDiscountMapper">
+    
+	<sql id="memberDiscountColumns">
+		a.id AS "id",
+		a.memberid AS "memberid",
+		a.type AS "type",
+		a.stock AS "stock",
+		a.price AS "price",
+		a.create_date AS "createDate"
+	</sql>
+	
+	<sql id="memberDiscountJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="MemberDiscount" >
+		SELECT 
+			<include refid="memberDiscountColumns"/>
+		FROM member_discount a
+		<include refid="memberDiscountJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取账号优惠信息 -->
+	<select id="getDiscountInfo" resultType="MemberDiscount" >
+		SELECT 
+			a.type AS "type",
+			a.stock AS "stock",
+			a.price AS "price"
+		FROM member_discount a
+		where a.memberid = #{memberid}
+	</select>
+	<select id="findList" resultType="MemberDiscount" >
+		SELECT 
+			<include refid="memberDiscountColumns"/>
+		FROM member_discount a
+		<include refid="memberDiscountJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="memberid != null and memberid != ''">
+				AND a.memberid = #{memberid}
+			</if>
+		</where>
+			ORDER BY a.create_date  DESC
+
+	</select>
+	
+	<select id="findAllList" resultType="MemberDiscount" >
+		SELECT 
+			<include refid="memberDiscountColumns"/>
+		FROM member_discount a
+		<include refid="memberDiscountJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO member_discount(
+			memberid,
+			type,
+			stock,
+			price,
+			create_date
+		) VALUES (
+			#{memberid},
+			#{type},
+			#{stock},
+			#{price},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE member_discount SET 	
+			memberid = #{memberid},
+			type = #{type},
+			stock = #{stock},
+			price = #{price}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM member_discount
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE member_discount SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="MemberDiscount" statementType="STATEMENT">
+		select * FROM member_discount  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

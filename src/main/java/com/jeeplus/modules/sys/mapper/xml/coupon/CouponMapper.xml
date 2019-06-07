@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.coupon.CouponMapper">
+    
+	<sql id="couponColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.descrption AS "descrption",
+		a.stock AS "stock",
+		a.price AS "price",
+		a.status AS "status",
+		a.category AS "category",
+		a.category_name AS "categoryName",
+		a.use_type AS "useType",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.type AS "type",
+		a.type_way AS "typeWay",
+		a.all_num AS "allNum",
+		a.use_num AS "useNum",
+		a.have_num AS "haveNum",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_flg AS "delFlg",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.QR_code AS "QRcode"
+	</sql>
+	
+	<sql id="couponJoins">
+		
+	</sql>
+	
+	<!--通过二维码获取优惠卷信息-->
+	<select id="getCouponByQRcode" resultType="Coupon">
+		SELECT
+		<include refid="couponColumns" />
+		FROM coupon a
+		<where>
+		    a.QR_code = #{QRcode} and a.status = 1 and a.end_date &gt;= now() and a.del_flg = 0
+		</where>
+		    limit 0,1
+	</select>
+	
+	<!--个人获取优惠卷-->
+	<update id="getCoupon">
+		UPDATE coupon SET 
+			have_num = #{haveNum}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findCouponList" resultType="Coupon">
+		SELECT
+		<include refid="couponColumns" />
+		FROM coupon_people b 
+		left join coupon a  on a.id = b.couponId
+		<where>
+			b.memberId=#{memberId} and a.status = 1 and b.status =1 and a.end_date &gt;= now()
+		</where>
+		order by a.end_date asc
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+		</choose>
+	</select>
+	
+	<select id="findSysCouponLists" resultType="Coupon">
+		SELECT
+		<include refid="couponColumns" />,
+		b.memberid as "memberId"
+		
+		FROM coupon a 
+		left join coupon_people b  on a.id = b.couponId
+		<where>
+			(b.memberid=#{memberId} or a.type_way =1 ) and a.status = 1 
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findQRcode" resultType="Coupon" >
+		SELECT 
+			<include refid="couponColumns"/>
+		FROM coupon a
+		<include refid="couponJoins"/>
+		WHERE a.QR_code = #{QRcode} limit 0,1
+	</select>
+    
+	<select id="get" resultType="Coupon" >
+		SELECT 
+			<include refid="couponColumns"/>
+		FROM coupon a
+		<include refid="couponJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Coupon" >
+		SELECT 
+			<include refid="couponColumns"/>
+		FROM coupon a
+		<include refid="couponJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Coupon" >
+		SELECT 
+			<include refid="couponColumns"/>
+		FROM coupon a
+		<include refid="couponJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO coupon(
+			title,
+			descrption,
+			stock,
+			price,
+			status,
+			category,
+			category_name,
+			use_type,
+			begin_date,
+			end_date,
+			type,
+			type_way,
+			all_num,
+			use_num,
+			have_num,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_flg,
+			del_date,
+			del_by,
+			QR_code
+		) VALUES (
+			#{title},
+			#{descrption},
+			#{stock},
+			#{price},
+			1,
+			#{category},
+			#{categoryName},
+			#{useType},
+			#{beginDate},
+			#{endDate},
+			#{type},
+			#{typeWay},
+			#{allNum},
+			#{useNum},
+			#{haveNum},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			0,
+			#{delDate},
+			#{delBy},
+			#{QRcode}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE coupon SET 	
+			title = #{title},
+			descrption = #{descrption},
+			stock = #{stock},
+			price = #{price},
+			status = #{status},
+			category = #{category},
+			category_name = #{categoryName},
+			use_type = #{useType},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			type = #{type},
+			type_way = #{typeWay},
+			all_num = #{allNum},
+			use_num = #{useNum},
+			have_num = #{haveNum},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_flg = #{delFlg},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			QR_code = #{QRcode}
+		WHERE id = #{id}
+	</update>
+	
+	<!--更改状态-->
+	<update id="status">
+		UPDATE coupon SET 
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		UPDATE coupon SET 
+			del_flg = 1
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE coupon SET 
+			del_flg = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Coupon" statementType="STATEMENT">
+		select * FROM coupon  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

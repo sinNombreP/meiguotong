@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.comcity.ComCityMapper">
+    
+	<sql id="comCityColumns">
+		a.id AS "id",
+		a.number AS "number",
+		a.province_id AS "provinceId",
+		a.city_destination AS "cityDestination",
+		a.name_pinyin AS "namePinyin",
+		a.status AS "status",
+		a.language_id AS "languageId",
+		a.photo_url AS "photoUrl",
+		a.video_url AS "videoUrl",
+		a.near_city_number AS "nearCityNumber",
+		a.is_car AS "isCar",
+		a.is_tourism AS "isTourism",
+		a.is_offered AS "isOffered",
+		a.is_scenic AS "isScenic",
+		a.is_player AS "isPlayer",
+		a.offeren_top AS "offerenTop",
+		a.scenic_sort AS "scenicSort",
+		a.offered_sort AS "offeredSort",
+		a.scenic_top AS "scenicTop",
+		a.player_sort AS "playerSort",
+		a.player_top AS "playerTop",
+		a.is_charter AS "isCharter",
+		a.is_transfer AS "isTransfer",
+		a.is_sort_distance AS "isSortDistance",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.city_name AS "cityName",
+		a.city_remark AS "cityRemark",
+		a.city_details AS "cityDetails",
+		a.common_num AS "commonNum",
+		a.star AS "star"
+	</sql>
+	
+	<sql id="comCityJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="ComCity" >
+		SELECT 
+			<include refid="comCityColumns"/>,
+		cl.content as "languageName"
+		FROM com_city a
+		<include refid="comCityJoins"/>
+		left join com_language cl on cl.id=a.language_id
+		WHERE a.id = #{id}
+	</select>
+	<!-- 定制城市介绍信息 -->
+	<select id="getCity" resultType="ComCity" >
+		SELECT 
+			a.city_name as "cityName",
+			a.id as "cityid",
+			a.photo_url as "photoUrl",
+			a.city_details as "cityDetails",
+			a.city_remark as "cityRemark"
+		FROM com_city a
+		WHERE a.id = #{id}
+	</select>
+	<!-- 城市详情 -->
+	<select id="getCityDetails" resultType="ComCity" >
+		SELECT 
+			a.city_name as "cityName",
+			a.id as "cityid",
+			a.photo_url as "photoUrl",
+			a.video_url as "videoUrl",
+			a.city_details as "cityDetails",
+			a.city_remark as "cityRemark",
+			a.common_num as "commonNum",
+			a.star as "star",
+			c.title as "countryName",
+			a.is_car AS "isCar",
+			a.is_tourism AS "isTourism",
+			a.is_offered AS "isOffered",
+			a.is_scenic AS "isScenic",
+			a.is_player AS "isPlayer"
+		FROM com_city a
+		left join country c on c.id=a.province_id
+		WHERE a.id = #{id}
+	</select>
+	<!-- 城市关键字搜索 -->
+	<select id="getCityByTitle" resultType="ComCity" >
+		SELECT 
+			a.city_name as "cityName",
+			a.id as "cityid",
+			a.photo_url as "photoUrl",
+			a.city_details as "cityDetails",
+			a.city_remark as "cityRemark"
+		FROM com_city a
+		where a.del_flag = 0 and a.language_id = #{languageId} 
+		and a.city_name LIKE concat('%',#{cityName},'%')
+	</select>
+	<!-- 根据语言获取城市 -->
+	<select id="getCityList" resultType="ComCity" >
+		SELECT 
+			a.city_name as "cityName",
+			a.id as "cityid",
+		    a.photo_url AS "photoUrl"
+		FROM com_city a
+		where a.del_flag = 0 and a.language_id = #{languageId}
+		<if test="cityName != null and cityName != ''">
+			AND a.city_name LIKE concat('%',#{cityName},'%')
+		</if>
+	</select>
+	<!-- 根据语言获取城市和城市景点数量 -->
+	<select id="getCityScenicNum" resultType="ComCity" >
+		SELECT 
+			a.city_name as "cityName",
+			a.id as "cityid",
+			(select count(ss.id) from scenic_spot ss 
+				where ss.city_id=a.id and ss.del_flag=0 AND ss.status = 3 )as "num"
+		FROM com_city a
+		where a.del_flag = 0 and a.language_id = #{languageId}
+	</select>
+	<select id="findList" resultType="ComCity" >
+		SELECT 
+			<include refid="comCityColumns"/>,
+		cl.content as "languageName",
+		b.title AS "countryName",
+		(SELECT COUNT(1) FROM scenic_spot b
+		WHERE a.id = b.city_id AND b.status = 3 AND b.del_flag = 0) AS "num"
+		FROM com_city a
+		<include refid="comCityJoins"/>
+		left join com_language cl on cl.id=a.language_id
+		LEFT JOIN country b ON b.id = a.province_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="namePinyin != null and namePinyin != ''">
+				AND a.name_pinyin = #{namePinyin}
+			</if>
+			<if test="provinceId != null and provinceId != ''">
+				AND a.province_id =#{provinceId}
+			</if>
+			<if test="cityName != null and cityName != ''">
+				AND a.city_name LIKE concat('%',#{cityName},'%')
+			</if>
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id = #{languageId}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComCity" >
+		SELECT 
+			<include refid="comCityColumns"/>
+		FROM com_city a
+		<include refid="comCityJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.status = 1 
+			<if test="languageId != null">
+				AND a.language_id = #{languageId},
+			</if> 
+		</where>		
+			ORDER BY a.update_date DESC
+	</select>
+	
+	<!-- 获取附近城市 -->
+	<select id="getNearbyCity"  resultType="ComCity">
+		SELECT 
+			a.id AS id,
+			a.city_name AS "cityName"
+		FROM com_city a
+		WHERE a.del_flag = 0 AND a.status = 1 AND FIND_IN_SET(a.id,(
+			SELECT near_city_number
+			FROM  com_city b
+			WHERE b.id = #{cityid}
+		)) > 0
+	</select>
+
+	
+	<!-- 获取城市 -->
+	<select id="getData" resultType="ComCity" >
+		SELECT 
+			a.id AS "id",
+			a.city_name AS "cityName"
+			<if test="endCity != null and endCity != ''">
+			,if(FIND_IN_SET(a.id,#{endCity})>0,1,0) AS "endCityFlag"
+			</if>
+		FROM com_city a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.status = 1 
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if> 
+			<if test="cityName != null and cityName != ''">
+				AND a.city_name LIKE concat('%',#{cityName},'%')
+			</if>
+		</where>		
+		ORDER BY a.update_date DESC
+	</select>
+	
+	
+	
+	<insert id="insert">
+		INSERT INTO com_city(
+			number,
+			province_id,
+			city_destination,
+			name_pinyin,
+			status,
+			language_id,
+			photo_url,
+			video_url,
+			near_city_number,
+			is_car,
+			is_tourism,
+			is_offered,
+			is_scenic,
+			is_player,
+			offeren_top,
+			scenic_sort,
+			offered_sort,
+			scenic_top,
+			player_sort,
+			player_top,
+			is_charter,
+			is_transfer,
+			is_sort_distance,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			city_name,
+			city_remark,
+			city_details,
+			common_num,
+			star
+		) VALUES (
+			#{number},
+			#{provinceId},
+			#{cityDestination},
+			#{namePinyin},
+			#{status},
+			#{languageId},
+			#{photoUrl},
+			#{videoUrl},
+			#{nearCityNumber},
+			#{isCar},
+			#{isTourism},
+			#{isOffered},
+			#{isScenic},
+			#{isPlayer},
+			#{offerenTop},
+			#{scenicSort},
+			#{offeredSort},
+			#{scenicTop},
+			#{playerSort},
+			#{playerTop},
+			#{isCharter},
+			#{isTransfer},
+			#{isSortDistance},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{cityName},
+			#{cityRemark},
+			#{cityDetails},
+			#{commonNum},
+			#{star}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_city SET 	
+			number = #{number},
+			province_id = #{provinceId},
+			city_destination=#{cityDestination},
+			name_pinyin = #{namePinyin},
+			status = #{status},
+			language_id = #{languageId},
+			photo_url = #{photoUrl},
+			video_url = #{videoUrl},
+			near_city_number = #{nearCityNumber},
+			is_car = #{isCar},
+			is_tourism = #{isTourism},
+			is_offered = #{isOffered},
+			is_scenic = #{isScenic},
+			is_player = #{isPlayer},
+			offeren_top = #{offerenTop},
+			scenic_sort = #{scenicSort},
+			offered_sort = #{offeredSort},
+			scenic_top = #{scenicTop},
+			player_sort = #{playerSort},
+			player_top = #{playerTop},
+			is_charter = #{isCharter},
+			is_transfer = #{isTransfer},
+			is_sort_distance = #{isSortDistance},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			city_name=#{cityName},
+			city_remark=#{cityRemark},
+			city_details=#{cityDetails},
+			common_num=#{commonNum},
+			star=#{star}
+		WHERE id = #{id}
+	</update>
+	<!--修改状态-->
+	<update id="status">
+		UPDATE com_city SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_city
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_city SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComCity" statementType="STATEMENT">
+		select * FROM com_city  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findCityBylanguageid" resultType="ComCity" >
+		select id,city_name as "cityName" from com_city 
+		where status=1 and del_flag=0
+		<if test="cityName != null and cityName != ''">
+		and city_name like concat('%',#{cityName},'%') 
+		</if>
+		<if test="languageId != null and languageId != ''">
+		and language_id=#{languageId}  
+		</if>
+		<if test="provinceId != null and provinceId != ''">
+		and province_id=#{provinceId} 
+		</if>
+		<if test="cityids != null and cityids != ''">
+		and !find_in_set(id,#{cityids})>0 
+		</if>
+	</select>
+	<select id="findCitynearCityid" resultType="ComCity" >
+		select id,city_name as "cityName" from com_city 
+		where status=1 and del_flag=0 and find_in_set(id,#{nearCityNumber})>0 
+	</select>
+	
+	<!--修改星级、评论数-->
+	<update id="changeCommnetNum">
+		UPDATE com_city SET 	
+			star=(select truncate(sum(level)/count(id),1) from com_comment where type=14 and type_id=#{id}),
+			common_num=common_num+1
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

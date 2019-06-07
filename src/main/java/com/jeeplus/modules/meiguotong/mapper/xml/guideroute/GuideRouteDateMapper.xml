@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.guideroute.GuideRouteDateMapper">
+    
+	<sql id="guideRouteDateColumns">
+		a.id AS "id",
+		a.routeid AS "routeid",
+		a.price_date AS "priceDate",
+		a.price AS "price"
+	</sql>
+	
+	<sql id="guideRouteDateJoins">
+		
+	</sql>
+	
+    <select id="getDateList" resultType="GuideRouteDate" >
+		SELECT 
+			a.price_date AS "date",
+			a.price AS "price"
+		FROM guide_route_date a
+		where DATE_FORMAT(a.price_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		and DATE_FORMAT(#{endDate}, '%Y-%m-%d')>DATE_FORMAT(a.price_date, '%Y-%m-%d')
+		and DATE_FORMAT(a.price_date, '%Y-%m-%d')>=DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+		and  a.routeid=#{routeid}
+		order by a.price_date
+	</select>
+	<select id="get" resultType="GuideRouteDate" >
+		SELECT 
+			<include refid="guideRouteDateColumns"/>
+		FROM guide_route_date a
+		<include refid="guideRouteDateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="GuideRouteDate" >
+		SELECT 
+			<include refid="guideRouteDateColumns"/>
+		FROM guide_route_date a
+		<include refid="guideRouteDateJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="routeid != null and routeid != ''">
+				AND a.routeid = #{routeid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GuideRouteDate" >
+		SELECT 
+			<include refid="guideRouteDateColumns"/>
+		FROM guide_route_date a
+		<include refid="guideRouteDateJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO guide_route_date(
+			routeid,
+			price_date,
+			price
+		) VALUES (
+			#{routeid},
+			#{priceDate},
+			#{price}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE guide_route_date SET 	
+			routeid = #{routeid},
+			price_date = #{priceDate},
+			price = #{price}
+		WHERE id = #{id}
+	</update>
+	
+	<!--删除旧的日期价格-->
+	<update id="deleteOld">
+		DELETE FROM guide_route_date
+		WHERE routeid = #{id}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM guide_route_date
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE guide_route_date SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="GuideRouteDate" statementType="STATEMENT">
+		select * FROM guide_route_date  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

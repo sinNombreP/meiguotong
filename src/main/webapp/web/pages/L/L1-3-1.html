@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>景点详情</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/E-publc.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../vendor/calendar/calendar-pro.css">
+    <link rel="stylesheet" href="../../css/common.css" />
+</head>
+
+<body>
+
+    <div id="app" v-cloak>
+
+        <ez-header></ez-header>
+        <ez-container></ez-container>
+
+        <!--content-->
+        <div class="container ez-container">
+            <div class="ez-scenic-detail ez-mb-md">
+                <div class="detail-wrap">
+                    <div class="detail-left pull-left">
+                        <div class="detail-img"><img :src="scenicSpot.imgUrl | carImgFilter" v-if="scenicSpot"></div>
+                        <div class="detail-img-xs">
+                            <div class="ez-scroll-content">
+                                <div class="scroll-btns">
+                                    <a href="javascript:;" class="scroll-right"><i class="iconfont icon-next" @click="imgRight"></i></a>
+                                    <a href="javascript:;" class="scroll-left"><i class="iconfont icon-prev" @click="imgLeft"></i></a>
+                                </div>
+                                <div class="scroll-wrap">
+                                    <div class="scroll-box">
+                                        <ul>
+                                            <li v-for="(list, index) in scenicSpot.imgUrl" :class="index == imgIndex?'active':''"
+                                                @click="imgIndexClick(index)" v-if="index > imgIndex-4">
+                                                <a>
+                                                    <img :src="list">
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-text pull-right">
+                        <h4 class="title">{{scenicSpot.name}}</h4>
+                        <h5 class="text-blue text-gray">【{{scenicSpot.countryName}}·{{scenicSpot.cityName}}】</h5>
+                        <div class="detail-text-label text-gray">
+                            <span v-for="(item, index) in scenicSpot.tagContent" :key="index">{{item}}</span>
+                        </div>
+                        <p class="text-gray">地址：{{scenicSpot.address}}</p>
+                        <p class="text-gray">详情：{{scenicSpot.content}}</p>
+                        <div class="detail-rate">
+                            <div class="pull-left text-orange ez-price">{{currencySign}}{{scenicSpot.price}}<span class="text-gray">/元起</span></div>
+                            <!-- <a href="#" class="text-gray">价格说明</a> -->
+                            <a href="javacript:;" class="text-gray" @click="refundTips" id="refundTips">退款说明</a>
+                            <div class=" pull-right">
+                                <div class="ez-star pull-left"></div>
+                                <a class="pull-right text-gray">{{scenicSpot.commentNum}}条评价</a>
+                            </div>
+                        </div>
+                        <div class="detail-recommend">
+                            <div class="detail-avatar">
+                                <img src="../../images/avatar-3.png" class="img-circle">
+                                <span class="text-gray">产品经理推荐</span>
+                            </div>
+                            <ul class="text-gray">
+                                <li><i class="iconfont icon-star"></i>{{scenicSpot.recommend}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-table">
+                    <table class="table table-responsive text-center">
+                        <thead>
+                            <tr>
+                                <th class="text-center text-bold">名称</th>
+                                <th class="text-center text-bold">预定规则</th>
+                                <th class="text-center text-bold">市场价</th>
+                                <th class="text-center text-bold">门票价格</th>
+                                <th class="text-center text-bold"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(list, index) in scenicSpotTicket" :key="index">
+                                <td> {{list.name}}</td>
+                                <td>{{list.rule}}天前</td>
+                                <td class="text-gray text-del">{{currencySign}}{{list.marketPrice}}</td>
+                                <td class="text-orange">{{currencySign}}{{list.price}}</td>
+                                <td>
+                                    <a class="btn ez-btn-parmary ticket-order" @click="getScenicNumClick(list.id)">预约</a>
+                                    <div class="calendar-box date-box ez-datetimer"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="ez-nav-tabs ez-custom-tabs">
+                <!-- Nav tabs -->
+                <ul class="tab-list list-inline">
+                    <li class="active"><a>预订须知</a></li>
+                    <li><a>景点介绍</a></li>
+                    <li><a>用户点评（{{scenicSpot.commentNum}}）</a></li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane active ez-scenic-pane" v-html="scenicSpot.reserveInfo">
+
+                    </div>
+                    <div class="tab-pane ez-scenic-pane" v-html="scenicSpot.introduce">
+
+                    </div>
+                    <div class="tab-pane ez-scenic-pane">
+                        <div class="ez-scenic-intro">
+                            <div class="intro-badges text-center">
+                                <i class="iconfont icon-notice"></i>
+                                <h5 class="text-bold">预订须知</h5>
+                            </div>
+                            <div class="scenic-intro-text">
+                                <div class="user-comments" v-for="(list, index) in commentList" :key="index">
+                                    <div class="comments-header">
+                                        <div class="comments-avatar">
+                                            <img :src="list.memberPhoto" class="img-circle">
+                                        </div>
+                                        <div class="pull-left">
+                                            <span class="pull-left ez-mr-sm">{{list.memberName}}</span>
+                                            <div class="ez-star pull-left ez-mr-sm">
+                                                    <img :src="list.level>index?'../../images/star-on.png':'../../images/star-off.png'"
+                                                    title="regular" v-for="(item, index) in 5" :key="index">
+                                            </div>
+                                            <span class="pull-left ez-mr-sm">{{list.level}}分</span>
+                                        </div>
+                                        <div class="pull-right text-gray">{{list.createDate}}</div>
+                                    </div>
+                                    <div class="comments-body">{{list.content}}</div>
+                                </div>
+
+                                <nav class="text-center col-lg-12 col-md-12 col-sm-12" v-show="show">
+                                    <ul class="pagination ez-navigation">
+                                        <li @click.stop="pageChange(-1)">
+                                            <a class="page-next" aria-label="Next" style="margin-right: 10px;">
+                                                <span aria-hidden="true">上一页 &gt;</span>
+                                            </a>
+                                        </li>
+                                        <li v-show="current_page>5" @click.stop="jumpPage(1)"><a href="#">1</a></li>
+                                        <li v-show="efont"><a>...</a></li>
+                                        <li v-for="num in indexs" :class="{active:current_page==num}" @click.stop="jumpPage(num)"><a>{{num}}</a></li>
+                                        <li v-show="ebehind"><a>...</a></li>
+                                        <li v-show="current_page<pages-4" @click.stop="jumpPage(pages)"><a>{{pages}}</a></li>
+                                        <li @click.stop="pageChange(1)">
+                                            <a class="page-next" aria-label="Next" style="margin-left: 10px;">
+                                                <span aria-hidden="true">下一页 &gt;</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <ez-footer></ez-footer>
+        <ez-aside></ez-aside>
+
+    </div>
+</body>
+
+</html>
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-pro.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+<script>
+
+
+
+    const app = new Vue({
+        el: "#app",
+        data: {
+            scenicid: GetQuery("id"),  //景点ID
+            scenicSpot: {},  //景点详情
+            imgIndex: 0,  //选中的img图片下标
+            current_page: 1, //当前页
+            pages: "", //总页数
+            commentList:[], //评论列表
+            refundMsg: "",  //退款说明文字
+            scenicSpotTicket:[],  //景点门票
+            scenicSpotTicketId:"",  //景点门票ID
+            event:"",  //点击预约的dom对象
+        },
+        computed:{
+            price:function(){
+                return 
+            }
+        },
+        mounted() {
+            this.getScenicDetails();
+            this.selectComment();
+            this.getRefundInfo();
+        },
+        methods: {
+            //下单页面
+            addOrder: function () {
+                let data = $('.calendar-box').calendarGetActive();
+                if(!data) return;
+                if(!data.date){
+                    layerMsg("请选择日期");
+                    return false;
+                }
+                if (parseInt(data.adultNum) <= 0 && parseInt(data.childNum) <= 0) {
+                    layerMsg("请选择出游人数");
+                    return false;
+                }
+                if(!data.totalPrice || parseInt(data.totalPrice) <= 0){
+                    layerMsg("价格错误");
+                    return false;
+                }
+                let beginDateFlag = data.date.split("-");
+                let month = parseInt(beginDateFlag[1]);
+                let day = parseInt(beginDateFlag[2]);
+                let beginDate = beginDateFlag[0] + "-" + ( month> 9 ? month : "0" + month) + "-" + (day > 9 ? day : "0" + day) ;
+                console.log(data);
+                localStorage.removeItem("scenicid");
+                localStorage.removeItem("beginDate");
+                localStorage.removeItem("adultNum");
+                localStorage.removeItem("childNum");
+                localStorage.removeItem("totalPrice");
+                localStorage.removeItem("scenicSpotTicketId");
+                localStorage.setItem("scenicid",this.scenicid);
+                localStorage.setItem("beginDate",beginDate);
+                localStorage.setItem("adultNum",data.adultNum);
+                localStorage.setItem("childNum",data.childNum);
+                localStorage.setItem("totalPrice",data.totalPrice);
+                localStorage.setItem("scenicSpotTicketId",this.scenicSpotTicketId);
+                location.href = "./L1-4.html";
+            },
+            //加入购物车
+            addCar: function () {
+                let data = $('.calendar-box').calendarGetActive();
+                if(!data) return;
+                if(!data.date){
+                    layerMsg("请选择日期");
+                    return false;
+                }
+                if (parseInt(data.adultNum) <= 0 && parseInt(data.childNum) <= 0) {
+                    layerMsg("请选择出游人数");
+                    return false;
+                }
+                if(!data.totalPrice || parseInt(data.totalPrice) <= 0){
+                    layerMsg("价格错误");
+                    return false;
+                }
+                let beginDateFlag = data.date.split("-");
+                let month = parseInt(beginDateFlag[1]);
+                let day = parseInt(beginDateFlag[2]);
+                let beginDate = beginDateFlag[0] + "-" + ( month> 9 ? month : "0" + month) + "-" + (day > 9 ? day : "0" + day) ;
+                console.log(data);
+                requestGet(saveCarUrl, {
+                    typeid: this.scenicid,
+                    carType: 5,  //1.常规路线2.当地参团3.当地玩家4.游轮5.景点
+                    beginDate: beginDate,
+                    adultNum: data.adultNum,
+                    childNum: data.childNum,
+                    price: data.price,
+                }, function (data) {
+                    layerMsg("添加购物车成功");
+                    app.calendarEmpty();
+                })
+            },
+            //退款提示
+            refundTips: function () {
+                layer.tips(this.refundMsg, '#refundTips', {
+                    tips: [1, '#3595CC'],
+                    maxWidth:230,
+                    time: 4000
+                });
+            },
+            //插件关闭
+            calendarEmpty:function(){
+                $('.calendar-box').empty();
+                $('.calendar-box').hide();
+            },
+            //点击预约
+            getScenicNumClick:function(id){
+                this.scenicSpotTicketId = id;
+                this.event = "";
+                this.getScenicNum();
+            },
+            //获取景点门票数量
+            getScenicNum: function () {
+                this.calendarEmpty();
+                this.event = this.event || window.event || arguments.callee.caller.arguments[0];
+                $(this.event.target).parent('td').css('position', 'relative');
+                var dom = $(this.event.target).parent('td').children('.ez-datetimer');
+                dom.show();
+                let priceDate = calendarDate.year + "-" + (calendarDate.month > 9 ? calendarDate.month : "0" + calendarDate.month);
+                console.log(priceDate);
+                requestGet(getScenicNumUrl, {
+                    scenicSpotTicketId: this.scenicSpotTicketId,
+                    scenicDate: priceDate,
+                }, function (data) {
+                    dom.calendar({
+                        ele: '.date-box', //依附dom
+                        title: '',
+                        //beginDate : '2017-10-07',
+                        //endDate : '2017-12-04',
+                        data: data.body.list || []
+                    });
+                })
+            },
+            //获取退款说明
+            getRefundInfo: function () {
+                requestGet(refundInforUrl, {
+                    productType: 7,
+                    productid: this.scenicid,
+                }, function (data) {
+                    app.refundList = data.body.list;
+                    let refundMsg = "";
+                    for (const iterator of Object.values(data.body.list)) {
+                        refundMsg += `订单确认后，提前${iterator.refundDay}天退单，返回${iterator.refundNum}%;`;
+                    }
+                    app.refundMsg = refundMsg;
+                })
+            },
+            //获取评论列表
+            selectComment: function () {
+                requestGet(selectCommentUrl, {
+                    pageNo: this.current_page,
+                    typeid: this.scenicid,
+                    proType: 7,  //1.包车租车2.短程接送3.接送机4常规路线5.当地参团6.游轮7.景点门票
+                    //8.当地玩家9.酒店10.保险11.旅游定制12导游 13.攻略评论 14.城市评论',
+                }, function (data) {
+                    app.commentList = data.body.list;
+                    app.pages = data.body.totalPage;
+                });
+            },
+            //点击图片
+            imgIndexClick: function (index) {
+                this.imgIndex = index;
+            },
+            //图片点击左边
+            imgLeft: function () {
+                if (this.imgIndex == 0) {
+                    return;
+                }
+                this.imgIndex--;
+            },
+            //图片点击右边
+            imgRight: function () {
+                if (this.imgIndex < this.scenicSpot.imgUrl.length - 1) {
+                    this.imgIndex++;
+                    return;
+                }
+            },
+            //获取景点详情
+            getScenicDetails: function () {
+                requestGet(getScenicDetailsUrl, {
+                    scenicid: this.scenicid,
+                }, function (data) {
+                    app.scenicSpot = data.body.scenicSpot;
+                    app.scenicSpotTicket = data.body.list;
+                    app.scenicSpot.imgUrl = app.scenicSpot.imgUrl.split(",");
+                    app.scenicSpot.tagContent = app.scenicSpot.tagContent.split(",");
+                });
+            },
+            //点击上一页 下一页
+            pageChange: function (index) {
+                index += this.current_page;
+                if (index < 1 || index > this.pages) {
+                    return;
+                }
+                this.current_page = index;
+                this.selectComment();
+            },
+            //选择页数
+            jumpPage: function (id) {
+                if (id == this.current_page) {
+                    return;
+                }
+                this.current_page = id;
+                this.selectComment();
+            },
+        },
+        computed: {
+            show: function () {
+                return this.pages && this.pages != 1
+            },
+            pstart: function () {
+                return this.current_page <= 1;
+            },
+            pend: function () {
+                return this.current_page >= this.pages;
+            },
+            efont: function () {
+                if (this.pages <= 7) return false;
+                return this.current_page > 5
+            },
+            ebehind: function () {
+                if (this.pages <= 7) return false;
+                var nowAy = this.indexs;
+                return nowAy[nowAy.length - 1] != this.pages;
+            },
+            indexs: function () {
+
+                var left = 1,
+                    right = this.pages,
+                    ar = [];
+                if (this.pages >= 7) {
+                    if (this.current_page > 5 && this.current_page < this.pages - 4) {
+                        left = Number(this.current_page) - 3;
+                        right = Number(this.current_page) + 3;
+                    } else {
+                        if (this.current_page <= 5) {
+                            left = 1;
+                            right = 7;
+                        } else {
+                            right = this.pages;
+
+                            left = this.pages - 6;
+                        }
+                    }
+                }
+                while (left <= right) {
+                    ar.push(left);
+                    left++;
+                }
+                return ar;
+            },
+        },
+        filters: {
+            carImgFilter: function (value) {
+                if (!value) return;
+                return value[app.imgIndex];
+            },
+        },
+    })
+
+
+
+
+    $(".ticket-order").click(function () {
+        $(this).parent('td').css('position', 'relative');
+        var dom = $(this).parent('td').children('.ez-datetimer');
+        dom.show();
+        dom.calendar({
+            ele: '.date-box', //依附dom
+            title: '',
+            //beginDate : '2017-10-07',
+            //endDate : '2017-12-04',
+            data: [
+                { date: '2018-08-07', price: '100', state: '充足' },
+                { date: '2018-08-08', price: '108', state: '充足' },
+                { date: '2018-08-09', price: '1888', state: '充足' },
+                { date: '2018-08-10', price: '110', state: '充足' },
+                { date: '2018-08-11', price: '111', state: '少量' },
+                { date: '2018-08-12', price: '112', state: '充足' },
+                { date: '2018-08-14', price: '113', state: '较少' },
+                { date: '2018-08-26', price: '899', state: '充足' },
+                { date: '2018-09-28', price: '5500', state: '充足' }
+            ]
+        });
+    });
+
+
+
+    //预订
+    function orderTicket() {
+        $(this).parent('td').css('position', 'relative');
+        var dom = $(this).parent('td').children('.ez-datetimer');
+        dom.show();
+        dom.calendar({
+            ele: '.date-box', //依附dom
+            title: '',
+            //beginDate : '2017-10-07',
+            //endDate : '2017-12-04',
+            data: [
+                { date: '2018-08-07', price: '100', state: '充足' },
+                { date: '2018-08-08', price: '108', state: '充足' },
+                { date: '2018-08-09', price: '1888', state: '充足' },
+                { date: '2018-08-10', price: '110', state: '充足' },
+                { date: '2018-08-11', price: '111', state: '少量' },
+                { date: '2018-08-12', price: '112', state: '充足' },
+                { date: '2018-08-14', price: '113', state: '较少' },
+                { date: '2018-08-26', price: '899', state: '充足' },
+                { date: '2018-09-28', price: '5500', state: '充足' }
+            ]
+        });
+    }
+
+
+    // $(function(){
+    //     //加入购物车
+    //     $('#app').on('click','.toShopcart',function () {
+    //         app.addCar();
+    //     })
+    // })
+</script>

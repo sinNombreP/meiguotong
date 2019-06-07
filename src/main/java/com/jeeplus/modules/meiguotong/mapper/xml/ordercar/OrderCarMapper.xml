@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.ordercar.OrderCarMapper">
+    
+	<sql id="orderCarColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.name AS "name",
+		a.adult_num AS "adultNum",
+		a.child_num AS "childNum",
+		a.bag_num AS "bagNum",
+		a.start_city AS "startCity",
+		a.start_address AS "startAddress",
+		a.end_city AS "endCity",
+		a.end_address AS "endAddress",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.air_type AS "airType",
+		a.air_no AS "airNo",
+		a.send_airport AS "sendAirport",
+		a.send_date AS "sendDate",
+		a.reach_airport AS "reachAirport",
+		a.reach_date AS "reachDate",
+		a.contacts_name AS "contactsName",
+		a.contacts_mobile AS "contactsMobile",
+		a.remark AS "remark",
+		a.price AS "price",
+		a.carid AS "carid",
+		a.car_name AS "carName",
+		a.pay_way AS "payWay",
+		a.pay_date AS "payDate",
+		a.status AS "status",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.refund_info AS "refundInfo",
+		a.refund_reason AS "refundReason",
+		a.order_no AS "orderNo",
+		a.member_id AS "memberId",
+		a.use_date AS "useDate",
+		a.pay_no AS "payNo",
+		a.after_no AS "afterNo",
+		a.car_time AS "carTime",
+		a.car_distance AS "carDistance",
+		a.seat_num AS "seatNum",
+		a.comfort AS "comfort",
+		a.car_bag_num AS "carBagNum",
+		a.agentid AS "agentid",
+		a.order_sys1 AS "orderSys1",
+		a.order_sys2 AS "orderSys2"
+	</sql>
+	   
+	<sql id="orderCarJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderCar" >
+		SELECT 
+			<include refid="orderCarColumns"/>,
+			if(m.type=1,d.nick_name,e.company_name) AS "nickName",
+		m.mobile AS "mobile",
+		os.remark as "orderRemark"
+		FROM order_car a
+		<include refid="orderCarJoins"/>
+		left join order_sys os on a.order_sys1=os.id 
+		LEFT JOIN member m ON a.member_id = m.id
+		LEFT JOIN member_information d ON a.member_id = d.memberid
+		left join member_travel e on a.member_id = e.memberid
+		WHERE a.id = #{id}
+	</select>
+	<select id="getList" resultType="OrderCar" >
+		SELECT 
+			<include refid="orderCarColumns"/>,
+			mi.nick_name  "nickName",
+			m.mobile AS "mobile"
+		FROM order_car a
+		left join member m on m.id=a.member_id 
+		left join member_information mi on mi.memberid=a.member_id
+		WHERE a.id = #{id} and a.type=#{type}
+	</select>
+	
+	<select id="findList" resultType="OrderCar" >
+		SELECT 
+			<include refid="orderCarColumns"/>
+		FROM order_car a
+		<include refid="orderCarJoins"/>		
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="startCity != null and startCity != ''">
+				AND a.start_city = #{startCity}
+			</if>
+			<if test="type != null and type !=''">
+				AND a.type = #{type}
+			</if>
+			<if test="id != null and id !=''">
+				AND a.id = #{id}
+			</if>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderCar" >
+		SELECT 
+			<include refid="orderCarColumns"/>
+		FROM order_car a
+		<include refid="orderCarJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_car(
+			type,
+			name,
+			adult_num,
+			child_num,
+			bag_num,
+			start_city,
+			start_address,
+			end_city,
+			end_address,
+			begin_date,
+			end_date,
+			air_type,
+			air_no,
+			send_airport,
+			send_date,
+			reach_airport,
+			reach_date,
+			contacts_name,
+			contacts_mobile,
+			remark,
+			price,
+			carid,
+			car_name,
+			pay_way,
+			pay_date,
+			status,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			refund_info,
+			refund_reason,
+			order_no,
+			member_id,
+			use_date,
+			pay_no,
+			after_no,
+			car_time,
+			car_distance,
+			seat_num,
+			comfort,
+			car_bag_num,
+			agentid,
+			order_sys1,
+			order_sys2
+		) VALUES (
+			#{type},
+			#{name},
+			#{adultNum},
+			#{childNum},
+			#{bagNum},
+			#{startCity},
+			#{startAddress},
+			#{endCity},
+			#{endAddress},
+			#{beginDate},
+			#{endDate},
+			#{airType},
+			#{airNo},
+			#{sendAirport},
+			#{sendDate},
+			#{reachAirport},
+			#{reachDate},
+			#{contactsName},
+			#{contactsMobile},
+			#{remark},
+			#{price},
+			#{carid},
+			#{carName},
+			#{payWay},
+			#{payDate},
+			#{status},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{refundInfo},
+			#{refundReason},
+			#{orderNo},
+			#{memberId},
+			#{useDate},
+			#{payNo},
+			#{afterNo},
+			#{carTime},
+			#{carDistance},
+			#{seatNum},
+			#{comfort},
+			#{carBagNum},
+			#{agentid},
+			#{orderSys1},
+			#{orderSys2}
+		)
+		
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+			select LAST_INSERT_ID() as id
+		</selectKey>
+		
+	</insert>
+	
+	<update id="update">
+		UPDATE order_car SET 	
+			type = #{type},
+			name = #{name},
+			adult_num = #{adultNum},
+			child_num = #{childNum},
+			bag_num = #{bagNum},
+			start_city = #{startCity},
+			start_address = #{startAddress},
+			end_city = #{endCity},
+			end_address = #{endAddress},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			air_type = #{airType},
+			air_no = #{airNo},
+			send_airport = #{sendAirport},
+			send_date = #{sendDate},
+			reach_airport = #{reachAirport},
+			reach_date = #{reachDate},
+			contacts_name = #{contactsName},
+			contacts_mobile = #{contactsMobile},
+			remark = #{remark},
+			price = #{price},
+			carid = #{carid},
+			car_name = #{carName},
+			pay_way = #{payWay},
+			pay_date = #{payDate},
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			refund_info = #{refundInfo},
+			refund_reason = #{refundReason},
+			order_no = #{orderNo},
+			member_id = #{memberId},
+			use_date = #{useDate},
+			pay_no=#{payNo},
+			after_no=#{afterNo},
+			car_time=#{carTime},
+			car_distance=#{carDistance},
+			seat_num=#{seatNum},
+			comfort=#{comfort},
+			car_bag_num=#{carBagNum},
+			agentid=#{agentid},
+			order_sys1=#{orderSys1},
+			order_sys2=#{orderSys2}
+		WHERE id = #{id}
+	</update>
+	<!-- 更改包车租车的状态 -->
+	<update id="status">
+	UPDATE order_car SET
+	status = #{status},
+	update_date = #{updateDate},
+	update_by = #{updateBy.id}
+	WHERE id = #{id} and type=#{type}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_car
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_car SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderCar" statementType="STATEMENT">
+		select * FROM order_car  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 查找订单列表 -->
+	<select id="findOrderCarList" resultType="OrderCar" >
+		select <include refid="orderCarColumns"/> ,s.company_name as 'companyName',
+		if(c.type=1,d.nick_name,e.company_name) AS "nickName",
+		c.type as "memberType"
+		from order_car a
+		left join sys_user s on a.agentid=s.agentid and s.fatherid=0 and s.del_flag=0
+		LEFT JOIN member c ON a.member_id = c.id
+		LEFT JOIN member_information d ON a.member_id = d.memberid
+		left join member_travel e on a.member_id = e.memberid
+		where a.type=#{type} and a.del_flag=0
+		<if test='ordertype==1'>
+		and FIND_IN_SET(a.status,'1,2,3,4,5,6') 
+		</if>
+		<if test='ordertype==2'>
+		and FIND_IN_SET(a.status,'7,8,9')  
+		</if>
+		<if test="status != null and status !=''">
+		and a.status= #{status} 
+		</if>
+		<if test="agentid != null and agentid !=''">
+		and a.agentid= #{agentid} 
+		</if>
+		<if test="dataFlag != null and dataFlag==1">
+		and to_days(a.create_date)= to_days(now()) 
+		</if>
+		<if test="dataFlag != null and dataFlag==2">
+		and to_days(a.begin_date)= to_days(now()) 
+		</if>
+		<if test="searchContent != null and searchContent !=''">
+		and (a.order_no like concat('%',#{searchContent},'%') 
+			or a.car_name like concat('%',#{searchContent},'%') 
+			or a.contacts_name like concat('%',#{searchContent},'%')) 
+		</if>	
+		<if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(a.begin_date, '%Y-%m-%d')
+			and DATE_FORMAT(a.begin_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>
+		<if test="memberType != null and memberType!=''">
+			AND c.type = #{memberType}
+		</if>
+		<if test="nickName != null and nickName!=''">
+			AND if(c.type=1,d.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findagentlist" resultType="sysUser" >
+		select agentid,company_name as 'companyName' 
+		from sys_user a left join sys_user_role r on a.id=user_id
+		where r.role_id='b27e3794a9924cc7be35f5295623aaa3' and a.fatherid=0
+	</select>
+	
+	<!-- 查找定制信息 -->
+		<select id="findOrderCarByOrderSys" resultType="OrderCar" >
+		select <include refid="orderCarColumns"/>
+		 from order_car a 
+		 <include refid="orderCarJoins"/>
+		  where a.order_sys1=#{orderSys1}
+	</select>
+	
+	<!-- 前端查找车辆详情 -->
+		<select id="findCarInfoByOrderSys2" resultType="OrderCar" >
+		select <include refid="orderCarColumns"/>
+		 from order_car a 
+		 <include refid="orderCarJoins"/>
+		  where a.type=#{0} and a.order_sys2=#{1}
+	</select>
+	
+	
+	<sql id="set_column">
+		<if test="orderSys1 != null ">
+			order_sys1 = #{orderSys1,jdbcType=INTEGER} ,
+		</if>
+		<if test="orderSys2 != null ">
+			order_sys2 = #{orderSys2,jdbcType=INTEGER} ,
+		</if>
+		<if test="agentid != null ">
+			agentid = #{agentid} ,
+		</if>
+		<if test="type != null ">
+			type = #{type} ,
+		</if>
+		<if test="name != null ">
+			name = #{name},
+		</if>
+		<if test="adultNum != null ">
+			adult_num = #{adultNum},
+		</if>
+		<if test="childNum != null ">
+			child_num = #{childNum},
+		</if>
+		<if test="bagNum != null ">
+			bag_num = #{bagNum},
+		</if>
+		<if test="startCity != null ">
+			start_city = #{startCity},
+		</if>
+		<if test="startAddress != null ">
+			start_address = #{startAddress},
+		</if>
+		<if test="endCity != null ">
+			end_city = #{endCity},
+		</if>
+		<if test="endAddress != null ">
+			end_address = #{endAddress},
+		</if>
+		<if test="beginDate != null ">
+			begin_date = #{beginDate},
+		</if>
+		<if test="endDate != null ">
+			end_date = #{endDate},
+		</if>
+		<if test="airType != null ">
+			air_type = #{airType},
+		</if>
+		<if test="airNo != null ">
+			air_no = #{airNo},
+		</if>
+		<if test="sendAirport != null ">
+			send_airport = #{sendAirport},
+		</if>
+		<if test="sendDate != null ">
+			send_date = #{sendDate},
+		</if>
+		<if test="reachAirport != null ">
+			reach_airport = #{reachAirport},
+		</if>
+		<if test="reachDate != null ">
+			reach_date = #{reachDate},
+		</if>
+		<if test="contactsName != null ">
+			contacts_name = #{contactsName},
+		</if>
+		<if test="contactsMobile != null ">
+			contacts_mobile = #{contactsMobile},
+		</if>
+		<if test="remark != null ">
+			remark = #{remark},
+		</if>
+		<if test="price != null ">
+			price = #{price},
+		</if>
+		<if test="carid != null ">
+			carid = #{carid},
+		</if>
+		<if test="carName != null ">
+			car_name = #{carName},
+		</if>
+		<if test="payWay != null ">
+			pay_way = #{payWay},
+		</if>
+		<if test="payDate != null ">
+			pay_date = #{payDate},
+		</if>
+		<if test="status != null ">
+			status = #{status},
+		</if>
+		<if test="updateDate != null ">
+			update_date = #{updateDate},
+		</if>
+		<if test="updateBy != null ">
+			update_by = #{updateBy.id},
+		</if>
+		<if test="delDate != null ">
+			del_date = #{delDate},
+		</if>
+		<if test="delBy != null ">
+			del_by = #{delBy},
+		</if>
+		<if test="languageId != null ">
+			language_id = #{languageId},
+		</if>
+		<if test="refundInfo != null ">
+			refund_info = #{refundInfo},
+		</if>
+		<if test="refundReason != null ">
+			refund_reason = #{refundReason},
+		</if>
+		<if test="orderNo != null ">
+			order_no = #{orderNo},
+		</if>
+		<if test="memberId != null ">
+			member_id = #{memberId},
+		</if>
+		<if test="useDate != null ">
+			use_date = #{useDate},
+		</if>
+		<if test="payNo != null ">
+			pay_no=#{payNo},
+		</if>
+		<if test="afterNo != null ">
+			after_no=#{afterNo},
+		</if>
+		<if test="carTime != null ">
+			car_time=#{carTime},
+		</if>
+		<if test="carDistance != null ">
+			car_distance=#{carDistance},
+		</if>
+		<if test="seatNum != null ">
+			seat_num=#{seatNum},
+		</if>
+		<if test="comfort != null ">
+			comfort=#{comfort},
+		</if>
+		<if test="carBagNum != null ">
+			car_bag_num=#{carBagNum}
+		</if>
+	</sql>
+	
+	<update id="updateObject">
+		UPDATE order_car 
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+	</update>
+	<update id="updateObject2">
+		UPDATE order_car 
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+		<if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+		<if test="orderSys2 != null ">
+			and order_sys2 = #{orderSys2,jdbcType=INTEGER}
+		</if>
+	</update>
+	<!-- 车辆行程 -->
+	<select id="findJourneyDateByCarid" resultType="OrderCar" >
+		select o.day_time as "date2"
+		from order_car a 
+		left join order_car_date o on o.orderid=a.order_sys1
+		where a.carid=#{carid} and DATE_FORMAT(o.day_time,"%Y-%m")=DATE_FORMAT(#{date},"%Y-%m")
+		union all 
+		select otd.use_date "date2"
+		from order_car a 
+		left join order_travel_business ot on a.order_sys1=ot.order_sys1
+		LEFT join order_travel_details otd on otd.order_trvel_id=ot.id
+		where a.carid=#{carid} and DATE_FORMAT(otd.use_date,"%Y-%m")=DATE_FORMAT(#{date},"%Y-%m")
+		GROUP BY date2
+	</select>
+	<!-- 车辆行程 -->
+	<select id="findJourneyByCarid" resultType="OrderCar" >
+		select a.id,a.carid,
+		CASE a.type 
+		WHEN 1 THEN "包车租车" WHEN 2 THEN "短程接送" WHEN 3 THEN "接送机" ELSE "定制" END "typeName", o.day_time as "date2"
+		from order_car a 
+		left join order_car_date o on o.orderid=a.order_sys1
+		where a.carid=#{carid} and DATE_FORMAT(o.day_time,"%Y-%m")=DATE_FORMAT(#{date},"%Y-%m")
+		union all 
+		select a.id,a.carid,"定制" as "typeName",otd.use_date "date2"
+		from order_car a 
+		left join order_travel_business ot on a.order_sys1=ot.order_sys1
+		LEFT join order_travel_details otd on otd.order_trvel_id=ot.id
+		where a.carid=#{carid} and DATE_FORMAT(otd.use_date,"%Y-%m")=DATE_FORMAT(#{date},"%Y-%m")
+	</select>
+	
+</mapper>

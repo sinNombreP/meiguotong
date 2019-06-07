@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.coupon.CouponPeopleMapper">
+    
+	<sql id="couponPeopleColumns">
+		a.id AS "id",
+		a.couponid AS "couponid",
+		a.status AS "status",
+		a.memberid AS "memberid",
+		a.get_way AS "getWay",
+		a.use_date AS "useDate",
+		a.create_date AS "createDate",
+		a.use_order AS "useOrder"
+	</sql>
+	
+	<sql id="couponPeopleJoins">
+		
+	</sql>
+	
+    <select id="findMemberByCounponId" resultType="CouponPeople" >
+		SELECT 
+			<include refid="couponPeopleColumns"/>
+		FROM coupon_people a
+		<include refid="couponPeopleJoins"/>
+		WHERE a.memberid=#{memberid} and a.couponId =#{couponid} limit 0,1
+	</select>
+    
+	<select id="get" resultType="CouponPeople" >
+		SELECT 
+			<include refid="couponPeopleColumns"/>
+		FROM coupon_people a
+		<include refid="couponPeopleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CouponPeople" >
+		SELECT 
+			<include refid="couponPeopleColumns"/>
+		FROM coupon_people a
+		<include refid="couponPeopleJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="CouponPeople" >
+		SELECT 
+			<include refid="couponPeopleColumns"/>
+		FROM coupon_people a
+		<include refid="couponPeopleJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO coupon_people(
+			couponid,
+			status,
+			memberid,
+			get_way,
+			use_date,
+			create_date,
+			use_order
+		) VALUES (
+			#{couponid},
+			#{status},
+			#{memberid},
+			#{getWay},
+			#{useDate},
+			#{createDate},
+			#{useOrder}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE coupon_people SET 	
+			couponid = #{couponid},
+			status = #{status},
+			memberid = #{memberid},
+			get_way = #{getWay},
+			use_date = #{useDate},
+			use_order = #{useOrder}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM coupon_people
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE coupon_people SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="CouponPeople" statementType="STATEMENT">
+		select * FROM coupon_people  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

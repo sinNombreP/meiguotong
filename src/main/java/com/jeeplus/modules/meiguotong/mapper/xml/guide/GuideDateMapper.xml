@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.guide.GuideDateMapper">
+    
+	<sql id="guideDateColumns">
+		a.id AS "id",
+		a.guideid AS "guideid",
+		a.price_date AS "priceDate",
+		a.price AS "price",
+		a.type AS "type"
+	</sql>
+	
+	<sql id="guideDateJoins">
+		
+	</sql>
+
+	<!--删除旧的日期设置-->
+    <delete id="deleteByGuideid">
+		DELETE FROM guide_date
+		WHERE guideid = #{guideid}
+	</delete>
+
+    <!--  获取导游某一天的价格 -->
+    <select id="getGuideDate" resultType="GuideDate" >
+		SELECT 
+			a.price AS "price"
+		FROM guide_date a
+		WHERE a.guideid = #{guideid} and a.type = #{type} 
+		and DATE_FORMAT(a.price_date, '%Y-%m-%d')=DATE_FORMAT(#{priceDate}, '%Y-%m-%d')
+	</select>
+	<select id="get" resultType="GuideDate" >
+		SELECT 
+			<include refid="guideDateColumns"/>
+		FROM guide_date a
+		<include refid="guideDateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getDateList" resultType="GuideDate" >
+		SELECT 
+			a.price_date AS "date",
+			a.price AS "price"
+		FROM guide_date a
+		where DATE_FORMAT(a.price_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		and DATE_FORMAT(#{endDate}, '%Y-%m-%d')>DATE_FORMAT(a.price_date, '%Y-%m-%d')
+		and DATE_FORMAT(a.price_date, '%Y-%m-%d')>=DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+		and a.type=1 and a.guideid=#{guideid}
+		order by a.price_date
+	</select>
+	<select id="findList" resultType="GuideDate" >
+		SELECT 
+			<include refid="guideDateColumns"/>
+		FROM guide_date a
+		<include refid="guideDateJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="price != null and price != ''">
+				AND a.price = #{price}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GuideDate" >
+		SELECT 
+			<include refid="guideDateColumns"/>
+		FROM guide_date a
+		<include refid="guideDateJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO guide_date(
+			guideid,
+			price_date,
+			price,
+			type
+		) VALUES (
+			#{guideid},
+			#{priceDate},
+			#{price},
+			#{type}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE guide_date SET 	
+			guideid = #{guideid},
+			price_date = #{priceDate},
+			price = #{price},
+			type = #{type}
+		WHERE id = #{id}
+	</update>
+	
+	<!--删除旧的日期价格-->
+	<update id="deleteOld">
+		DELETE FROM guide_date
+		WHERE guideid = #{guideid}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM guide_date
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE guide_date SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="GuideDate" statementType="STATEMENT">
+		select * FROM guide_date  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

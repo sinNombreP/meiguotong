@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.memberincome.MemberIncomeMapper">
+    
+	<sql id="memberIncomeColumns">
+		a.id AS "id",
+		a.no AS "no",
+		a.type AS "type",
+		a.income AS "income",
+		a.order_id AS "orderId",
+		a.agentid AS "agentid",
+		a.memberid AS "memberid",
+		a.remark AS "remark",
+		a.income_price AS "incomePrice",
+		a.create_date AS "createDate",
+		a.people as "people",
+		a.pay as "pay",
+		a.`rank` As "rank",
+		a.checks AS "checks",
+		a.payType AS "payType"
+	</sql>
+	
+	<sql id="memberIncomeJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="MemberIncome" >
+		SELECT 
+			<include refid="memberIncomeColumns"/>,
+			mi.nick_name as "nickName",
+			if(m.create_type=1,m.mobile,m.email)as number
+		FROM member_income a
+		<include refid="memberIncomeJoins"/>
+		left join member m on a.memberid=m.id
+		left join member_information mi on a.memberid=mi.memberid
+		WHERE a.id = #{id}
+	</select>
+	<!-- 帐户流水接口数据 -->
+	<select id="findMemberIncomePage" resultType="MemberIncome" >
+		SELECT 
+			<include refid="memberIncomeColumns"/>
+		FROM member_income a
+		<include refid="memberIncomeJoins"/>
+		<where>
+			AND a.memberid = #{memberid}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				order by a.create_date desc
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findList" resultType="MemberIncome" >
+		SELECT 
+			<include refid="memberIncomeColumns"/>
+		FROM member_income a
+		<include refid="memberIncomeJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="income != null and income != ''">
+				AND a.income = #{income}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="agentid != null and agentid != ''">
+				AND a.agentid = #{agentid}
+			</if>
+			<if test="memberid != null and memberid != ''">
+				AND a.memberid = #{memberid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MemberIncome" >
+		SELECT 
+			<include refid="memberIncomeColumns"/>
+		FROM member_income a
+		<include refid="memberIncomeJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO member_income(
+			no,
+			type,
+			income,
+			order_id,
+			agentid,
+			memberid,
+			remark,
+			income_price,
+			create_date,
+			people,
+			pay,
+			`rank`,
+			checks,
+			payType
+		) VALUES (
+			#{no},
+			#{type},
+			#{income},
+			#{orderId},
+			#{agentid},
+			#{memberid},
+			#{remark},
+			#{incomePrice},
+			#{createDate},
+			#{people},
+			#{pay},
+			#{rank},
+			#{checks},
+			#{payType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE member_income SET 	
+			no = #{no},
+			type = #{type},
+			income = #{income},
+			order_id = #{orderId},
+			agentid = #{agentid},
+			memberid = #{memberid},
+			income_price = #{incomePrice},
+			remark=#{remark},
+			people=#{people},
+			pay=#{pay},
+			`rank`=#{rank},
+			checks=#{checks},
+			payType=#{payType}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM member_income
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE member_income SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="MemberIncome" statementType="STATEMENT">
+		select * FROM member_income  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 查询会员提现记录 -->
+	<select id="findTiXianList" resultType="MemberIncome" >
+		SELECT 
+			<include refid="memberIncomeColumns"/>,
+			if(m.create_type=1,m.mobile,m.email)as number
+		FROM member_income a
+		<include refid="memberIncomeJoins"/>
+		left join member m on a.memberid=m.id
+		<where>
+			
+			${dataScope}
+			and a.type=15 
+			<if test="number != null and number != ''">
+				AND ((m.mobile like concat('%',#{number},'%') and m.create_type=1) 
+					or (m.email like concat('%',#{number},'%') and m.create_type=2))
+					or a.no like concat('%',#{number},'%')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findMemberIncomeZhiKeList" resultType="MemberIncome" >
+		SELECT 
+			<include refid="memberIncomeColumns"/>,
+			min.nick_name as 'nickName',
+			if(m.create_type=1,m.mobile,m.email)as number
+		FROM member_income a
+		<include refid="memberIncomeJoins"/>
+		left join member m on a.memberid=m.id
+		left join guide g on m.id=g.memberid 
+		left join member_information min on m.id=min.memberid
+		<where>
+			
+			${dataScope}
+			and g.id is Null 
+			<if test="number != null and number != ''">
+				AND ((m.mobile like concat('%',#{number},'%') and m.create_type=1) 
+					or (m.email like concat('%',#{number},'%') and m.create_type=2))
+					or min.nick_name like concat('%',#{number},'%')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		</select>
+		
+		<!-- 查看会员提现详情 -->
+		<select id="findMemberIncomeTiXianById" resultType="MemberIncome" >
+		SELECT 
+			<include refid="memberIncomeColumns"/>,
+			min.nick_name as 'nickName',
+			if(m.create_type=1,m.mobile,m.email)as number
+		FROM member_income a
+		<include refid="memberIncomeJoins"/>
+		left join member m on a.memberid=m.id
+		left join guide g on m.id=g.memberid 
+		left join member_information min on m.id=min.memberid
+		<where>
+		a.id=#{id}
+		</where>
+		</select>
+	
+</mapper>

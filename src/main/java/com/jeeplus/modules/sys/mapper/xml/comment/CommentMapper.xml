@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.comment.CommentMapper">
+    
+	<sql id="commentColumns">
+		a.id AS "id",
+		a.replyid AS "replyid",
+		a.type AS "type",
+		a.typeid AS "typeid",
+		a.content AS "content",
+		a.memberid AS "memberid",
+		a.member_name AS "memberName",
+		a.reply_member AS "replyMember",
+		a.reply_name AS "replyName",
+		a.comment_date AS "commentDate",
+		a.reply_num AS "replyNum",
+		a.status AS "status",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.title AS "title",
+		a.typename AS "typename"
+	</sql>
+	
+	<sql id="commentJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="Comment" >
+		SELECT 
+			<include refid="commentColumns"/>
+		FROM comment a
+		<include refid="commentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findCommentList" resultType="Comment" >
+		SELECT a.id AS "id",a.memberid AS "memberid",a.member_name AS "memberName",b.img AS "memberPhoto",a.reply_num AS "replyNum",
+		a.comment_date AS "commentDate",a.status AS "status",a.del_by AS "delBy",a.content AS "content",a.replyId AS "replyid"
+		FROM comment a
+		LEFT JOIN member_information b
+		on b.memberid=a.memberid
+		where a.type=#{type} AND a.replyId is null
+		<if test="typeid!=null and typeid !='' ">
+		 and a.typeid=#{typeid}
+		</if>
+	</select>
+	
+	<select id="findTwoCommentList" resultType="Comment" >
+		SELECT a.id AS "id",a.memberid AS "memberid",a.member_name AS "memberName",b.img AS "memberPhoto",
+		a.content AS "content",a.reply_member AS "replyMember",a.reply_name as "replyName",
+		c.img AS "replyMemberphoto",a.comment_date AS "commentDate"
+		FROM comment a 
+		LEFT JOIN member_information b
+		on a.memberid=b.memberid
+		LEFT JOIN member_information c
+		on c.memberid=a.reply_member
+		where a.replyId=#{id}
+	</select>
+	
+	<select id="findList" resultType="Comment" >
+		SELECT 
+			<include refid="commentColumns"/>
+		FROM comment a
+		<include refid="commentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="memberid != null and memberid != ''">
+				AND a.memberid = #{memberid}
+			</if>
+			<if test="beginCommentDate != null and endCommentDate != null and beginCommentDate != '' and endCommentDate != ''">
+				AND a.comment_date BETWEEN #{beginCommentDate} AND #{endCommentDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Comment" >
+		SELECT 
+			<include refid="commentColumns"/>
+		FROM comment a
+		<include refid="commentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO comment(
+			replyid,
+			type,
+			typeid,
+			content,
+			memberid,
+			member_name,
+			reply_member,
+			reply_name,
+			comment_date,
+			reply_num,
+			status,
+			del_flag,
+			del_date,
+			del_by,
+			title,
+			typename
+		) VALUES (
+			#{replyid},
+			#{type},
+			#{typeid},
+			#{content},
+			#{memberid},
+			#{memberName},
+			#{replyMember},
+			#{replyName},
+			#{commentDate},
+			#{replyNum},
+			#{status},
+			#{delFlag},
+			#{delDate},
+			#{delBy},
+			#{title},
+			#{typename}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE comment SET 	
+			replyid = #{replyid},
+			type = #{type},
+			typeid = #{typeid},
+			content = #{content},
+			memberid = #{memberid},
+			member_name = #{memberName},
+			reply_member = #{replyMember},
+			reply_name = #{replyName},
+			comment_date = #{commentDate},
+			reply_num = #{replyNum},
+			status = #{status},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			title = #{title},
+			typename = #{typename}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM comment
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE comment SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="updateCommentNumByCommentId">
+		UPDATE comment a SET 
+		a.reply_num=a.reply_num+1
+		WHERE id = #{commentId}
+	</update>
+	
+	<!--更改状态-->
+	<update id="status">
+		UPDATE comment SET 
+			status=#{status}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Comment" statementType="STATEMENT">
+		select * FROM comment  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>常规路线</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/E-publc.css">
+    <link rel="stylesheet" href="../../css/common.css" />
+    <!--[if lt IE 9]>
+    <script src="../../vendor/html5.js"></script>
+    <script src="../../vendor/respond.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div id="app" v-cloak>
+        <ez-header></ez-header>
+        <ez-container></ez-container>
+<!--content-->
+<div class="content ez-travel-complete">
+    <div class="content-order">
+        <div class="content-order-icon">
+            <div style="border: 1px solid #f99905;"><i style="color:#f99905;" class="iconfont icon-dagou"></i><label>确认订单</label></div>
+            <div style="border: 1px solid #f99905;"><i style="color:#f99905;" class="iconfont icon-dagou"></i><label>确认付款</label></div>
+            <div style="border: 1px solid #f99905;"><i style="color:#f99905;" class="iconfont icon-dagou"></i><label>完成订单</label></div>
+            <p></p>
+        </div>
+
+        <div class="content-order-info">
+            <div class="content-order-details">
+                <div class="content-order-details-top">
+                    <p><i class="iconfont icon-dagou"></i></p>
+                    <p>行程预定成功！</p>
+                    <p>我们将安排好您的行程后，短信或邮箱通知您。</p>
+                </div>
+                <div class="content-order-details-btn">
+                    <div @click="goOrderInfo">查看订单</div>
+                    <div @click="back">返回常规路线</div>
+                </div>
+                <p>如有疑问,请致电话{{phone}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- /content-->
+<ez-website></ez-website>
+</div>
+</body>
+</html>
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+<script type="text/javascript">
+
+    new Vue({
+        el:"#app",
+        data:{
+            phone:"",  //客服电话
+        },
+        mounted() {
+            this.getLogo();
+        },
+        methods:{
+            //查看订单
+            goOrderInfo(){
+                location.href = "../p-my/P1.html";
+            },
+            //返回
+            back:function(){
+                location.href = "./F1.html";
+            },
+            //获取LOGO设置
+            getLogo:function(){
+                // let this_ = this;
+                // requestGet(getLogoUrl, {
+                // }, function (data) {
+                //     for (const iterator of Object.values(data.body.comProtocol)) {
+                //         if(iterator.type == 4) this_.phone = phone;
+                //     }
+                // })
+            },
+        },
+    })
+
+</script>

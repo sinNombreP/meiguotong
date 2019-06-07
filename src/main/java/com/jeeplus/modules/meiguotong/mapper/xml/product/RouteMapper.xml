@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.product.RouteMapper">
+    
+	<sql id="routeColumns">
+		a.id AS "id",
+		a.agentid AS "agentid",
+		a.no AS "no",
+		a.status AS "status",
+		a.language AS "language",
+		a.type AS "type",
+		a.title AS "title",
+		a.subtitle AS "subtitle",
+		a.infor AS "infor",
+		a.price_infor AS "priceInfor",
+		a.recommend AS "recommend",
+		a.scenic AS "scenic",
+		a.content AS "content",
+		a.car_img AS "carImg",
+		a.start_city AS "startCity",
+		a.end_city AS "endCity",
+		a.label_attrid AS "labelAttrid",
+		a.day_num AS "dayNum",
+		a.night_num AS "nightNum",
+		a.advance_day AS "advanceDay",
+		a.price AS "price",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.look_num AS "lookNum",
+		a.collection_num AS "collectionNum",
+		a.comment_num AS "commentNum",
+		a.finish_num AS "finishNum",
+		a.star AS "star",
+		a.remark AS "remark",
+		b.company_name AS "companyName",
+		c.content AS "langContent",
+		(SELECT  group_concat(b.content) FROM com_tag b WHERE FIND_IN_SET(b.id,a.label_attrid) > 0 ) AS "tagContent",
+		(SELECT  group_concat(b.name) FROM scenic_spot b WHERE FIND_IN_SET(b.id,a.scenic) > 0 ) AS "scenicContent",
+		(SELECT city_name FROM com_city b WHERE a.start_city = b.id) AS "startCityContent",
+		(SELECT city_name FROM com_city b WHERE a.end_city = b.id) AS "endCityContent"
+	</sql>
+	
+	<sql id="routeDateColumns">
+		d.price_date AS "priceDate",
+		d.one_profit AS "oneProfit",
+		d.two_profit AS "twoProfit",
+		d.three_profit AS "threeProfit",
+		d.four_profit AS "fourProfit",
+		d.arrange_profit AS "arrangeProfit",
+		d.price_info AS "priceInfo",
+		d.house_one AS "houseOne",
+		d.stock AS "stock",
+		d.one_cost AS "oneCost",
+		d.two_cost AS "twoCost",
+		d.three_cost AS "threeCost",
+		d.four_cost AS "fourCost",
+		d.arrange_cost AS "arrangeCost"
+	</sql>
+	
+		<sql id="routeTimeColumns">
+		e.routeid AS "routeid",
+		e.date_type AS "dateType",
+		e.begin_date AS "beginDate",
+		e.end_date AS "endDate",
+		e.week_date AS "weekDate",
+		e.day_date AS "dayDate"
+	</sql>
+	
+	<sql id="routeJoins">
+		LEFT JOIN sys_user b ON b.fatherid = 0 AND a.agentid = b.agentid
+		LEFT JOIN com_language c ON a.language = c.id
+		LEFT JOIN route_date d ON a.id = d.routeid AND d.fathid = 0
+		LEFT JOIN route_time e ON a.id = e.routeid
+	</sql>
+	
+	<sql id="routeJoinsOne">
+		LEFT JOIN sys_user b ON b.fatherid = 0 AND a.agentid = b.agentid
+		LEFT JOIN com_language c ON a.language = c.id
+	</sql>
+	
+    <!-- 获取路线详情接口 -->
+    <select id="getRoute" resultType="Route" >
+		SELECT 
+			a.day_num AS "dayNum",
+			a.title AS "title",
+			a.subtitle AS "subtitle",
+			a.no as "no",
+			a.infor AS "infor",
+			a.price_infor AS "priceInfor",
+			a.recommend AS "recommend",
+			a.end_city AS "endCity",
+			cc.city_name as "endCityContent",
+		    a.start_city AS "startCity",
+			b.city_name as "startCityContent",
+			a.price AS "price",
+			a.car_img AS "carImg",
+			a.comment_num AS "commentNum",
+			a.star AS "star",
+			a.content AS "content",
+			if((select count(pc.id) from product_collection pc where pc.type=1 and 
+				pc.typeid=a.id and pc.memberid=#{memberid})>0,1,2) as "ifcollection",
+			ifnull((SELECT  group_concat(b.content) FROM com_tag b 
+				WHERE FIND_IN_SET(b.id,a.label_attrid) > 0 ),"") AS "tagContent",
+			(select GROUP_CONCAT(ss.name) from route_content rc
+				LEFT JOIN scenic_spot ss on ss.id=rc.trip_scenic
+				where rc.routeid=a.id ORDER BY rc.day_count) as "scenicContent",
+			su.company_name as "companyName",
+			a.remark AS "remark"
+		FROM route a
+		left join com_city cc on cc.id = a.end_city
+		left join com_city b on b.id = a.start_city
+		left join sys_user su on su.agentid=a.agentid and su.fatherid=0
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取参团详情接口 -->
+    <select id="getCityRoute" resultType="Route" >
+		SELECT 
+			a.day_num AS "dayNum",
+			a.title AS "title",
+			a.subtitle AS "subtitle",
+			a.no AS "no",
+			a.infor AS "infor",
+			a.end_city AS "endCity",
+			cc.city_name as "endCityContent",
+			a.price_infor AS "priceInfor",
+			a.recommend AS "recommend",
+			a.price AS "price",
+			a.car_img AS "carImg",
+			a.comment_num AS "commentNum",
+			a.star AS "star",
+			a.content AS "content",
+			if((select count(pc.id) from product_collection pc where pc.type=2 and 
+				pc.typeid=a.id and pc.memberid=#{memberid})>0,1,2) as "ifcollection",
+			ifnull((SELECT  group_concat(b.content) FROM com_tag b 
+				WHERE FIND_IN_SET(b.id,a.label_attrid) > 0 ),"") AS "tagContent",
+			(select GROUP_CONCAT(ss.name) from route_content rc
+				LEFT JOIN scenic_spot ss on ss.id=rc.trip_scenic
+				where rc.routeid=a.id ORDER BY rc.day_count,rc.trip_date) as "scenicContent",
+			su.company_name as "companyName",
+			a.remark AS "remark"
+		FROM route a
+		left join com_city cc on cc.id=a.end_city
+		left join sys_user su on su.agentid=a.agentid and su.fatherid=0
+		WHERE a.id = #{id}
+	</select>
+	<select id="get" resultType="Route" >
+		SELECT 
+			<include refid="routeColumns"/>,
+			<include refid="routeDateColumns"/>,
+			<include refid="routeTimeColumns"/>,
+			if(a.type=1,b1.city_name,cc1.city_name) as "cityName",
+			if(a.type=1,a.start_city,a.end_city) as "cityid"
+		FROM route a
+		<include refid="routeJoins"/>
+		left join com_city cc1 on cc1.id = a.end_city
+		left join com_city b1 on b1.id = a.start_city
+		WHERE a.id = #{id}
+	</select>
+	<!-- 常规路线搜索接口 -->
+	<select id="findRouteList" resultType="Route" >
+		SELECT 
+			a.id as "routeid",
+			a.title AS "title",
+			a.subtitle AS "subtitle",
+			a.infor AS "infor",
+			a.car_img AS "carImg",
+			a.price AS "price",
+			a.comment_num AS "commentNum",
+			a.star AS "star",
+			ifnull((SELECT  group_concat(b.content) FROM com_tag b WHERE FIND_IN_SET(b.id,a.label_attrid) > 0 ),"") AS "tagContent"
+		FROM route a
+		<where>
+			a.del_flag = 0 AND a.type = #{type} AND a.language = #{language}
+			 and a.status = 3
+			 and EXISTS(SELECT price_date from route_date 
+				where fathid=1 and routeid=a.id and price_date>NOW() 
+				)
+			${dataScope}
+			<if test="startCity != null and startCity != ''">
+				and a.start_city = #{startCity}
+			</if>
+			<if test="endCity != null and endCity != ''">
+				and a.end_city = #{endCity}
+			</if>
+			<if test="day != null and day != ''">
+				AND FIND_IN_SET(if(a.day_num>=15,15,a.day_num),#{day})>0
+			</if>
+			<if test="minPrice != null and minPrice != ''">
+				AND a.price>#{minPrice}
+			</if>	
+			<if test="maxPrice != null and maxPrice != ''">
+				AND #{maxPrice}>a.price
+			</if>
+			 <if test="dateLIst != null and dateLIst != ''">
+				 AND exists (select id from route_date where routeid=a.id and fathid=1  
+				 and price_date in 
+				<foreach collection="dateLIst" item="date" index="index"
+                	open="(" close=")" separator=",">
+                	#{date}
+            	</foreach>
+            	)
+			</if>
+			<if test="scenicList != null and scenicList != ''">
+				and 
+				(<foreach item="scenic" index="index" collection="scenicList" separator="or">
+	                find_in_set(#{scenic},a.scenic)>0
+				</foreach>)
+			</if>
+			<if test="attrList != null and attrList != ''">
+				and 
+				(<foreach item="attr" index="index" collection="attrList" separator="or">
+	                find_in_set(#{attr},a.label_attrid)>0
+				</foreach>)
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 当地参团搜索接口 -->
+	<select id="findCityRouteList" resultType="Route" >
+		SELECT 
+			a.id as "routeid",
+			a.title AS "title",
+			a.subtitle AS "subtitle",
+			a.infor AS "infor",
+			a.car_img AS "carImg",
+			a.price AS "price",
+			a.comment_num AS "commentNum",
+			a.star AS "star",
+			ifnull((SELECT  group_concat(b.content) FROM com_tag b 
+				WHERE FIND_IN_SET(b.id,a.label_attrid) > 0 ),"") AS "tagContent",
+			cc.city_name as "endCityContent",
+			(select GROUP_CONCAT(ss.name) from route_content rc
+				LEFT JOIN scenic_spot ss on ss.id=rc.trip_scenic
+				where rc.routeid=a.id ORDER BY rc.day_count,rc.trip_date) as "scenicContent",
+			a.day_num as "dayNum",
+			(SELECT price_date from route_date 
+				where fathid=1 and routeid=a.id and price_date>NOW() 
+				order by price_date limit 1) as "routeDate",
+			rt.date_type as "dateType",
+			rt.begin_date as "beginDate",
+			rt.end_date as "endDate",
+			rt.week_date as "weekDate",
+			rt.day_date as "dayDate"
+		FROM route a
+		left join com_city cc on cc.id=a.end_city
+		left join route_time rt on rt.routeid=a.id
+		<where>
+			a.del_flag = 0 AND a.type = #{type} AND a.language = #{language}
+			and a.status = 3
+			and EXISTS(SELECT price_date from route_date 
+				where fathid=1 and routeid=a.id and price_date>NOW() 
+				)
+			${dataScope}
+			<if test="endCity != null and endCity != ''">
+				and a.end_city = #{endCity}
+			</if>
+			<if test="day != null and day != ''">
+				AND FIND_IN_SET(if(a.day_num>=15,15,a.day_num),#{day})>0
+			</if>
+			<if test="minPrice != null and minPrice != ''">
+				AND a.price>#{minPrice}
+			</if>	
+			<if test="maxPrice != null and maxPrice != ''">
+				AND #{maxPrice}>a.price
+			</if>
+			 <if test="dateLIst != null and dateLIst != ''">
+				 AND exists 
+				 (
+				 select id from route_date where routeid=a.id and fathid=1  
+				 	and price_date in 
+					<foreach collection="dateLIst" item="date" index="index"
+	                	open="(" close=")" separator=",">
+	                	#{date}
+	            	</foreach>
+            	 )
+			</if>
+			<if test="attrList != null and attrList != ''">
+				and 
+				(<foreach item="attr" index="index" collection="attrList" separator="or">
+	                find_in_set(#{attr},a.label_attrid)>0
+				</foreach>)
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findList" resultType="Route" >
+		SELECT 
+			<include refid="routeColumns"/>,
+			<include refid="routeDateColumns"/>,
+			<include refid="routeTimeColumns"/>
+		FROM route a
+		<include refid="routeJoins"/>
+		left join com_city cc on cc.id=a.end_city
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+			AND a.type = #{type}
+			${dataScope}
+			<if test="agentid != null">
+				AND a.agentid = #{agentid}
+			</if>
+			<if test="no != null and no != ''">
+				AND a.no LIKE concat('%',#{no},'%')
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status = #{status}
+			</if>
+			<if test="language != null and language != ''">
+				AND a.language = #{language}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="endCity != null and endCity != ''">
+				AND a.end_city = #{endCity}
+			</if>
+			<if test="endCityContent != null and endCityContent != ''">
+				AND cc.city_name like concat('%', #{endCityContent},'%')
+			</if>
+			
+			<if test="labelAttrid != null and labelAttrid != ''">
+				AND a.label_attrid = #{labelAttrid}
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.no,#{ids}) > 0
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 修改审核状态 -->
+	<update id="updateStatus">
+			UPDATE route SET
+			 status = #{status}
+			WHERE id = #{id}
+	</update>
+	
+	<select id="findAllList" resultType="Route" >
+		SELECT 
+			<include refid="routeColumns"/>
+		FROM route a
+		<include refid="routeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO route(
+			agentid,
+			no,
+			status,
+			language,
+			type,
+			title,
+			subtitle,
+			infor,
+			price_infor,
+			recommend,
+			scenic,
+			content,
+			car_img,
+			start_city,
+			end_city,
+			label_attrid,
+			day_num,
+			night_num,
+			advance_day,
+			price,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			del_flag,
+			del_date,
+			del_by,
+			look_num,
+			collection_num,
+			comment_num,
+			finish_num,
+			star,
+			remark
+		) VALUES (
+			#{agentid},
+			#{no},
+			1,
+			#{language},
+			#{type},
+			#{title},
+			#{subtitle},
+			#{infor},
+			#{priceInfor},
+			#{recommend},
+			#{scenic},
+			#{content},
+			#{carImg},
+			#{startCity},
+			#{endCity},
+			#{labelAttrid},
+			#{dayNum},
+			#{nightNum},
+			#{advanceDay},
+			#{price},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{delFlag},
+			#{delDate},
+			#{delBy},
+			0,
+			0,
+			0,
+			0,
+			5,
+			#{remark}
+		)
+		 <selectKey keyProperty="id" order="AFTER" resultType="java.lang.String">
+	        SELECT LAST_INSERT_ID()
+	    </selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE route SET 	
+			agentid = #{agentid},
+			no = #{no},
+			status = #{status},
+			language = #{language},
+			type = #{type},
+			title = #{title},
+			subtitle = #{subtitle},
+			infor = #{infor},
+			price_infor = #{priceInfor},
+			recommend = #{recommend},
+			scenic = #{scenic},
+			content = #{content},
+			car_img = #{carImg},
+			start_city = #{startCity},
+			end_city = #{endCity},
+			label_attrid = #{labelAttrid},
+			day_num = #{dayNum},
+			night_num = #{nightNum},
+			advance_day = #{advanceDay},
+			price = #{price},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remark = #{remark}
+		WHERE id = #{id}
+	</update>
+	<!-- 添加路线或参团编号 -->
+	<update id="updateNo">
+		UPDATE route SET 	
+			no = #{no}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM route
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE route SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Route" statementType="STATEMENT">
+		select * FROM route  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findRrouteByTitle" resultType="Route" >
+		select id,title 
+		from route 
+		where type=2 and status=3 and del_flag=0
+		<if test="title != null and title != ''">
+		and title like concat('%',#{title},'%')
+		</if>
+		<if test="cityId != null and cityId != ''">
+		and end_city=#{cityId} 
+		</if>
+		<if test="routeids != null and routeids != ''">
+		and !find_in_set(id,#{routeids})>0 
+		</if>
+	</select>
+	<select id="findRouteByOfferenTop" resultType="Route" >
+		select id,title 
+		from route 
+		where type=2 and status=3 and del_flag=0
+		and find_in_set(id,#{offerenTop})>0 
+	</select>
+	
+	<select id="findOfferedList" resultType="Route" >
+		select id,title,subtitle,infor,price,comment_num,star,(SELECT  group_concat(b.content) FROM com_tag b WHERE FIND_IN_SET(b.id,route.label_attrid) > 0 ) AS "tagContent",car_img
+		from route 
+		where type=2 and `status`=3 and del_flag=0 
+		and find_in_set(id,#{offerenTop})>0 
+        <if test="language != null and language != ''">
+			and `language`=#{language}
+		</if>
+		<if test="sort != null and sort != '' and sort==2">
+			ORDER BY create_date desc
+		</if>
+		<if test="sort != null and sort != '' and sort==3">
+			ORDER BY finish_num
+		</if>
+		<if test="pageNumber != null  and pageSize !=null ">
+			limit  #{pageNumber},#{pageSize}
+	    </if>
+	</select>
+	
+	<select id="countOffered" resultType="int" >
+		select count(id)
+		from route 
+		where type=2 and `status`=3 and del_flag=0 
+		and find_in_set(id,#{offerenTop})>0 
+        <if test="language != null and language != ''">
+			and `language`=#{language}
+		</if>
+	</select>
+	
+	<select id="findRrouteByOfferenTop" resultType="Route" >
+		select id,title 
+		from route 
+		where type=2 and status=3 and del_flag=0
+		and find_in_set(id,#{offerenTop})>0 
+	</select>
+	
+	<select id="findRouteStockByDate" resultType="Route" >
+		SELECT 
+			a.id,a.advance_day as "advanceDay",r.stock,r.num
+		FROM route a 
+		left join route_date r on a.id=r.routeid
+		WHERE a.id = #{0} and DATE_FORMAT(r.price_date, '%Y-%m-%d')=DATE_FORMAT(#{1}, '%Y-%m-%d')
+	</select>
+	
+	<!--修改星级、评论数-->
+	<update id="changeCommnetNum">
+		UPDATE route SET 	
+			star=(select truncate(sum(level)/count(id),1) from com_comment where (type=4 or type=5) and type_id=#{id}),
+			comment_num=comment_num+1
+		WHERE id = #{id}
+	</update>
+	
+	<!--修改查看数量-->
+	<update id="changeLookNum">
+		update route set look_num=look_num+1 where id=#{id}
+	</update>
+	
+	<!--修改收藏数量-->
+	<update id="changecollectionNum">
+		update route set collection_num=collection_num+#{collectionNum} where id=#{id}
+	</update>
+</mapper>

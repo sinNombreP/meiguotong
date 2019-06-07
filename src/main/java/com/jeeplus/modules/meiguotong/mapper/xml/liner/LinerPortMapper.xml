@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.liner.LinerPortMapper">
+    
+	<sql id="linerPortColumns">
+		a.id AS "id",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy.id",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.name AS "name",
+		a.cityid AS "cityid",
+		a.status AS "status",
+		cl.content as "languageName",
+		cc.city_name as "cityName"
+	</sql>
+	
+	<sql id="linerPortJoins">
+		left join com_language cl on cl.id=a.language_id 
+		left join com_city cc on cc.id=a.cityid
+	</sql>
+	
+    
+	<select id="get" resultType="LinerPort" >
+		SELECT 
+			<include refid="linerPortColumns"/>
+		FROM liner_port a
+		<include refid="linerPortJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!--  根据语言获取港口 -->
+	<select id="getPortList" resultType="LinerPort" >
+		SELECT 
+			a.id AS "id",
+			a.name AS "name"
+		FROM liner_port a
+		<where>
+			a.del_flag = 0 and a.status=1
+				AND a.language_id = #{languageId}
+		</where>
+	</select>
+	<!--  根据语言城市获取港口 -->
+	<select id="getPortByCity" resultType="LinerPort" >
+		SELECT 
+			a.id AS "id",
+			a.name AS "name"
+		FROM liner_port a
+		<where>
+			a.del_flag = 0 and a.status=1
+				AND a.language_id = #{languageId}
+				and a.cityid = #{cityid}
+		</where>
+	</select>
+	<select id="findList" resultType="LinerPort" >
+		SELECT 
+			<include refid="linerPortColumns"/>
+		FROM liner_port a
+		<include refid="linerPortJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id = #{languageId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="LinerPort" >
+		SELECT 
+			<include refid="linerPortColumns"/>
+		FROM liner_port a
+		<include refid="linerPortJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO liner_port(
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			name,
+			cityid,
+			status
+		) VALUES (
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy.id},
+			#{delFlag},
+			#{languageId},
+			#{name},
+			#{cityid},
+			1
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE liner_port SET 	
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy.id},
+			language_id = #{languageId},
+			name = #{name},
+			cityid = #{cityid},
+			status = #{status}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM liner_port
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE liner_port SET 
+			del_flag = 1,
+			del_date = #{delDate},
+			del_by = #{delBy.id}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="LinerPort" statementType="STATEMENT">
+		select * FROM liner_port  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

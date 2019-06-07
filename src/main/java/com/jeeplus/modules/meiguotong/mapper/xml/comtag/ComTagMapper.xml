@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.comtag.ComTagMapper">
+    
+	<sql id="comTagColumns">
+		a.id AS "id",
+		a.tag_num AS "tagNum",
+		a.type AS "type",
+		a.father_id AS "fatherId",
+		a.status AS "status",
+		a.language_id AS "languageId",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.content AS "content"
+	</sql>
+	
+	<sql id="comTagJoins">
+		
+	</sql>
+	<!-- 查找当地玩家已有属性 -->
+    <select id="getGuideTagList" resultType="ComTag" >
+		SELECT 
+			<include refid="comTagColumns"/>
+		FROM com_tag a
+		<include refid="comTagJoins"/>
+		WHERE FIND_IN_SET(a.id,#{tagId})>0
+	</select>
+	<select id="get" resultType="ComTag" >
+		SELECT 
+			<include refid="comTagColumns"/>,
+			ct.content as "fatherContent"
+		FROM com_tag a
+		<include refid="comTagJoins"/>
+		left join com_tag ct on ct.id=a.father_id
+		WHERE a.id = #{id}
+	</select>
+	<!-- 根据语言获取标签 -->
+	<select id="getLabelByLanguage" resultType="ComTag">
+	select
+	  	a.id AS "id",
+	 	 a.content AS "content"
+	from com_tag a
+	where a.father_id=0 and a.del_flag=0 and a.type=#{type} and a.status=1 and a.language_id=#{languageId}
+	</select>
+	<!-- 获取玩家擅长属性 -->
+	<select id="getGuideLabel" resultType="ComTag">
+	select
+	  	a.id AS "tagid",
+	 	 a.content AS "content"
+	from com_tag a
+	where a.del_flag=0 and a.type=5 and a.status=1 and a.language_id=#{languageId}
+	</select>
+	<!-- 获取各类型标签属性 类型56-->
+	<select id="getLabel" resultType="ComTag">
+	select
+	  	a.id AS "tagid",
+	 	 a.content AS "content"
+	from com_tag a
+	where a.del_flag=0 and a.type=#{type} and a.status=1 and a.language_id=#{languageId}
+	</select>
+	<!-- 获取各类型标签属性类型1234 -->
+	<select id="getRouteLabel" resultMap="comTagList">
+	select
+	  	a.id AS "tagid",
+	 	a.content AS "content"
+	from com_tag a
+	where a.del_flag=0 and a.type=#{type} and a.status=1 
+	and a.language_id=#{languageId} and a.father_id=0
+	and
+	EXISTS(select b.id from com_tag b where b.father_id = a.id and b.del_flag=0 and b.status=1 )
+	</select>
+	<resultMap id="comTagList" type="ComTag">
+		<result property="tagid" column="tagid"/>
+		<result property="content" column="content"/>
+			 <collection property="comTagList" column="tagid" javaType="ArrayList" 
+		                ofType="ComTag" select="getRouteTag"/>
+	</resultMap>
+	<select id="getRouteTag" resultType="ComTag">
+	select
+	  	a.id AS "tagid",
+	 	a.content AS "content"
+	from com_tag a
+	where a.del_flag=0 and a.status=1 
+	 and a.father_id=#{tagid}
+	</select>
+	
+	<!-- 查找当地玩家属性名称 -->
+	<select id="getList" resultType="ComTag">
+	select
+	<include refid="comTagColumns"/> 
+	from com_tag a
+	where a.del_flag=0 and a.type=5 and a.status=1
+	</select>
+	<!-- 常规路线列表数据 -->
+	<select id="findList" resultMap="getCommentDateMap" >
+				SELECT 
+			<include refid="comTagColumns"/>
+		FROM com_tag a
+		<where>
+		 a.del_flag = 0	
+		 AND a.father_id = 0   and a.type=#{type}
+		</where>
+	</select>
+	<resultMap id="getCommentDateMap" type="ComTag" >
+		<id property="id" column="id" />
+		<result property="id" column="id"/>
+		<result property="type" column="type"/>
+	<collection property="comTagList" column="{id=id,type=type}" javaType="ArrayList"  ofType="ComTag" select="getCommentDateTwo"/>
+	</resultMap>	
+	<!-- 根据父评论id获取子评论 -->
+	<select id="getCommentDateTwo" resultType="ComTag">
+		SELECT 
+			<include refid="comTagColumns"/>
+		FROM com_tag a
+		<where>
+		 a.del_flag = 0  and a.type=#{type}
+		 AND a.father_id = #{id} 
+		</where>
+	</select>	
+	<!-- 根据type查询属性 -->
+     <select id="getNameByType" resultType="ComTag" >
+     		SELECT 
+					a.id AS "id",
+					a.content AS "content"
+					<if test="labelAttrid != null and labelAttrid != ''">
+					,if(FIND_IN_SET(a.id,#{labelAttrid})>0,1,0) AS "checkFlag"
+					</if>
+     		FROM com_tag a
+      		WHERE a.type = #{type} AND a.del_flag = 0 AND a.status = 1 AND a.father_id &gt; 0
+     		<if test="languageId != null"> 
+     			AND a.language_id = #{languageId}
+     		</if>
+     		<if test="content != null and content != ''"> 
+     			AND a.content LIKE concat('%',#{content},'%')
+     		</if> 
+     </select>
+	
+	<!-- 获取某个类型还未添加的属性 -->
+     <select id="getTagByType" resultType="ComTag" >
+     		SELECT 
+					a.id AS "id",
+					a.content AS "content"
+					<if test="labelAttrid != null and labelAttrid != ''">
+					,if(FIND_IN_SET(a.id,#{labelAttrid})>0,1,0) AS "checkFlag"
+					</if>
+     		FROM com_tag a
+      		WHERE a.type = #{type} AND a.del_flag = 0 AND a.status = 1 AND a.father_id &gt; 0
+     		<if test="languageId != null"> 
+     			AND a.language_id = #{languageId}
+     		</if>
+     		<if test="content != null and content != ''"> 
+     			AND a.content LIKE concat('%',#{content},'%')
+     		</if> 
+     		<if test="labelAttrid != null and labelAttrid != ''"> 
+     			AND !FIND_IN_SET(a.id,#{labelAttrid})>0
+     		</if> 
+     </select>
+	<!-- 当地玩家列表数据 -->
+	 <select id="PlayerList" resultType="ComTag" >
+		SELECT 
+			<include refid="comTagColumns"/>
+		FROM com_tag a
+		<include refid="comTagJoins"/>
+		<where>
+			a.del_flag = 0 and a.type=#{type}
+			${dataScope}
+			<if test="tagNum != null and tagNum != ''">
+				AND a.tag_num = #{tagNum}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComTag" >
+		SELECT 
+			<include refid="comTagColumns"/>
+		FROM com_tag a
+		<include refid="comTagJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_tag(
+			tag_num,
+			type,
+			father_id,
+			status,
+			language_id,
+			update_by,
+			update_date,
+			create_date,
+			create_by,
+			del_flag,
+			del_date,
+			del_by,
+			content
+		) VALUES (
+			#{tagNum},
+			#{type},
+			#{fatherId},
+			1,
+			#{languageId},
+			#{updateBy.id},
+			#{updateDate},
+			#{createDate},
+			#{createBy.id},
+			#{delFlag},
+			#{delDate},
+			#{delBy},
+			#{content}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_tag SET 	
+			tag_num = #{tagNum},
+			type = #{type},
+			father_id = #{fatherId},
+			status = #{status},
+			language_id = #{languageId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			content =#{content}
+		WHERE id = #{id}
+	</update>
+	<update id="uPdate">
+		UPDATE com_tag SET
+			content =#{content}
+		WHERE type = #{type}
+	</update>
+	<!--修改状态-->
+	<update id="status">
+		UPDATE com_tag SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_tag
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_tag SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComTag" statementType="STATEMENT">
+		select * FROM com_tag  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

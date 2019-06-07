@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.module.ModuleHtmlMapper">
+    
+	<sql id="moduleHtmlColumns">
+		a.id AS "id",
+		a.html_name AS "htmlName",
+		a.html_seal AS "htmlSeal"
+	</sql>
+	
+	<sql id="moduleHtmlJoins">
+		
+	</sql>
+	
+	<!-- 获取页面ID -->
+	<select id="getModuleDataInfo" resultType="ModuleHtml">
+		SELECT 
+			<include refid="moduleHtmlColumns"/>
+		FROM module_html a
+		WHERE a.html_name = #{htmlName} AND a.html_seal = #{htmlSeal}
+	</select>
+    
+	<select id="get" resultType="ModuleHtml" >
+		SELECT 
+			<include refid="moduleHtmlColumns"/>
+		FROM module_html a
+		<include refid="moduleHtmlJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ModuleHtml" >
+		SELECT 
+			<include refid="moduleHtmlColumns"/>
+		FROM module_html a
+		<include refid="moduleHtmlJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 获取所有网站页面 -->
+	<select id="getModuleHtmlList" resultMap="getModuleHtmlListMap">
+		SELECT 
+			a.html_name AS "htmlName"
+		FROM module_html a
+		GROUP BY a.html_name
+	</select>
+
+	<resultMap type="ModuleHtml" id="getModuleHtmlListMap">
+		<id property="htmlName" column="htmlName"/>
+		<collection  property="moduleHtmlList" column="htmlName" 
+		javaType="ArrayList" ofType="ModuleHtml" select="getModuleHtmlListMapSelect"/>
+	</resultMap>
+	
+	<select id="getModuleHtmlListMapSelect" resultType="ModuleHtml">
+		SELECT 
+			<include refid="moduleHtmlColumns"/>
+		FROM module_html a
+		WHERE a.html_name = #{html_name}
+	</select>
+	
+	<select id="findAllList" resultType="ModuleHtml" >
+		SELECT 
+			<include refid="moduleHtmlColumns"/>
+		FROM module_html a
+		<include refid="moduleHtmlJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO module_html(
+			html_name,
+			html_seal
+		) VALUES (
+			#{htmlName},
+			#{htmlSeal}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE module_html SET 	
+			html_name = #{htmlName},
+			html_seal = #{htmlSeal}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM module_html
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE module_html SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ModuleHtml" statementType="STATEMENT">
+		select * FROM module_html  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

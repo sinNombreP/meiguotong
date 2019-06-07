@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.insurance.InsuranceRelationModMapper">
+    
+	<sql id="insuranceRelationModColumns">
+		a.id AS "id",
+		a.agentid AS "agentid",
+		a.type AS "type",
+		a.name AS "name",
+		a.insurance_id AS "insuranceId",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId"
+	</sql>
+	
+	<sql id="insuranceRelationModJoins">
+		
+	</sql>
+    <!--  获取不同类型保险方案 -->
+    <select id="getInsurance" resultType="Insurance" >
+		SELECT 
+			insurance.id as "id",
+			insurance.name as "name",
+			insurance.price as "price",
+			insurance.content as "content"
+		FROM insurance_relation_mod a
+		left join insurance insurance on FIND_IN_SET(insurance.id,a.insurance_id)>0
+		where a.del_flag = 0 and a.type=#{type} and a.language_id=#{languageId}
+		and insurance.status=3 and insurance.del_flag=0
+	</select>
+	<select id="get" resultType="InsuranceRelationMod" >
+		SELECT 
+			<include refid="insuranceRelationModColumns"/>
+		FROM insurance_relation_mod a
+		<include refid="insuranceRelationModJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 查找保险数据 -->
+	<select id="findInsuranceById" resultType="Insurance" >
+		SELECT 
+			a.name AS "name",
+			a.price AS "price",
+			a.content AS "content"
+		FROM insurance a
+		WHERE  
+			<foreach collection="array" item="ids" open="a.id in ("  close=")" separator=",">
+			#{ids}
+			</foreach>
+	</select>
+	
+	<!--   查找保险的insuranceId -->
+		<select id="findInsruanceId" resultType="String" >
+		SELECT 
+			a.insurance_id AS "insuranceId"
+		FROM insurance_relation_mod a
+		WHERE a.type = 6
+	</select>
+	<!-- 查找邮轮可买保险-->
+	<select id="findInsruanceRelationModList" resultType="InsuranceRelationMod" >
+		SELECT 
+		
+			<include refid="insuranceRelationModColumns"/>,
+			i.name AS "insuranceName",
+			i.price AS "price"			
+		FROM insurance_relation_mod a
+		left join i on a.insurance_id=i.id
+		WHERE a.type = #{type} and a.del_flag=0
+	</select>	
+	<select id="findList" resultType="InsuranceRelationMod" >
+		SELECT 
+			<include refid="insuranceRelationModColumns"/>
+		FROM insurance_relation_mod a
+		<include refid="insuranceRelationModJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="agentid != null">
+				AND a.agentid = #{agentid}
+			</if>
+			<if test="insuranceId != null and insuranceId != ''">
+				AND a.insurance_id = #{insuranceId}
+			</if>
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 查询保险信息 -->
+	<select id="getInfor" resultType="InsuranceRelationMod" >
+		SELECT 
+			<include refid="insuranceRelationModColumns"/>,
+			(select group_concat(b.name) from insurance b
+				where FIND_IN_SET(b.id,a.insurance_id)>0) as "insuranceName"
+		FROM insurance_relation_mod a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="agentid != null">
+				AND a.agentid = #{agentid}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type}
+			</if>
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	
+	<select id="findAllList" resultType="InsuranceRelationMod" >
+		SELECT 
+			<include refid="insuranceRelationModColumns"/>
+		FROM insurance_relation_mod a
+		<include refid="insuranceRelationModJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO insurance_relation_mod(
+			agentid,
+			type,
+			name,
+			insurance_id,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id
+		) VALUES (
+			#{agentid},
+			#{type},
+			#{name},
+			#{insuranceId},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE insurance_relation_mod SET 	
+			agentid = #{agentid},
+			type = #{type},
+			name = #{name},
+			insurance_id = #{insuranceId},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM insurance_relation_mod
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE insurance_relation_mod SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="InsuranceRelationMod" statementType="STATEMENT">
+		select * FROM insurance_relation_mod  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

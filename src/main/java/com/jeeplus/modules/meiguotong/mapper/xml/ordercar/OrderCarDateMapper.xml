@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.ordercar.OrderCarDateMapper">
+    
+	<sql id="orderCarDateColumns">
+		a.id AS "id",
+		a.orderid AS "orderid",
+		a.serviceid AS "serviceid",
+		a.title AS "title",
+		a.cityid AS "cityid",
+		a.city AS "city",
+		a.air_num AS "airNum",
+		a.send_airport AS "sendAirport",
+		a.send_date AS "sendDate",
+		a.reach_airport AS "reachAirport",
+		a.reach_date AS "reachDate",
+		a.day AS "day",
+		a.day_time AS "dayTime",
+		a.end_cityid as "endCityid",
+		a.end_city as "endCity",
+		a.range as "range"
+	</sql>
+	
+	<sql id="orderCarDateJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderCarDate" >
+		SELECT 
+			<include refid="orderCarDateColumns"/>
+		FROM order_car_date a
+		<include refid="orderCarDateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderCarDate" >
+		SELECT 
+			<include refid="orderCarDateColumns"/>
+		FROM order_car_date a
+		<include refid="orderCarDateJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderCarDate" >
+		SELECT 
+			<include refid="orderCarDateColumns"/>
+		FROM order_car_date a
+		<include refid="orderCarDateJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_car_date(
+			orderid,
+			serviceid,
+			title,
+			cityid,
+			city,
+			air_num,
+			send_airport,
+			send_date,
+			reach_airport,
+			reach_date,
+			day,
+			day_time,
+			end_cityid,
+			end_city,
+			`range`
+		) VALUES (
+			#{orderid},
+			#{serviceid},
+			#{title},
+			#{cityid},
+			#{city},
+			#{airNum},
+			#{sendAirport},
+			#{sendDate},
+			#{reachAirport},
+			#{reachDate},
+			#{day},
+			#{dayTime},
+			#{endCityid},
+			#{endCity},
+			#{range}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE order_car_date SET 	
+			orderid = #{orderid},
+			serviceid = #{serviceid},
+			title = #{title},
+			cityid = #{cityid},
+			city = #{city},
+			air_num = #{airNum},
+			send_airport = #{sendAirport},
+			send_date = #{sendDate},
+			reach_airport = #{reachAirport},
+			reach_date = #{reachDate},
+			day = #{day},
+			day_time = #{dayTime},
+			end_cityid = #{endCityid},
+			end_city = #{endCity},
+			range = #{range}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_car_date
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_car_date SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderCarDate" statementType="STATEMENT">
+		select * FROM order_car_date  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 查询包车租车日期行程 -->
+	<select id="findOrderCarDataByOrderId" resultType="OrderCarDate" >
+		select DATE_FORMAT(o.day_time, '%Y-%m-%d') as "dayTime" from  order_car_date o 
+		where orderid=#{orderid} group by DATE_FORMAT(o.day_time, '%Y-%m-%d') order by DATE_FORMAT(o.day_time, '%Y-%m-%d')
+	</select>
+	<!-- 查询包车租车日期行程详情 -->
+	<select id="findOrderCarDataByDay" resultType="OrderCarDate" >
+		select
+		<include refid="orderCarDateColumns"/>
+		FROM order_car_date a
+		<include refid="orderCarDateJoins"/>
+		where a.orderid=#{orderid} and DATE_FORMAT(a.day_time, '%Y-%m-%d')=DATE_FORMAT(#{dayTime}, '%Y-%m-%d')
+	</select>
+</mapper>

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.travel.OrderTravelDetailsMapper">
+    
+	<sql id="orderTravelDetailsColumns">
+		a.id AS "id",
+		a.order_trvel_id AS "orderTrvelId",
+		a.day AS "day",
+		a.sort AS "sort",
+		a.city_sort AS "citySort",
+		a.city AS "city",
+		a.scenic AS "scenic",
+		a.use_date AS "useDate",
+		a.type AS "type",
+		a.busiInfo AS "busiInfo",
+		a.busi_address AS "busiAddress",
+		a.busi_begin_date AS "busiBeginDate",
+		a.busi_end_date AS "busiEndDate",
+		a.busi_item_id AS "busiItemId",
+		a.busi_item AS "busiItem",
+		a.busi_adult_num AS "busiAdultNum",
+		a.busi_child_num AS "busiChildNum",
+		a.busi_content AS "busiContent",
+		b.city_name AS "cityName",
+		a.price AS "price",
+		a.order_scenic_id AS "orderScenicId"
+	</sql>
+	
+	<sql id="orderTravelDetailsJoins">
+		LEFT JOIN com_city b ON a.city = b.id
+	</sql>
+	
+    
+	<select id="get" resultType="OrderTravelDetails" >
+		SELECT 
+			<include refid="orderTravelDetailsColumns"/>
+		FROM order_travel_details a
+		<include refid="orderTravelDetailsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderTravelDetails" >
+		SELECT 
+			<include refid="orderTravelDetailsColumns"/>
+		FROM order_travel_details a
+		<include refid="orderTravelDetailsJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据定制ID查询详情 -->
+	<select id="getInfor" resultType="OrderTravelDetails">
+		SELECT 
+			a.day AS "day",
+			DATE(a.use_date) AS "useDate"
+		FROM order_travel_details a
+		<where>
+			a.order_trvel_id = #{id}
+		</where>
+		GROUP BY a.day,DATE(a.use_date)
+		ORDER BY a.day
+	</select>
+	
+	<!-- 查询每一天的详情 -->
+	<select id="getDateByDay" resultType="comCity">
+		select c.id,city_name as "cityName"
+		from order_travel_details a left join com_city c on a.city=c.id
+		where a.day=#{day} and a.order_trvel_id=#{orderTrvelId} and a.type=1
+		group by c.id,city_name
+	</select>
+	
+	<select id="findAllList" resultType="OrderTravelDetails" >
+		SELECT 
+			<include refid="orderTravelDetailsColumns"/>
+		FROM order_travel_details a
+		<include refid="orderTravelDetailsJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_travel_details(
+			order_trvel_id,
+			day,
+			city_sort,
+			sort,
+			city,
+			scenic,
+			use_date,
+			type,
+			busiInfo,
+			busi_address,
+			busi_begin_date,
+			busi_end_date,
+			busi_item_id,
+			busi_item,
+			busi_adult_num,
+			busi_child_num,
+			busi_content,
+			price,
+			order_scenic_id
+		) VALUES (
+			#{orderTrvelId},
+			#{day},
+			#{citySort},
+			#{sort},
+			#{city},
+			#{scenic},
+			#{useDate},
+			#{type},
+			#{busiInfo},
+			#{busiAddress},
+			#{busiBeginDate},
+			#{busiEndDate},
+			#{busiItemId},
+			#{busiItem},
+			#{busiAdultNum},
+			#{busiChildNum},
+			#{busiContent},
+			#{price},
+			#{orderScenicId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE order_travel_details SET 	
+			order_trvel_id = #{orderTrvelId},
+			day = #{day},
+			sort = #{sort},
+			city_sort = #{citySort},
+			city = #{city},
+			scenic = #{scenic},
+			use_date = #{useDate},
+			type = #{type},
+			busiInfo = #{busiInfo},
+			busi_address = #{busiAddress},
+			busi_begin_date = #{busiBeginDate},
+			busi_end_date = #{busiEndDate},
+			busi_item_id = #{busiItemId},
+			busi_item = #{busiItem},
+			busi_adult_num = #{busiAdultNum},
+			busi_child_num = #{busiChildNum},
+			busi_content = #{busiContent},
+			price = #{price},
+			order_scenic_id = #{orderScenicId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_travel_details
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_travel_details SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderTravelDetails" statementType="STATEMENT">
+		select * FROM order_travel_details  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findBusinessByOrderTravelId" resultType="OrderTravelDetails" >
+		select a.busiInfo
+		 from order_travel_details a 
+		 where a.day=#{day} and a.city=#{city} and a.order_trvel_id=#{orderTrvelId} and a.type=2
+	</select>
+	
+	<!-- 前端查询每一天的详情 -->
+	<select id="findTravelDetailByDate" resultType="comCity">
+		select c.id,city_name as "cityName"
+		from order_travel_details a left join com_city c on a.city=c.id
+		where DATE_FORMAT(a.use_date, '%Y-%m-%d')=DATE_FORMAT(#{useDate}, '%Y-%m-%d')
+		 and a.order_trvel_id=#{orderTrvelId}
+		group by c.id,city_name
+	</select>
+	
+	<!-- 前端查询商务信息 -->
+	<select id="findBusinessByDate" resultType="OrderTravelDetails" >
+		select a.busiInfo
+		 from order_travel_details a 
+		 where DATE_FORMAT(a.use_date, '%Y-%m-%d')=DATE_FORMAT(#{useDate}, '%Y-%m-%d')
+		  and a.city=#{city} and a.order_trvel_id=#{orderTrvelId} and a.type=2
+	</select>
+	
+</mapper>

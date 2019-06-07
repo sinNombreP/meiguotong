@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.comPoster.ComPosterMapper">
+    
+	<sql id="comPosterColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.link AS "link",
+		a.position_type AS "positionType",
+		a.type AS "type",
+		a.typeid AS "typeid",
+		a.content AS "content",
+		a.carousel AS "carousel",
+		a.img AS "img",
+		a.create_by AS "createBy.id",
+		a.create_date AS "createDate",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.is_auto AS "isAuto",
+		a.time AS "time"
+	</sql>
+	
+	<sql id="comPosterJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComPoster" >
+		SELECT 
+			<include refid="comPosterColumns"/>
+		FROM com_poster a
+		<include refid="comPosterJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	
+	<select id="findPosterByType" resultType="ComPoster" >
+		SELECT a.id AS "id",a.title AS "title",a.type AS "type",a.typeId AS "typeId",a.link AS "link",a.content AS "content",a.img AS "img",
+		a.time AS "time",a.carousel AS "carousel",a.is_auto AS "isAuto",a.update_date AS "updateDate"  FROM com_poster a
+		where a.position_type=#{positionType}
+		ORDER BY a.carousel
+	</select>
+	
+	
+	<select id="findList" resultType="ComPoster" >
+		SELECT 
+			<include refid="comPosterColumns"/>
+		FROM com_poster a
+		<include refid="comPosterJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="positionType != null and positionType != ''">
+				AND a.position_type LIKE 
+					<if test="dbName == 'oracle'">'%'||#{positionType}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{positionType}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{positionType},'%')</if>
+			</if>
+			<if test="type != null and type != '' ">
+				AND a.type Like
+					<if test="dbName == 'oracle'">'%'||#{type}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{type}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{type},'%')</if>
+			</if>
+			<if test="beginCreateDate != null and endCreateDate != null and beginCreateDate != '' and endCreateDate != ''">
+				AND a.create_date BETWEEN #{beginCreateDate} AND #{endCreateDate}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComPoster" >
+		SELECT 
+			<include refid="comPosterColumns"/>
+		FROM com_poster a
+		<include refid="comPosterJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_poster(
+			title,
+			link,
+			position_type,
+			type,
+			typeid,
+			content,
+			carousel,
+			img,
+			create_by,
+			create_date,
+			update_date,
+			update_by,
+			del_flag,
+			del_date,
+			del_by,
+			is_auto,
+			time
+		) VALUES (
+			#{title},
+			#{link},
+			#{positionType},
+			#{type},
+			#{typeid},
+			#{content},
+			#{carousel},
+			#{img},
+			#{createBy.id},
+			#{createDate},
+			#{updateDate},
+			#{updateBy.id},
+			#{delFlag},
+			#{delDate},
+			#{delBy},
+			#{isAuto},
+			#{time}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_poster SET 	
+			title = #{title},
+			link = #{link},
+			position_type = #{positionType},
+			type = #{type},
+			typeid = #{typeid},
+			content = #{content},
+			carousel = #{carousel},
+			img = #{img},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			is_auto = #{isAuto},
+			time = #{time}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_poster
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_poster SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComPoster" statementType="STATEMENT">
+		select * FROM com_poster  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.hotel.HotelRoomMapper">
+    
+	<sql id="hotelRoomColumns">
+		a.hoteRoomNo AS "hoteRoomNo",
+		a.status AS "status",
+		a.agentid AS "agentid",
+		a.people AS "people",
+		a.id AS "id",
+		a.roomName AS "roomName",
+		a.hotel_id AS "hotelId",
+		a.img_url AS "imgUrl",
+		a.hotel_room_device_id AS "hotelRoomDeviceId",
+		a.content AS "content",
+		a.other_info AS "otherInfo",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		b.city_id AS "cityId",
+		b.level AS "level",
+		b.name AS "name",
+		b.language_id AS "languageid",
+		c.city_name AS "cityName",
+		d.money AS "money",
+		d.stock_all AS "stockAll",
+		d.date_type AS "dateType",
+		d.begin_date AS "beginDate",
+		d.end_date AS "endDate",
+		d.week_date AS "weekDate",
+		d.day_date AS "dayDate",
+		(SELECT group_concat(b.name) FROM hotel_room_device b WHERE FIND_IN_SET(b.id,a.hotel_room_device_id) > 0 ) AS "hotelRoomDeviceName"
+	</sql>
+	
+	<sql id="hotelRoomJoins">
+		LEFT JOIN hotel b ON a.hotel_id = b.id
+		LEFT JOIN com_city c ON b.city_id = c.id
+		LEFT JOIN hotel_room_time d ON a.id = d.hotel_room_id
+	</sql>
+	
+	
+	
+	<select id="get" resultType="HotelRoom" >
+		SELECT 
+			<include refid="hotelRoomColumns"/>
+		FROM hotel_room a
+		<include refid="hotelRoomJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取酒店房间列表 -->
+	<select id="getHotelRoom" resultType="HotelRoom" >
+		SELECT 
+			a.id as "id",
+			a.roomName as "roomName",
+			a.people as "people",
+			a.img_url as "imgUrl",
+			a.content as "content",
+			hrd.price AS "price",
+			hrd.stock_num AS "stockNum"
+		FROM hotel_room a
+		left join hotel_room_date hrd on hrd.hotel_room_id=a.id 
+			and DATE_FORMAT(hrd.price_date, '%Y-%m-%d')=DATE_FORMAT(#{date}, '%Y-%m-%d')
+		where
+			a.del_flag = 0 and a.status=3 and a.hotel_id =#{hotelId}
+			and hrd.id is not null
+		ORDER BY a.update_date DESC
+	</select>
+
+	<select id="findList" resultType="HotelRoom" >
+		SELECT 
+			<include refid="hotelRoomColumns"/>
+		FROM hotel_room a
+		<include refid="hotelRoomJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="roomName != null and roomName != ''">
+				AND (a.roomName LIKE concat('%',#{roomName},'%') OR a.hotelNo = #{roomName})
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="cityId != null">
+				AND b.city_id = #{cityId}
+			</if>
+			<if test="level != null">
+				AND b.level = #{level}
+			</if>
+			<if test="agentid != null">
+				AND b.agentid = #{agentid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据agentid获取城市 -->
+	<select id="findListByAgentid" resultMap="findListByAgentidMap">
+	select 
+		c.cityId AS "cityId",
+		b.city_name AS "cityName"
+	from (
+		SELECT  
+			a.city_id AS "cityId"
+		FROM hotel a
+		<where> a.del_flag = #{DEL_FLAG_NORMAL} 			
+			<if test="agentid != null">
+				AND a.agentid = #{agentid}
+			</if>
+			<if test="languageid != null and languageid!=''">
+				AND a.language_id = #{languageid}
+			</if>
+		</where>
+		GROUP BY a.city_id
+		) c
+		LEFT JOIN com_city b ON c.cityId = b.id
+	</select>
+	
+	<resultMap type="HotelRoom" id="findListByAgentidMap">
+		<result property="cityId" column="cityId"/>
+		<result property="cityName" column="cityName"/>
+	    <collection property="hotelRoomList" column="cityId" javaType="ArrayList"  ofType="HotelRoom" select="getNameByCity"/>
+	</resultMap>
+	
+	<select id="getNameByCity" resultType="HotelRoom">
+ 		SELECT 
+			a.id AS "hotelId",
+			a.name AS "name"
+		FROM hotel a WHERE a.city_id = #{cityId}
+	</select>
+	
+	<select id="findAllList" resultType="HotelRoom" >
+		SELECT 
+			<include refid="hotelRoomColumns"/>
+		FROM hotel_room a
+		<include refid="hotelRoomJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hotel_room(
+			agentid,
+			people,
+			roomName,
+			hotel_id,
+			img_url,
+			hotel_room_device_id,
+			content,
+			other_info,
+			update_by,
+			update_date,
+			create_date,
+			create_by,
+			del_flag,
+			del_date,
+			del_by,
+			status,
+			hoteRoomNo
+		) VALUES (
+			#{agentid},
+			#{people},
+			#{roomName},
+			#{hotelId},
+			#{imgUrl},
+			#{hotelRoomDeviceId},
+			#{content},
+			#{otherInfo},
+			#{updateBy.id},
+			#{updateDate},
+			now(),
+			#{createBy.id},
+			#{delFlag},
+			#{delDate},
+			#{delBy},
+			1,
+			#{hoteRoomNo}
+		)
+		 <selectKey keyProperty="id" order="AFTER" resultType="java.lang.String">
+	        SELECT LAST_INSERT_ID()
+	    </selectKey>
+
+	</insert>
+	
+	<update id="update">
+		UPDATE hotel_room SET 	
+			hoteRoomNo = #{hoteRoomNo},
+			people = #{people},
+			status = #{status},
+			roomName = #{roomName},
+			hotel_id = #{hotelId},
+			img_url = #{imgUrl},
+			hotel_room_device_id = #{hotelRoomDeviceId},
+			content = #{content},
+			other_info = #{otherInfo},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_date = #{delDate},
+			del_by = #{delBy}
+		WHERE id = #{id}
+	</update>
+	<!--  修改酒店房间编号  -->
+	<update id="updateHotelNo">
+		UPDATE hotel_room SET 	
+			hoteRoomNo = #{hoteRoomNo}
+		WHERE id = #{id}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hotel_room
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hotel_room SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="HotelRoom" statementType="STATEMENT">
+		select * FROM hotel_room  where ${propertyName} = '${value}'
+	</select>
+	<!-- 接口获取酒店房间详情 -->
+    <select id="getRoomDetails" resultMap="roomDetails" >
+		SELECT 
+			a.id as "id",
+			a.roomName as "roomName",
+			a.img_url as "imgUrl",
+			a.hotel_room_device_id AS "hotelRoomDeviceId",
+			a.other_info as "otherInfo",
+			hotel.language_id as "languageid"
+		FROM hotel_room a
+		left join hotel hotel on hotel.id=a.hotel_id
+		WHERE a.id = #{id}
+	</select>
+	
+	<resultMap type="HotelRoom" id="roomDetails">
+		<result property="id" column="id"/>
+		<result property="roomName" column="roomName"/>
+		<result property="imgUrl" column="imgUrl"/>
+		<result property="hotelRoomDeviceId" column="hotelRoomDeviceId"/>
+		<result property="otherInfo" column="otherInfo"/>
+		<result property="otherInfo" column="otherInfo"/>
+		<result property="languageid" column="languageid"/>
+	    <collection property="hotelRoomDeviceList" column="{hotelRoomDeviceId=hotelRoomDeviceId,languageid=languageid}" javaType="ArrayList"  ofType="HotelRoomDevice" select="getDevice"/>
+	</resultMap>
+	
+	<select id="getDevice" resultType="HotelRoomDevice">
+ 		SELECT 
+			a.name AS "name",
+			a.icon AS "icon",
+			if(find_in_set(a.id,#{hotelRoomDeviceId})>0,1,2) as "ifTrue"
+		FROM hotel_room_device a 
+		where a.language_id=#{languageid} and a.status=1 and a.del_flag=0
+	</select>
+	
+</mapper>

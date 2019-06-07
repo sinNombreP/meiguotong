@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.compush.ComPushContentMapper">
+    
+	<sql id="comPushContentColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.content AS "content",
+		a.languageid AS "languageid",
+		a.status AS "status",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy.id"
+	</sql>
+	
+	<sql id="comPushContentJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComPushContent" >
+		SELECT 
+			<include refid="comPushContentColumns"/>
+		FROM com_push_content a
+		<include refid="comPushContentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ComPushContent" >
+		SELECT 
+			<include refid="comPushContentColumns"/>
+		FROM com_push_content a
+		<include refid="comPushContentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="content != null and content != ''">
+				AND a.content = #{content}
+			</if>
+			<if test="languageid != null and languageid != ''">
+				AND a.languageid = #{languageid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComPushContent" >
+		SELECT 
+			<include refid="comPushContentColumns"/>
+		FROM com_push_content a
+		<include refid="comPushContentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_push_content(
+			type,
+			content,
+			languageid,
+			status,
+			update_by,
+			update_date,
+			create_date,
+			create_by,
+			del_flag,
+			del_date,
+			del_by
+		) VALUES (
+			#{type},
+			#{content},
+			#{languageid},
+			#{status},
+			#{updateBy.id},
+			#{updateDate},
+			#{createDate},
+			#{createBy.id},
+			#{delFlag},
+			#{delDate},
+			#{delBy.id}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_push_content SET 	
+			type = #{type},
+			content = #{content},
+			languageid = #{languageid},
+			status = #{status},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_date = #{delDate},
+			del_by = #{delBy.id}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_push_content
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_push_content SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComPushContent" statementType="STATEMENT">
+		select * FROM com_push_content  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 根据语言ID查询自动推送模板内容 -->
+	<select id="findComPushContentByLanguageid" resultType="ComPushContent" >
+		select id,content,status from com_push_content where languageid=#{languageid}
+	</select>
+	
+</mapper>

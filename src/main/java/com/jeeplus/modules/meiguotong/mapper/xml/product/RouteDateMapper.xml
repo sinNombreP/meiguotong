@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.product.RouteDateMapper">
+
+    <sql id="routeDateColumns">
+		a.id AS "id",
+		a.fathid AS "fathid",
+		a.routeid AS "routeid",
+		a.price_date AS "priceDate",
+		a.one_profit AS "oneProfit",
+		a.two_profit AS "twoProfit",
+		a.three_profit AS "threeProfit",
+		a.four_profit AS "fourProfit",
+		a.arrange_profit AS "arrangeProfit",
+		a.price_info AS "priceInfo",
+		a.house_one AS "houseOne",
+		a.stock AS "stock",
+		a.one_cost AS "oneCost",
+		a.two_cost AS "twoCost",
+		a.three_cost AS "threeCost",
+		a.four_cost AS "fourCost",
+		a.arrange_cost AS "arrangeCost",
+		a.num AS "num",
+		a.del_flag as "delFlag"
+	</sql>
+
+    <sql id="routeDateJoins">
+
+    </sql>
+    <!-- 获取产品某个日期的价格 -->
+    <select id="getRouteDate" resultType="RouteDate">
+		SELECT 
+			a.price_date AS "priceDate",
+			a.stock AS "stock",
+			(a.one_cost+a.one_profit) AS "oneCost",
+			(a.two_cost+a.two_profit) AS "twoCost",
+			(a.three_cost+a.three_profit) AS "threeCost",
+			(a.four_cost+a.four_profit) AS "fourCost",
+			(a.arrange_cost+a.arrange_profit) AS "arrangeCost"	
+		FROM route_date a
+		where DATE_FORMAT(a.price_date, '%Y-%m-%d')=DATE_FORMAT(#{priceDate}, '%Y-%m-%d')
+		and a.routeid=#{routeid} and a.fathid=1 and a.del_flag=0
+	</select>
+
+    <select id="getByFathid" resultType="RouteDate">
+		SELECT 
+        	<include refid="routeDateColumns"/>
+        FROM route_date a
+        	<include refid="routeDateJoins"/>
+		where a.fathid=0 and a.routeid=#{routeid}
+	</select>
+	<!-- 获取路线产品日期价格（所有）(仅后台编辑可用)-->
+    <select id="getAllDateList" resultType="RouteDate">
+		SELECT 
+        	<include refid="routeDateColumns"/>
+        FROM route_date a
+        	<include refid="routeDateJoins"/>
+		where a.fathid=1 and a.routeid=#{routeid}
+	</select>
+    <!-- 获取产品需要的几个月的价格 -->
+    <select id="getDateList" resultType="RouteDate">
+		SELECT 
+			a.price_date AS "date",
+			a.stock AS "state",
+	    	b.price AS "price",
+			(a.one_cost+a.one_profit) AS "oneCost",
+			(a.two_cost+a.two_profit) AS "twoCost",
+			(a.three_cost+a.three_profit) AS "threeCost",
+			(a.four_cost+a.four_profit) AS "fourCost",
+			(a.arrange_cost+a.arrange_profit) AS "arrangeCost"	
+		FROM route_date a
+		LEFT JOIN route b ON a.routeid = b.id
+		where DATE_FORMAT(a.price_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		and DATE_FORMAT(#{endDate}, '%Y-%m-%d')>DATE_FORMAT(a.price_date, '%Y-%m-%d')
+		and DATE_FORMAT(a.price_date, '%Y-%m-%d')>=DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+		and a.fathid=1 and a.routeid=#{routeid} and a.del_flag=0
+		order by a.price_date
+	</select>
+
+    <select id="get" resultType="RouteDate">
+        SELECT
+        <include refid="routeDateColumns"/>
+        FROM route_date a
+        <include refid="routeDateJoins"/>
+        WHERE a.routeid = #{id}
+    </select>
+
+    <select id="findList" resultType="RouteDate">
+        SELECT
+        <include refid="routeDateColumns"/>
+        FROM route_date a
+        <include refid="routeDateJoins"/>
+        <where>
+
+            ${dataScope}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findAllList" resultType="RouteDate">
+        SELECT
+        <include refid="routeDateColumns"/>
+        FROM route_date a
+        <include refid="routeDateJoins"/>
+        <where>
+
+            ${dataScope}
+        </where>
+        <choose>
+            <when test="page !=null and page.orderBy != null and page.orderBy != ''">
+                ORDER BY ${page.orderBy}
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+		INSERT INTO route_date(
+			fathid,
+			routeid,
+			price_date,
+			one_profit,
+			two_profit,
+			three_profit,
+			four_profit,
+			arrange_profit,
+			price_info,
+			house_one,
+			stock,
+			one_cost,
+			two_cost,
+			three_cost,
+			four_cost,
+			arrange_cost,
+			del_flag,
+			num
+		) VALUES (
+			#{fathid},
+			#{routeid},
+			#{priceDate},
+			#{oneProfit},
+			#{twoProfit},
+			#{threeProfit},
+			#{fourProfit},
+			#{arrangeProfit},
+			#{priceInfo},
+			#{houseOne},
+			#{stock},
+			#{oneCost},
+			#{twoCost},
+			#{threeCost},
+			#{fourCost},
+			#{arrangeCost},
+			0,
+			0
+		)
+	</insert>
+
+    <update id="update">
+		UPDATE route_date SET 	
+			fathid = #{fathid},
+			routeid = #{routeid},
+			price_date = #{priceDate},
+			one_profit = #{oneProfit},
+			two_profit = #{twoProfit},
+			three_profit = #{threeProfit},
+			four_profit = #{fourProfit},
+			arrange_profit = #{arrangeProfit},
+			price_info = #{priceInfo},
+			house_one = #{houseOne},
+			stock = #{stock},
+			one_cost = #{oneCost},
+			two_cost = #{twoCost},
+			three_cost = #{threeCost},
+			four_cost = #{fourCost},
+			arrange_cost = #{arrangeCost},
+			del_flag = #{delFlag},
+			num = #{num}
+		WHERE id = #{id}
+	</update>
+
+    <update id="updateObject">
+        UPDATE route_date
+        <set>
+            <if test="fathid != null ">
+                fathid = #{fathid},
+            </if>
+            <if test="routeid != null ">
+                routeid = #{routeid},
+            </if>
+            <if test="oneProfit != null ">
+                one_profit = #{oneProfit},
+            </if>
+            <if test="twoProfit != null ">
+                two_profit = #{twoProfit},
+            </if>
+            <if test="threeProfit != null ">
+                three_profit = #{threeProfit},
+            </if>
+            <if test="fourProfit != null ">
+                four_profit = #{fourProfit},
+            </if>
+            <if test="arrangeProfit != null ">
+                arrange_profit = #{arrangeProfit},
+            </if>
+            <if test="priceInfo != null ">
+                price_info = #{priceInfo},
+            </if>
+            <if test="houseOne != null ">
+                house_one = #{houseOne},
+            </if>
+            <if test="stock != null ">
+                stock = #{stock},
+            </if>
+            <if test="stock != null ">
+                one_cost = #{oneCost},
+            </if>
+            <if test="twoCost != null ">
+                two_cost = #{twoCost},
+            </if>
+            <if test="threeCost != null ">
+                three_cost = #{threeCost},
+            </if>
+            <if test="fourCost != null ">
+                four_cost = #{fourCost},
+            </if>
+            <if test="arrangeCost != null ">
+                arrange_cost = #{arrangeCost}
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据参团ID删除数据 -->
+    <update id="deleteByRouteId">
+		DELETE FROM route_date
+		WHERE routeid = #{routeid}
+	</update>
+
+    <!--物理删除-->
+    <update id="delete">
+		DELETE FROM route_date
+		WHERE id = #{id}
+	</update>
+
+    <!--逻辑删除-->
+    <update id="deleteByLogic">
+		UPDATE route_date SET 
+			del_flag = 1
+		WHERE id = #{id}
+	</update>
+
+
+    <!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+    <select id="findUniqueByProperty" resultType="RouteDate" statementType="STATEMENT">
+		select * FROM route_date  where ${propertyName} = '${value}'
+	</select>
+
+    <!-- 定义可重用的SQL代码段，可以包含在其他语句中 -->
+    <sql id="base_column">
+		 id ,fathid ,routeid ,price_date ,one_profit ,two_profit ,three_profit ,four_profit ,arrange_profit ,price_info ,house_one ,stock ,one_cost ,two_cost ,three_cost ,four_cost ,arrange_cost 
+	</sql>
+
+    <sql id="base_value_column">
+		 #{id},#{fathid},#{routeid},#{priceDate},#{oneProfit},#{twoProfit},#{threeProfit},#{fourProfit},#{arrangeProfit},#{priceInfo},#{houseOne},#{stock},#{oneCost},#{twoCost},#{threeCost},#{fourCost},#{arrangeCost}
+	</sql>
+
+
+    <select id="findListByPage" resultType="com.jeeplus.modules.meiguotong.entity.product.RouteDate">
+        SELECT
+        <include refid="base_column"/>
+        FROM ROUTE_DATE
+        where
+        1=1
+
+        <if test="id != null ">
+            AND id = #{id,jdbcType=INTEGER}
+        </if>
+
+        <if test="fathid != null ">
+            AND fathid = #{fathid,jdbcType=INTEGER}
+        </if>
+
+        <if test="routeid != null ">
+            AND routeid = #{routeid,jdbcType=INTEGER}
+        </if>
+
+        <if test="filter_priceDate != null">
+            AND date_format(price_date,'%Y-%m-%d')<![CDATA[=]]>#{filter_priceDate}
+        </if>
+
+
+        <if test="order != null and order != ''">
+            order by ${order}
+        </if>
+
+        <if test="pageNumber != null  and pageSize !=null ">
+            limit #{pageNumber,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+        </if>
+    </select>
+    
+    <update id="changeNumByDate">
+	update route_date set num=num+#{num} where  fathid=1 and routeid=#{routeid} 
+	and  DATE_FORMAT(price_date, '%Y-%m-%d')=DATE_FORMAT(#{priceDate}, '%Y-%m-%d')
+
+	</update>
+	
+	<select id="findNumByDate" resultType="RouteDate">
+        SELECT
+        <include refid="routeDateColumns"/>
+        FROM route_date a
+        <include refid="routeDateJoins"/>
+        WHERE fathid=1 and routeid=#{routeid} and a.del_flag=0
+		and  DATE_FORMAT(price_date, '%Y-%m-%d')=DATE_FORMAT(#{priceDate}, '%Y-%m-%d')
+    </select>
+</mapper>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.member.MemberContactsMapper">
+    
+	<sql id="memberContactsColumns">
+		a.id AS "id",
+		a.memberid AS "memberid",
+		a.chinese_name AS "chineseName",
+		a.english_name AS "englishName",
+		a.cert_type AS "certType",
+		a.cert_no AS "certNo",
+		a.cert_valid_date AS "certValidDate",
+		a.birthday AS "birthday",
+		a.area AS "area",
+		a.mobile AS "mobile",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="memberContactsJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="MemberContacts" >
+		SELECT 
+			<include refid="memberContactsColumns"/>
+		FROM member_contacts a
+		<include refid="memberContactsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!--  获取常用联系人信息列表接口 -->
+	<select id="getContactMember" resultType="MemberContacts" >
+		SELECT 
+			a.id AS "contactid",
+			a.chinese_name AS "chineseName",
+			a.english_name AS "englishName",
+			SUBSTRING_INDEX(a.english_name, "/", 1) as "sur",
+			SUBSTRING_INDEX(a.english_name, "/", -1) as "name",
+			a.cert_type AS "certType",
+			a.cert_no AS "certNo",
+			a.cert_valid_date AS "certValidDate",
+			a.birthday AS "birthday",
+			a.area AS "area",
+			a.mobile AS "mobile"
+		FROM member_contacts a
+		where a.del_flag = 0 AND a.memberid = #{memberid}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findList" resultType="MemberContacts" >
+		SELECT 
+			<include refid="memberContactsColumns"/>
+		FROM member_contacts a
+		<include refid="memberContactsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="memberid != null">
+				AND a.memberid = #{memberid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MemberContacts" >
+		SELECT 
+			<include refid="memberContactsColumns"/>
+		FROM member_contacts a
+		<include refid="memberContactsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO member_contacts(
+			memberid,
+			chinese_name,
+			english_name,
+			cert_type,
+			cert_no,
+			cert_valid_date,
+			birthday,
+			area,
+			mobile,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag
+		) VALUES (
+			#{memberid},
+			#{chineseName},
+			#{englishName},
+			#{certType},
+			#{certNo},
+			#{certValidDate},
+			#{birthday},
+			#{area},
+			#{mobile},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE member_contacts SET 	
+			memberid = #{memberid},
+			chinese_name = #{chineseName},
+			english_name = #{englishName},
+			cert_type = #{certType},
+			cert_no = #{certNo},
+			cert_valid_date = #{certValidDate},
+			birthday = #{birthday},
+			area = #{area},
+			mobile = #{mobile},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM member_contacts
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE member_contacts SET 
+			del_flag = 1,
+			del_date = now()
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="MemberContacts" statementType="STATEMENT">
+		select * FROM member_contacts  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

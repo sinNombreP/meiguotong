@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.member.MemberRefundMapper">
+    
+	<sql id="memberRefundColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.type_id AS "typeId",
+		a.refund_content AS "refundContent",
+		a.refund_type AS "refundType",
+		a.refund_day AS "refundDay",
+		a.refund_num AS "refundNum",
+		a.create_date AS "createDate",
+		a.fathflag AS "fathflag"
+	</sql>
+	     
+	<sql id="memberRefundJoins">
+		
+	</sql>
+	
+    <!-- 获取退款说明 -->
+	<select id="getRefundInfor" resultType="MemberRefund" >
+		SELECT 
+			a.refund_day AS "refundDay",
+			a.refund_num AS "refundNum"
+		FROM member_refund a
+		<where>
+			a.type=#{type} and a.type_id=#{typeId}
+			and a.refund_type=#{refundType}
+		</where>
+		order by a.refund_day
+	</select>
+
+	<select id="get" resultType="MemberRefund" >
+		SELECT 
+			<include refid="memberRefundColumns"/>
+		FROM member_refund a
+		<include refid="memberRefundJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取导游退款信息（接口） -->
+	<select id="getGuideRefund" resultType="MemberRefund" >
+		SELECT 
+			<include refid="memberRefundColumns"/>
+		FROM member_refund a
+		<include refid="memberRefundJoins"/>
+		<where>
+			a.type=1 and a.type_id=#{typeId}
+		</where>
+		order by a.refund_type,a.refund_day
+	</select>
+
+	<select id="findList" resultType="MemberRefund" >
+		SELECT 
+			<include refid="memberRefundColumns"/>
+		FROM member_refund a
+		<include refid="memberRefundJoins"/>
+		<where>
+			${dataScope} 
+			a.fathflag != 0 
+			<if test="type != null">
+				AND a.type = #{type}
+			</if>
+			<if test="typeId != null">
+				AND a.type_id = #{typeId}
+			</if>
+			<if test="refundType != null and refundType != ''">
+				AND a.refund_type = #{refundType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<!-- 根据供应商ID查询供应商退款说明 -->
+	<select id="findListByAgentid" resultMap="findListByAgentidMap" >
+        SELECT
+              b.name AS "refundContent",
+              a.type AS "refundType",
+              a.agentid AS "agentid"
+        FROM sys_user_type a
+         LEFT JOIN sys_role b ON a.type = b.user_type
+         WHERE
+            a.userType = 1 AND a.ststus = 1 AND b.type = 2 AND b.user_type IS NOT NULL
+            AND b. del_flag = 0 AND b.useable = 1  AND a.agentid = #{typeId}
+          ORDER BY a.type
+	</select>
+
+    <resultMap id="findListByAgentidMap" type="MemberRefund">
+        <result column="refundType" property="refundType"/>
+        <result column="refundContent" property="refundContent"/>
+        <result column="agentid" property="agentid"/>
+        <collection property="memberRefundList" column="{agentid=agentid,refundType=refundType}" javaType="ArrayList"
+                    ofType="MemberRefund"  select="findListByAgentidSelect"/>
+    </resultMap>
+
+    <select id="findListByAgentidSelect" resultType="MemberRefund">
+        SELECT
+            a.refund_day AS "refundDay",
+            a.refund_num AS "refundNum"
+        FROM member_refund a
+        WHERE a.type_id = #{agentid} AND a.type = 2 
+       
+        <choose>
+			<when test="refundType !=null and refundType != '' and refundType==1">
+				 AND a.refund_type = 1
+			</when>
+			<when test="refundType !=null and refundType != '' and refundType==2">
+				 AND a.refund_type = 4
+			</when>
+			<when test="refundType !=null and refundType != '' and refundType==3">
+				 AND a.refund_type = 5
+			</when>
+			<when test="refundType !=null and refundType != '' and refundType==4">
+				 AND a.refund_type = 6
+			</when>
+			<when test="refundType !=null and refundType != '' and refundType==5">
+				 AND a.refund_type = 7
+			</when>
+			<when test="refundType !=null and refundType != '' and refundType==6">
+				 AND a.refund_type = 9
+			</when>
+			<when test="refundType !=null and refundType != '' and refundType==7">
+				 AND a.refund_type = 10
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+    </select>
+	<select id="findMemberRefund" resultType="MemberRefund">
+        SELECT
+            a.refund_day AS "refundDay",
+            a.refund_num AS "refundNum"
+        FROM member_refund a
+        WHERE a.type_id = #{agentid} AND a.type = 2 
+        	AND a.refund_type = #{refundType}
+    </select>
+	<select id="findAllList" resultType="MemberRefund" >
+		SELECT 
+			<include refid="memberRefundColumns"/>
+		FROM member_refund a
+		<include refid="memberRefundJoins"/>
+		<where>
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据typeid删除退款说明 -->
+	<delete id="deleteByTypeid">
+		DELETE FROM member_refund
+		WHERE type = #{type} AND type_id = #{typeId} AND fathflag != 0 
+	</delete>
+	
+	<insert id="insert">
+		INSERT INTO member_refund(
+			type,
+			type_id,
+			refund_content,
+			refund_type,
+			refund_day,
+			refund_num,
+			create_date,
+			fathflag
+		) VALUES (
+			#{type},
+			#{typeId},
+			#{refundContent},
+			#{refundType},
+			#{refundDay},
+			#{refundNum},
+			#{createDate},
+			#{fathflag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE member_refund SET 	
+			type = #{type},
+			type_id = #{typeId},
+			refund_content = #{refundContent},
+			refund_type = #{refundType},
+			refund_day = #{refundDay},
+			refund_num = #{refundNum},
+			fathflag = #{fathflag}
+		WHERE id = #{id}
+	</update>
+	
+	<!--根据导游id的删除退款说明-->
+	<update id="deleteGuideRefund">
+		DELETE FROM member_refund
+		WHERE type = 1 and type_id = #{typeid}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM member_refund
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE member_refund SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="MemberRefund" statementType="STATEMENT">
+		select * FROM member_refund  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

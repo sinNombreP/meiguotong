@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.guideroute.GuideRouteMapper">
+    
+	<sql id="guideRouteColumns">
+		a.id AS "id",
+		a.guideid AS "guideid",
+		a.memberid AS "memberid",
+		a.title AS "title",
+		a.photo AS "photo",
+		a.scenice AS "scenice",
+		a.details AS "details",
+		a.mini_num AS "miniNum",
+		a.transactions_num AS "transactionsNum",
+		a.price AS "price",
+		a.cityid AS "cityid",
+		a.create_date AS "createDate",
+		a.languageid AS "languageid",
+		a.day AS "day"
+	</sql>
+	
+	<sql id="guideRouteJoins">
+		
+	</sql>
+	
+    <!-- 获取导游的路线规划详情接口 -->
+    <select id="getGuideRouteDetail" resultType="GuideRoute" >
+		SELECT 
+			a.id AS "guideRouteid",
+			a.title AS "title",
+			a.photo AS "photo",
+			a.scenice AS "scenice",
+			a.details AS "details",
+			a.mini_num AS "miniNum",
+			a.transactions_num AS "transactionsNum",
+			a.price AS "price",
+			a.day AS "day",
+			a.cityid AS "cityid",
+			cc.city_name AS "city",
+			b.date_type AS "dateType",
+			b.begin_date AS "beginDate",
+			b.end_date AS "endDate",
+			b.week_date AS "weekDate",
+			b.day_date AS "dayDate"
+		FROM guide_route a
+		left join guide_route_time b on b.routeid=a.id
+		left join com_city cc on cc.id=a.cityid
+		WHERE a.id = #{id}
+	</select>
+	<select id="get" resultType="GuideRoute" >
+		SELECT 
+			<include refid="guideRouteColumns"/>
+		FROM guide_route a
+		<include refid="guideRouteJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 导游推荐路线接口 -->
+	<select id="findGuideRouteList" resultType="GuideRoute" >
+		SELECT 
+			a.id AS "id",
+			a.title AS "title",
+			a.photo AS "photo",
+			a.scenice AS "scenice",
+			ifnull((SELECT  group_concat(b.name) FROM scenic_spot b 
+				WHERE FIND_IN_SET(b.id,a.scenice) > 0 ),"") AS "sceniceName",
+			a.transactions_num AS "transactionsNum",
+			a.mini_num AS "miniNum",
+			a.price AS "price",
+			a.day AS "day"
+		FROM guide_route a
+		where a.guideid =#{guideid} and a.languageid=#{languageid}
+		order by a.create_date desc
+	</select>
+	<!-- 获取导游添加的路线规划接口 -->
+	<select id="getGuideRoute" resultType="GuideRoute" >
+		SELECT 
+			a.id AS "guideRouteid",
+			a.title AS "title",
+			a.photo AS "photo",
+			a.transactions_num AS "transactionsNum",
+			a.price AS "price",
+			cc.city_name AS "city"
+		FROM guide_route a
+		left join com_city cc on cc.id=a.cityid
+		<where>
+			a.memberid = #{memberid} and a.languageid = #{languageid}
+		</where>
+		order by a.create_date desc
+	</select>
+	<select id="findList" resultType="GuideRoute" >
+		SELECT 
+			<include refid="guideRouteColumns"/>
+		FROM guide_route a
+		<include refid="guideRouteJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="languageid != null">
+				a.languageid = #{languageid}
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GuideRoute" >
+		SELECT 
+			<include refid="guideRouteColumns"/>
+		FROM guide_route a
+		<include refid="guideRouteJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO guide_route(
+			guideid,
+			memberid,
+			title,
+			photo,
+			scenice,
+			details,
+			mini_num,
+			transactions_num,
+			price,
+			cityid,
+			create_date,
+			languageid,
+			day
+		) VALUES (
+			#{guideid},
+			#{memberid},
+			#{title},
+			#{photo},
+			#{scenice},
+			#{details},
+			#{miniNum},
+			0,
+			#{price},
+			#{cityid},
+			#{createDate},
+			#{languageid},
+			#{day}
+		)
+		<selectKey keyProperty="id" order="AFTER" resultType="String" >
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE guide_route SET 	
+			guideid = #{guideid},
+			memberid = #{memberid},
+			title = #{title},
+			photo = #{photo},
+			scenice = #{scenice},
+			details = #{details},
+			mini_num = #{miniNum},
+			transactions_num = #{transactionsNum},
+			price = #{price},
+			cityid = #{cityid},
+			create_date = #{createDate},
+			day = #{day}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM guide_route
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE guide_route SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="GuideRoute" statementType="STATEMENT">
+		select * FROM guide_route  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="productCar_findGuideRoute" resultType="GuideRoute" >
+		select <include refid="guideRouteColumns"/>,
+		(select GROUP_CONCAT(name) from scenic_spot where FIND_IN_SET(id,a.scenice)) as "sceniceName" ,
+		g.real_name as "realName",
+		YEAR(now())-YEAR(m.birthday) as "age",
+		m.sex,
+		c.title as "countryName",
+		cc.city_name as "city",
+		cc.city_name as "cityName",
+		(select GROUP_CONCAT(content) from com_tag where FIND_IN_SET(id,g.tag_id)) as "tagContent" ,
+		g.introduction
+		from guide_route a 
+		<include refid="guideRouteJoins"/>
+		left join guide g on a.guideid=g.id 
+		left join member_information m on g.memberid=m.memberid
+		left join country c on m.countryid=c.id
+		left join com_city cc on m.cityid=cc.id
+		where a.id=#{id}
+	</select>
+</mapper>

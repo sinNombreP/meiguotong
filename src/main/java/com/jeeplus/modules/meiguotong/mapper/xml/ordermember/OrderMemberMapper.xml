@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.ordermember.OrderMemberMapper">
+    
+	<sql id="orderMemberColumns">
+		a.id AS "id",
+		a.chinese_name AS "chineseName",
+		a.english_name AS "englishName",
+		a.cert_type AS "certType",
+		a.cert_no AS "certNo",
+		a.cert_valid_date AS "certValidDate",
+		a.birthday AS "birthday",
+		a.area AS "area",
+		a.mobile AS "mobile",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.type AS "type",
+		a.type_id AS "typeId"
+	</sql>
+	
+	<sql id="orderMemberJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderMember" >
+		SELECT 
+			<include refid="orderMemberColumns"/>
+		FROM order_member a
+		<include refid="orderMemberJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 查找邮轮出行人信息 -->
+		<select id="findListByTyid" resultType="OrderMember" >
+		SELECT 
+			<include refid="orderMemberColumns"/>
+		FROM order_member a
+		<include refid="orderMemberJoins"/>
+		WHERE a.type_id = #{typeId} and a.type=1
+	</select>
+	<select id="findList" resultType="OrderMember" >
+		SELECT 
+			<include refid="orderMemberColumns"/>
+		FROM order_member a
+		<include refid="orderMemberJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="chineseName != null and chineseName != ''">
+				AND a.chinese_name = #{chineseName}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type}
+			</if>
+			<if test="typeId != null">
+				AND a.type_id = #{typeId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderMember" >
+		SELECT 
+			<include refid="orderMemberColumns"/>
+		FROM order_member a
+		<include refid="orderMemberJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_member(
+			chinese_name,
+			english_name,
+			cert_type,
+			cert_no,
+			cert_valid_date,
+			birthday,
+			area,
+			mobile,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			type,
+			type_id
+		) VALUES (
+			#{chineseName},
+			#{englishName},
+			#{certType},
+			#{certNo},
+			#{certValidDate},
+			#{birthday},
+			#{area},
+			#{mobile},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{type},
+			#{typeId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE order_member SET 	
+			chinese_name = #{chineseName},
+			english_name = #{englishName},
+			cert_type = #{certType},
+			cert_no = #{certNo},
+			cert_valid_date = #{certValidDate},
+			birthday = #{birthday},
+			area = #{area},
+			mobile = #{mobile},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			type = #{type},
+			type_id = #{typeId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_member
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_member SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderMember" statementType="STATEMENT">
+		select * FROM order_member  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findListByTyid2" resultType="OrderMember" >
+		SELECT 
+			<include refid="orderMemberColumns"/>
+		FROM order_member a
+		
+		WHERE a.type_id = #{typeId} 
+	</select>
+	
+</mapper>

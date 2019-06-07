@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.income.IncomeMapper">
+    
+	<sql id="incomeColumns">
+		a.id AS "id",
+		a.no AS "no",
+		a.income AS "income",
+		a.type AS "type",
+		a.order_id AS "orderId",
+		a.agentid AS "agentid",
+		a.pay_type AS "payType",
+		a.income_price AS "incomePrice",
+		a.status AS "status",
+		a.create_date AS "createDate",
+		a.memberId as "memberId"
+	</sql>
+	
+	<sql id="incomeJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="Income" >
+		SELECT 
+			<include refid="incomeColumns"/>,
+			mi.nick_name as "nickName",
+			mi.phone
+		FROM income a
+		<include refid="incomeJoins"/>
+		left join member_information mi on a.memberId=mi.memberid
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Income" >
+		SELECT 
+			<include refid="incomeColumns"/>
+		FROM income a
+		<include refid="incomeJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Income" >
+		SELECT 
+			<include refid="incomeColumns"/>
+		FROM income a
+		<include refid="incomeJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO income(
+			no,
+			income,
+			type,
+			order_id,
+			agentid,
+			pay_type,
+			income_price,
+			status,
+			create_date,
+			memberId
+		) VALUES (
+			#{no},
+			#{income},
+			#{type},
+			#{orderId},
+			#{agentid},
+			#{payType},
+			#{incomePrice},
+			#{status},
+			#{createDate},
+			#{memberId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE income SET 	
+			no = #{no},
+			income = #{income},
+			type = #{type},
+			order_id = #{orderId},
+			agentid = #{agentid},
+			pay_type = #{payType},
+			income_price = #{incomePrice}
+			status = #{status},
+			memberId=#{memberId}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM income
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE income SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Income" statementType="STATEMENT">
+		select * FROM income  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findIncomeListByMoreParameter" resultType="Income" >
+		SELECT 
+			<include refid="incomeColumns"/>,
+			mi.nick_name as "nickName",
+			mi.phone
+		FROM income a
+		<include refid="incomeJoins"/>
+		left join member_information mi on a.memberId=mi.memberid
+		WHERE 1=1
+		<if test="type != null and type != ''">
+			and a.type=#{type}
+		</if>
+		<if test="payType != null and payType != ''">
+			and a.pay_type=#{payType}
+		</if>
+		<if test="status != null and status != ''">
+			and a.status=#{status}
+		</if>
+		<if test="no != null and no != ''">
+			and a.no like concat('%',#{no},'%')
+		</if>
+	</select>
+	<!-- 销售金额 -->
+	<select id="findIncomeSale" resultType="Income" >
+		select (select ifnull(sum(income_price),0)  from income 
+		where TO_DAYS(create_date)=TO_DAYS(now())) "toDay",
+		(select ifnull(sum(income_price),0)  from income 
+		where TO_DAYS(now())- TO_DAYS(create_date)=1)"torrow",
+		(select ifnull(sum(income_price),0)  from income 
+		where YEARWEEK(create_date) = YEARWEEK(now())) "toWeek",
+		(select ifnull(sum(income_price),0)  from income 
+		where DATE_FORMAT(create_date,'%Y%m') = DATE_FORMAT(now(),"%Y%m")) "toMonth",
+		(select sum(income_price)  from income) "all"
+	</select>
+</mapper>

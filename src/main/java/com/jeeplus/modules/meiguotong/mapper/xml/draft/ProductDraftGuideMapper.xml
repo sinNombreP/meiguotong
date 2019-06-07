@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.draft.ProductDraftGuideMapper">
+    
+	<sql id="productDraftGuideColumns">
+		a.id AS "id",
+		a.draftid AS "draftid",
+		a.guideid AS "guideid"
+	</sql>
+	
+	<sql id="productDraftGuideJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ProductDraftGuide" >
+		SELECT 
+			<include refid="productDraftGuideColumns"/>
+		FROM product_draft_guide a
+		<include refid="productDraftGuideJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ProductDraftGuide" >
+		SELECT 
+			<include refid="productDraftGuideColumns"/>
+		FROM product_draft_guide a
+		<include refid="productDraftGuideJoins"/>
+		<where>
+			
+			${dataScope}
+		
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProductDraftGuide" >
+		SELECT 
+			<include refid="productDraftGuideColumns"/>
+		FROM product_draft_guide a
+		<include refid="productDraftGuideJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO product_draft_guide(
+			draftid,
+			guideid
+		) VALUES (
+			#{draftid},
+			#{guideid}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE product_draft_guide SET 	
+			draftid = #{draftid},
+			guideid = #{guideid}
+		WHERE id = #{id}
+	</update>
+	
+	<!--根据草稿id物理删除-->
+	<update id="deleteByDraftId">
+		DELETE FROM product_draft_guide
+		WHERE draftid = #{id}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM product_draft_guide
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE product_draft_guide SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ProductDraftGuide" statementType="STATEMENT">
+		select * FROM product_draft_guide  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

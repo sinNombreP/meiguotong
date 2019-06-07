@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.comVersion.ComVersionMapper">
+    
+	<sql id="comVersionColumns">
+		a.id AS "id",
+		a.terminal AS "terminal",
+		a.version AS "version",
+		a.downloadurl AS "downloadurl",
+		a.remark AS "remark",
+		a.froce AS "froce",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.lastupdate_date AS "lastupdateDate"
+	</sql>
+	
+	<sql id="comVersionJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComVersion" >
+		SELECT 
+			<include refid="comVersionColumns"/>
+		FROM com_version a
+		<include refid="comVersionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ComVersion" >
+		SELECT 
+			<include refid="comVersionColumns"/>
+		FROM com_version a
+		<include refid="comVersionJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="remark != null and remark != ''">
+				AND a.remark = #{remark}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComVersion" >
+		SELECT 
+			<include refid="comVersionColumns"/>
+		FROM com_version a
+		<include refid="comVersionJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_version(
+			terminal,
+			version,
+			downloadurl,
+			remark,
+			froce,
+			update_date,
+			update_by,
+			lastupdate_date
+		) VALUES (
+			#{terminal},
+			#{version},
+			#{downloadurl},
+			#{remark},
+			#{froce},
+			#{updateDate},
+			#{updateBy.id},
+			#{lastupdateDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_version SET 	
+			terminal = #{terminal},
+			version = #{version},
+			downloadurl = #{downloadurl},
+			remark = #{remark},
+			froce = #{froce},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			lastupdate_date = #{lastupdateDate}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_version
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_version SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComVersion" statementType="STATEMENT">
+		select * FROM com_version  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

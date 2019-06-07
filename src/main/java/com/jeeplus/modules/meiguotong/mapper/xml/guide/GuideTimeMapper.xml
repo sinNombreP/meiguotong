@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.guide.GuideTimeMapper">
+    
+	<sql id="guideTimeColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.guideid AS "guideid",
+		a.date_type AS "dateType",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.week_date AS "weekDate",
+		a.day_date AS "dayDate",
+		a.price AS "price"
+	</sql>
+	
+	<sql id="guideTimeJoins">
+		
+	</sql>
+
+	<!--删除旧的日期设置-->
+    <delete id="deleteByGuideid">
+		DELETE FROM guide_time
+		WHERE guideid = #{guideid}
+	</delete>
+
+
+    <select id="get" resultType="GuideTime" >
+		SELECT 
+			<include refid="guideTimeColumns"/>
+		FROM guide_time a
+		<include refid="guideTimeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取导游的设置日期价格（接口） -->
+	<select id="getGuideTime" resultType="GuideTime" >
+		SELECT 
+			<include refid="guideTimeColumns"/>
+		FROM guide_time a
+		<include refid="guideTimeJoins"/>
+		<where>
+			a.guideid = #{guideid}
+		</where>
+	</select>
+	<select id="findList" resultType="GuideTime" >
+		SELECT 
+			<include refid="guideTimeColumns"/>
+		FROM guide_time a
+		<include refid="guideTimeJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="dateType != null and dateType != ''">
+				AND a.date_type = #{dateType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="GuideTime" >
+		SELECT 
+			<include refid="guideTimeColumns"/>
+		FROM guide_time a
+		<include refid="guideTimeJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO guide_time(
+			type,
+			guideid,
+			date_type,
+			begin_date,
+			end_date,
+			week_date,
+			day_date,
+			price
+		) VALUES (
+			#{type},
+			#{guideid},
+			#{dateType},
+			#{beginDate},
+			#{endDate},
+			#{weekDate},
+			#{dayDate},
+			#{price}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE guide_time SET 	
+			type = #{type},
+			guideid = #{guideid},
+			date_type = #{dateType},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			week_date = #{weekDate},
+			day_date = #{dayDate},
+			price = #{price}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM guide_time
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE guide_time SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="GuideTime" statementType="STATEMENT">
+		select * FROM guide_time  where ${propertyName} = '${value}'
+	</select>
+
+	<select id="getGuideType" resultType="java.lang.String">
+		SELECT group_concat(distinct type)
+		FROM guide_time
+		WHERE guideid = #{uid}
+	</select>
+
+
+</mapper>

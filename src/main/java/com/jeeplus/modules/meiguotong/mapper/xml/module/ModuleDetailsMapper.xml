@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.module.ModuleDetailsMapper">
+    
+	<sql id="moduleDetailsColumns">
+		a.id AS "id",
+		a.module_content_id AS "moduleContentId",
+		a.cityid AS "cityid",
+		a.tagid AS "tagid",
+		a.desid AS "desid",
+		a.first_type_content AS "firstTypeContent"
+	</sql>
+	
+	<sql id="moduleDetailsJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ModuleDetails" >
+		SELECT 
+			<include refid="moduleDetailsColumns"/>
+		FROM module_details a
+		<include refid="moduleDetailsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 按内容ID删除数据 -->
+	<delete id="deleteByModeleContentId">
+		DELETE  
+		FROM module_details a
+		WHERE a.module_content_id = #{moduleContentId}
+	</delete>
+	
+	<select id="findList" resultType="ModuleDetails" >
+		SELECT 
+			<include refid="moduleDetailsColumns"/>
+		FROM module_details a
+		<include refid="moduleDetailsJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ModuleDetails" >
+		SELECT 
+			<include refid="moduleDetailsColumns"/>
+		FROM module_details a
+		<include refid="moduleDetailsJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO module_details(
+			module_content_id,
+			cityid,
+			tagid,
+			desid,
+			first_type_content
+		) VALUES (
+			#{moduleContentId},
+			#{cityid},
+			#{tagid},
+			#{desid},
+			#{firstTypeContent}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE module_details SET 	
+			module_content_id = #{moduleContentId},
+			cityid = #{cityid},
+			tagid = #{tagid},
+			desid = #{desid},
+			first_type_content = #{firstTypeContent}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM module_details
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE module_details SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ModuleDetails" statementType="STATEMENT">
+		select * FROM module_details  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

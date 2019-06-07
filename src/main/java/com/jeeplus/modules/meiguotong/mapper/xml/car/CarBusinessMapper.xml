@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.car.CarBusinessMapper">
+    
+	<sql id="carBusinessColumns">
+		a.id AS "id",
+		a.carid AS "carid",
+		a.business_type AS "businessType",
+		a.status AS "status",
+		a.date_type AS "dateType",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.week_date AS "weekDate",
+		a.day_date AS "dayDate",
+		a.hour_date AS "hourDate",
+		a.language AS "language"
+	</sql>
+	
+	<sql id="carTimePriceColumns">
+		b.price AS "price",
+		b.start_price AS "startPrice",
+		b.head_price AS "headPrice",
+		b.food_price AS "foodPrice",
+		b.empty_price AS "emptyPrice"
+	</sql>
+	
+	<sql id="carBusinessJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="CarBusiness" >
+		SELECT 
+			<include refid="carBusinessColumns"/>
+		FROM car_business a
+		<include refid="carBusinessJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="CarBusiness" >
+		SELECT 
+			<include refid="carBusinessColumns"/>
+		FROM car_business a
+		<include refid="carBusinessJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 获取汽车业务 -->
+	<select id="getDataByCarid" resultType="CarBusiness">
+		SELECT 
+			<include refid="carBusinessColumns"/>,
+			<include refid="carTimePriceColumns"/>,
+			(SELECT  group_concat(b.serviceid) FROM car_time_price b WHERE b.businessid = a.id) AS "titleids"
+		FROM car_business a
+		LEFT JOIN car_time_price b ON a.id = b.businessid
+		<if test="businessType != null and businessType != 1 and  businessType != 4 and businessType != 5">	 AND b.type = 0 </if>
+		<where>
+			a.carid = #{carid} AND a.business_type = #{businessType}
+		</where>
+		LIMIT 1
+	</select>
+	
+	<select id="findAllList" resultType="CarBusiness" >
+		SELECT 
+			<include refid="carBusinessColumns"/>
+		FROM car_business a
+		<include refid="carBusinessJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO car_business(
+			hour_date,
+			carid,
+			business_type,
+			status,
+			date_type,
+			begin_date,
+			end_date,
+			week_date,
+			day_date,
+			language
+		) VALUES (
+			#{hourDate},
+			#{carid},
+			#{businessType},
+			#{status},
+			#{dateType},
+			#{beginDate},
+			#{endDate},
+			#{weekDate},
+			#{dayDate},
+			#{language}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE car_business SET 	
+			hour_date = #{hourDate},
+			carid = #{carid},
+			business_type = #{businessType},
+			status = #{status},
+			date_type = #{dateType},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			week_date = #{weekDate},
+			day_date = #{dayDate},
+			language = #{language}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM car_business
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE car_business SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="CarBusiness" statementType="STATEMENT">
+		select * FROM car_business  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.hotel.HotelRoomDateMapper">
+    
+	<sql id="hotelRoomDateColumns">
+		a.id AS "id",
+		a.price_date AS "priceDate",
+		a.price AS "price",
+		a.hotel_room_id AS "hotelRoomId",
+		a.stock_num AS "stockNum"
+	</sql>
+	
+	<sql id="hotelRoomDateJoins">
+		
+	</sql>
+	
+    <!-- 根据日期房间id获取价格库存 -->
+    <select id="getHotelRoomDate" resultType="HotelRoomDate" >
+		SELECT 
+			<include refid="hotelRoomDateColumns"/>
+		FROM hotel_room_date a
+		<include refid="hotelRoomDateJoins"/>
+		WHERE DATE_FORMAT(a.price_date, '%Y-%m-%d')=DATE_FORMAT(#{priceDate}, '%Y-%m-%d')
+		and a.hotel_room_id = #{hotelRoomId}
+	</select>
+	<select id="get" resultType="HotelRoomDate" >
+		SELECT 
+			<include refid="hotelRoomDateColumns"/>
+		FROM hotel_room_date a
+		<include refid="hotelRoomDateJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 根据酒店ID删除数据 -->
+	<delete id="deleteByHotelRoomId">
+		DELETE FROM hotel_room_date
+		WHERE hotel_room_id = #{hotelRoomId}
+	</delete>
+	
+	<select id="findList" resultType="HotelRoomDate" >
+		SELECT 
+			<include refid="hotelRoomDateColumns"/>
+		FROM hotel_room_date a
+		<include refid="hotelRoomDateJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="HotelRoomDate" >
+		SELECT 
+			<include refid="hotelRoomDateColumns"/>
+		FROM hotel_room_date a
+		<include refid="hotelRoomDateJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hotel_room_date(
+			hotel_room_id,
+			price_date,
+			price,
+			stock_num
+		) VALUES (
+			#{hotelRoomId},
+			#{priceDate},
+			#{price},
+			#{stockNum}
+		)
+	</insert>
+	
+	
+	<update id="update">
+		UPDATE hotel_room_date SET 	
+			price_date = #{priceDate},
+			hotel_room_id = #{hotelRoomId},
+			price = #{price},
+			stock_num = #{stockNum}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hotel_room_date
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hotel_room_date SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="HotelRoomDate" statementType="STATEMENT">
+		select * FROM hotel_room_date  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

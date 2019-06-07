@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>旅游定制</title>
+    <script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+    <script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../js/ez-public.js"></script>
+    <script type="text/javascript" src="../../js/ez-page.js"></script>
+    <script type="text/javascript" src="../../js/ez-slider.js"></script>
+
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/E-publc.css">
+    <!--[if lt IE 9]>
+    <script src="../../vendor/html5.js"></script>
+    <script src="../../vendor/respond.js"></script>
+    <![endif]-->
+</head>
+<body>
+<header class="ez-header">
+    <div class="container ez-container ez-navbar-header">
+        <!-- Brand-->
+        <div class="navbar-header header-logo">
+            <a class="ez-logo" href="#">
+                <img alt="万事通美国" src="../../images/logo.png">
+            </a>
+        </div>
+        <div class="navbar-header header-border"></div>
+        <div class="navbar-header header-phone">
+            <div>
+                <div><img class="" src="../../images/service-time.png"></div>
+                <span><i class="iconfont icon-phone"></i>617-652-8008（美国）</span>
+            </div>
+            <div>
+                <div class="title-tel">服务热线</div>
+                <span><i class="iconfont icon-phone"></i>021-672816809（中国）</span>
+            </div>
+        </div>
+
+        <ul class="nav navbar-nav navbar-right ez-navbar">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <span class="ez-avatar">
+                        <img alt="..." src="../../images/avatar.png">
+                        <b class="text-black">Admin</b>
+                    </span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="#">个人资料</a></li>
+                    <li><a href="#">玩家中心</a></li>
+                    <li><a href="#">关于我们</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#">登出</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#">
+                    <div class="ez-shopcart text-center">
+                        <span class="iconfont icon-shopcart"></span>
+                        <i class="on">6</i>
+                    </div>
+                </a>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right ez-header-right">
+            <li class="dropdown">
+                <select class="select-left">
+                    <option value="0">美元</option>
+                    <option value="1">欧元</option>
+                </select>
+            </li>
+            <!--<li>
+                <select class="select-right">
+                    <option value="1">English</option>
+                    <option value="2">中文简体</option>
+                    <option value="3">中文繁体</option>
+                </select>
+            </li>-->
+            <li class="dropdown select-lang">
+                <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="false" aria-expanded="false">
+                    <div class="lang-name">中文简体</div>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><input type="radio" name="lng">English</li>
+                    <li><input type="radio" name="lng">中文简体</li>
+                    <li><input type="radio" name="lng">中文繁体</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</header>
+<div class="container ez-container  ez-main-nav">
+    <ul class="list-inline text-center ez-navlist">
+        <li class="active"><a href="#">租车包车</a></li>
+        <li><a href="#">旅游拼车</a></li>
+        <li><a href="#">旅游定制</a></li>
+        <li><a href="#">常规路线</a></li>
+        <li><a href="#">酒店</a></li>
+        <li><a href="#">机票</a></li>
+        <li><a href="#">游学</a></li>
+        <li><a href="#">高尔夫俱乐部</a></li>
+        <li><a href="#">高端定制</a></li>
+
+        <li><a href="#">豪华租车</a></li>
+        <li><a href="#">酷玩房车</a></li>
+        <li><a href="#">商务定制</a></li>
+        <li><a href="#">当地参团</a></li>
+        <li><a href="#">民俗</a></li>
+        <li><a href="#">门票</a></li>
+        <li><a href="#">投资</a></li>
+        <li><a href="#">名人俱乐部</a></li>
+        <li><a href="#">游艇俱乐部</a></li>
+
+        <li><a href="#">机场接送</a></li>
+        <li><a href="#">游玩项目</a></li>
+        <li><a href="#">旅游商务</a></li>
+        <li><a href="#">当地玩家</a></li>
+        <li><a href="#">寄宿</a></li>
+        <li><a href="#">秀票</a></li>
+        <li><a href="#">置产</a></li>
+        <li><a href="#">企业家俱乐部</a></li>
+        <li><a href="#">航空俱乐部</a></li>
+
+        <li><a href="#">短程接送</a></li>
+        <li><a href="#">度假村</a></li>
+        <li><a href="#">高端定制</a></li>
+        <li><a href="#">司机导游</a></li>
+        <li><a href="#">短租</a></li>
+        <li><a href="#">邮轮</a></li>
+        <li><a href="#">法律</a></li>
+        <li><a href="#">保龄球俱乐部</a></li>
+        <li><a href="#">航空俱乐部</a></li>
+
+        <li><a href="#">专机接送</a></li>
+        <li><a href="#">游玩项目</a></li>
+        <li><a href="#">旅游商务</a></li>
+        <li><a href="#">当地玩家</a></li>
+        <li><a href="#">长租</a></li>
+        <li><a href="#">秀票</a></li>
+        <li><a href="#">置产</a></li>
+        <li><a href="#">红酒俱乐部</a></li>
+        <li><a href="#">跑车俱乐部</a></li>
+    </ul>
+
+    <div class="text-center btn-more">
+        <a class="btn ez-btn ez-nav-open">查看更多 <i class="iconfont icon-down"></i></a>
+        <a class="btn ez-btn ez-nav-close" style="display: none;">收起 <i class="iconfont icon-up"></i></a>
+    </div>
+
+    <ul class="list-inline ez-citylist">
+        <li class="active"><a href="#">纽约</a></li>
+        <li><a href="#">华盛顿</a></li>
+        <li><a href="#">波士顿</a></li>
+        <li><a href="#">洛杉矶</a></li>
+        <li><a href="#">旧金山</a></li>
+        <li><a href="#">拉斯维加斯</a></li>
+        <li><a href="#">西雅图</a></li>
+        <li><a href="#">阿拉斯加</a></li>
+        <li><a href="#">休斯顿</a></li>
+        <li><a href="#">华盛顿</a></li>
+        <li><a href="#">波士顿</a></li>
+        <li><a href="#">洛杉矶</a></li>
+        <li><a href="#">旧金山</a></li>
+        <li><a href="#">拉斯维加斯</a></li>
+        <li><a href="#">西雅图</a></li>
+        <li><a href="#">阿拉斯加</a></li>
+        <li><a href="#">休斯顿</a></li>
+        <li><a href="#">华盛顿</a></li>
+        <li><a href="#">波士顿</a></li>
+        <li><a href="#">洛杉矶</a></li>
+        <li><a href="#">旧金山</a></li>
+        <li><a href="#">拉斯维加斯</a></li>
+        <li><a href="#">西雅图</a></li>
+        <li><a href="#">阿拉斯加</a></li>
+        <li><a href="#">休斯顿</a></li>
+        <li><a href="#">蒙特利尔</a></li>
+        <li><a href="#">拉斯维加斯</a></li>
+        <li><a href="#">西雅图</a></li>
+        <li><a href="#">阿拉斯加</a></li>
+        <li><a href="#">休斯顿</a></li>
+        <li><a href="#">拉斯维加斯</a></li>
+    </ul>
+
+</div>
+<!--content-->
+<div class="content ez-travel-city">
+    <div class="tourism-info">
+        <ul>
+            <li>
+                <p class="">地点</p>
+                <select name="" class="form-control">
+                        <option value="">出发地：华盛顿-华盛顿杜勒国际机场</option>
+                </select>
+            </li>
+            <li>
+                <p class="">地点</p>
+                <select name="" class="form-control">
+                        <option value="">开始时间：2017/01/01 19：30</option>
+                </select>
+                <select name="" class="form-control">
+                        <option value="">结束间：2017/01/01 19：30</option>
+                </select>
+            </li>
+            <li>
+                <p class="">地点</p>
+                <select name="" class="form-control">
+                        <option value="">人数：10成人，2小孩，2行李箱</option>
+                </select>
+            </li>
+
+        </ul>
+        <div class="tourism-info-btn">
+            <button class="btn btn-primary">立即订制</button>
+        </div>
+    </div>
+
+    <div class="travel-plan">
+        <div class="travel-plan-head">
+            <span class="travel-plan-head-title">定制旅游计划</span>
+            <span class="travel-plan-head-add iconfont icon-addition_fill"> 添加一天</span>
+        </div>
+        <div class="travel-plan-content">
+            <i class="iconfont icon-prev travel-plan-content-prev"></i>
+            <div class="travel-plan-content-list">
+                <ul>
+                    <li><i class="iconfont icon-cuowu"></i><a href="#"><img src="../../images/business-3.png" width="280" height="200" alt=""></a></li>
+                    <li><i class="iconfont icon-cuowu"></i><a href="#"><img src="../../images/business-3.png" width="280" height="200" alt=""></a></li>
+                    <li><i class="iconfont icon-cuowu"></i><a href="#"><img src="../../images/business-3.png" width="280" height="200" alt=""></a></li>
+                    <li><i class="iconfont icon-cuowu"></i><a href="#"><img src="../../images/business-3.png" width="280" height="200" alt=""></a></li>
+                    <li><i class="iconfont icon-cuowu"></i><a href="#"><img src="../../images/business-3.png" width="280" height="200" alt=""></a></li>
+                    <li><i class="iconfont icon-cuowu"></i><a href="#"><img src="../../images/business-3.png" width="280" height="200" alt=""></a></li>
+                </ul>
+            </div>
+            <i class="iconfont icon-next travel-plan-content-next"></i>
+        </div>
+    </div>
+    
+    <div class="tourism-custom">
+        <div class="travel-list">
+            <div class="travel-list-head">
+            <span class="travel-list-head-prev"><i class="iconfont icon-prev"></i></span>
+                <div class="trip-scroll-box">
+                    <ul>
+                        <li class="travel-list-head-span-style"><span>2日游</span></li>
+                        <li><span>3日游</span></li>
+                        <li><span>4日游</span></li>
+                        <li><span>5日游</span></li>
+                        <li><span>6日游</span></li>
+                        <li><span>7日游</span></li>
+                    </ul>
+                </div>
+                <span class="travel-list-head-next"><i class="iconfont icon-next"></i></span>
+            </div>
+            <div class="travel-list-content">
+                <div class="travel-list-content-list travel-list-head-span-style_yic travel-list-head-span-style_xians">
+                    <ul>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                 <div class="travel-list-content-list travel-list-head-span-style_yic " >
+                    <ul>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="iconfont icon-addition_fill"></i><a href="#"><img src="../../images/business-2.png" width="343" height="240" alt=""></a>
+                            <div class="travel-list-content-info">
+                                <p><a href="#">旧金山行程二选一+优胜美地&17英里+赌城三峡选一|超值半自助游优胜美英...</a></p>
+                                <span><i class="iconfont icon-mark"></i>6个目的，35个景点</span>
+                            </div>
+                        </li>
+                       
+                    </ul>
+                 </div>
+                <div class="travel-list-content-btn">
+                    <a class="btn btn-primary">上一页</a>
+                    <a class="btn btn-primary">下一页</a>
+                </div>
+            </div>
+        </div>
+        <div class="travel-content">
+            <div class="travel-content-main">
+                <div class="travel-content-main-title">
+                    选择城市和目的地
+                </div>
+                <div class="travel-content-main-con">
+                    <form action="" method="">
+                        <input type="text" name="search" placeholder="输入搜索城市">
+                        <a href="#" class="travel-content-main-con-btn">确定</a>
+                        <a href="#" class="travel-content-main-con-btn">取消</a>
+                    </form>
+                    <ul>
+                        <li>
+                            <a href="">世界贸易中心1号楼<i class="iconfont icon-addition_fill"></i></a>
+                        </li>
+                        <li>
+                            <a href="">世界贸易中心1号楼<i class="iconfont icon-addition_fill"></i></a>
+                        </li>
+                        <li>
+                            <a href="">世界贸易中心1号楼<i class="iconfont icon-addition_fill"></i></a>
+                        </li>
+                        <li>
+                            <a href="">世界贸易中心1号楼<i class="iconfont icon-addition_fill"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="travel-content-introduce">
+                <div class="travel-content-introduce-left"><img src="../../images/business-3.png" width="300" height="180" ></div>
+                <div class="travel-content-introduce-right">
+                    <b>克利夫兰</b><span>（美国俄亥俄州城市）</span>
+                    <p>位于伊利湖南岸，凯霍加河的河口，昔日西储地的范围内，距离宾州100公里，是俄亥俄州凯霍加县的首府。开埠于1796年，历史上由于运河和铁路交汇，成为了制造业中心。在大型工业衰退后，成为了金融、保险和医疗中心。</p>
+                    <p>克里夫兰在20世纪50年代曾拥有多达90余万的人口，然而在随后的数十年中人口不断流失，至美国2000年人口普查，克里夫兰市区人口下降至478,403。</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="travel-buy">
+            <p>共： <span class="iconfont icon-qian">699</span></p>
+            <ul>
+                <li><a href="">地图预览</a></li>
+                <li><a href="">保存草稿</a></li>
+                <li><a href="">下一步<br/>（选择汽车）</a></li>
+            </ul>
+        </div>
+
+        <div class="travel-prompt">
+            <div class="travel-prompt-hred">
+                <ul>
+                    <li><span class="travel-prompt-hred-style">注意事项</span></li>
+                    <li><span>列表自定</span></li>
+                    <li><span>列表自定</span></li>
+                </ul>
+            </div>
+            <div class="travel-prompt-content">
+                <p class="travel-prompt-content-title">客栈介绍</p>
+                <div class="travel-prompt-content-con">
+                    <p>2013年开业   2014年装修   15间房 电话--18887243551</p>
+                    <p>“像家一样”是朵家无论大理的客栈还是成都的咖啡馆，始终也是唯一不变的追求，多年海内外自助旅行，住过无数各色各异的客栈民宿和酒店，我明白旅行在外的人身体最需要的栖息地是究竟。 朵家，位于大理古城人民路下段洱海门外侧，交通便利，好停车。共有1.8米大床房3间，1.2米双床榻榻米2间. 全部独立卫浴。免费无限网络覆盖，空间开敞的室内公共休闲区，精致的院落。客房内配套实木或铁艺家具，60支纱埃及棉高档床品，亚 麻窗帘，实木地板，全身镜，吹风筒，妇洗器，品牌卫浴。室内禁烟以及不提供一次性用具。</p>
+                </div>
+                
+            </div>
+            <div class="travel-prompt-content" style="display: none;">
+                <p class="travel-prompt-content-title">客栈介绍1</p>
+                <div class="travel-prompt-content-con">
+                    <p>2013年开业   2014年装修   15间房 电话--18887243551</p>
+                    <p>“像家一样”是朵家无论大理的客栈还是成都的咖啡馆，始终也是唯一不变的追求，多年海内外自助旅行，住过无数各色各异的客栈民宿和酒店，我明白旅行在外的人身体最需要的栖息地是究竟。 朵家，位于大理古城人民路下段洱海门外侧，交通便利，好停车。共有1.8米大床房3间，1.2米双床榻榻米2间. 全部独立卫浴。免费无限网络覆盖，空间开敞的室内公共休闲区，精致的院落。客房内配套实木或铁艺家具，60支纱埃及棉高档床品，亚 麻窗帘，实木地板，全身镜，吹风筒，妇洗器，品牌卫浴。室内禁烟以及不提供一次性用具。</p>
+                </div>
+                
+            </div>
+            <div class="travel-prompt-content"  style="display: none;">
+                <p class="travel-prompt-content-title">客栈介绍2</p>
+                <div class="travel-prompt-content-con">
+                    <p>2013年开业   2014年装修   15间房 电话--18887243551</p>
+                    <p>“像家一样”是朵家无论大理的客栈还是成都的咖啡馆，始终也是唯一不变的追求，多年海内外自助旅行，住过无数各色各异的客栈民宿和酒店，我明白旅行在外的人身体最需要的栖息地是究竟。 朵家，位于大理古城人民路下段洱海门外侧，交通便利，好停车。共有1.8米大床房3间，1.2米双床榻榻米2间. 全部独立卫浴。免费无限网络覆盖，空间开敞的室内公共休闲区，精致的院落。客房内配套实木或铁艺家具，60支纱埃及棉高档床品，亚 麻窗帘，实木地板，全身镜，吹风筒，妇洗器，品牌卫浴。室内禁烟以及不提供一次性用具。</p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- /content-->
+<footer class="ez-footer">
+    <div class="ez-advantage">
+        <div class="container ez-container">
+            <div class="advantage-title">
+                <img alt="..." src="../../images/ez-advantage.png">
+            </div>
+            <ul class="list-inline text-center advantage-list pull-right">
+                <li>
+                    <i class="iconfont icon-sun"></i>
+                    <p>阳光保证</p>
+                </li>
+                <li>
+                    <i class="iconfont icon-app"></i>
+                    <p>产品丰富</p>
+                </li>
+                <li>
+                    <i class="iconfont icon-service"></i>
+                    <p>卓越服务</p>
+                </li>
+                <li>
+                    <i class="iconfont icon-label"></i>
+                    <p>预定价格保障</p>
+                </li>
+                <li>
+                    <i class="iconfont icon-hotel"></i>
+                    <p>酒店升级保障</p>
+                </li>
+                <li>
+                    <i class="iconfont icon-flight"></i>
+                    <p>航班延误保障</p>
+                </li>
+                <li>
+                    <i class="iconfont icon-fault"></i>
+                    <p>特殊原因退订保障</p>
+                </li>
+                <li>
+                    <i class="iconfont icon-rain"></i>
+                    <p>不可抗力退订保障</p>
+                </li>
+                <li>
+                    <i class="iconfont icon-disasters"></i>
+                    <p>重大灾害保障</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container ez-container ez-links">
+        <ul class="list-inline links-list">
+            <h4>合作伙伴</h4>
+            <li><a href="#"><img src="../../images/links/link1.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link2.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link3.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link4.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link5.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link6.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link7.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link8.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link9.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link10.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link11.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link12.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link13.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link14.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link15.png" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link16.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link17.gif" class="center-block img-responsive"></a></li>
+            <li><a href="#"><img src="../../images/links/link18.gif" class="center-block img-responsive"></a></li>
+        </ul>
+    </div>
+
+    <div class="container ez-container ez-category">
+        <div class="footer-logo">
+            <img src="../../images/footer-logo.png">
+        </div>
+        <div class="footer-category text-center">
+            <div class="category-grid">
+                <p class="title">订购指南</p>
+                <ul class="category-list">
+                    <li><a href="#">订购流程</a></li>
+                    <li><a href="#">客户协议</a></li>
+                    <li><a href="#">更改取消</a></li>
+                    <li><a href="#">使用及隐私条款</a></li>
+                </ul>
+            </div>
+            <div class="category-grid">
+                <p class="title">用户中心</p>
+                <ul class="category-list">
+                    <li><a href="#">用户注册/登录</a></li>
+                    <li><a href="#">找回密码</a></li>
+                    <li><a href="#">付款方式</a></li>
+                    <li><a href="#">积分奖励</a></li>
+                    <li><a href="#">会员俱乐部</a></li>
+                    <li><a href="#">旅游保险</a></li>
+                </ul>
+            </div>
+
+            <div class="category-grid">
+                <p class="title">帮助中心</p>
+                <ul class="category-list">
+                    <li><a href="#">公司简介</a></li>
+                    <li><a href="#">签证服务</a></li>
+                    <li><a href="#">旅游保险</a></li>
+                    <li><a href="#">网站地图</a></li>
+                </ul>
+            </div>
+
+            <div class="category-grid">
+                <p class="title">新阳光合作</p>
+                <ul class="category-list">
+                    <li><a href="#">友情链接</a></li>
+                    <li><a href="#">商务合作</a></li>
+                    <li><a href="#">网站联盟</a></li>
+                </ul>
+            </div>
+
+            <div class="category-grid">
+                <p class="title">新阳光国际</p>
+                <ul class="category-list">
+                    <li><a href="#">关于我们</a></li>
+                    <li><a href="#">联系我们</a></li>
+                    <li><a href="#">招聘英才</a></li>
+                    <li><a href="#">版权</a></li>
+                </ul>
+            </div>
+
+        </div>
+        <div class="footer-qrcode text-center pull-right">
+            <img src="../../images/qrcode.png" class="center-block img-responsive">
+            <p>关注微信公众号</p>
+        </div>
+    </div>
+
+    <div class="container ez-container footer-bottom">
+        <div class="footer-about col-md-12">
+            <div><img src="../../images/ez-nta.png" class="center-block img-responsive"></div>
+            <div><img src="../../images/ez-iata.png" class="center-block img-responsive"></div>
+            <div><img src="../../images/ez-nta.png" class="center-block img-responsive"></div>
+            <div><img src="../../images/ez-iata.png" class="center-block img-responsive"></div>
+            <div><img src="../../images/ez-nta.png" class="center-block img-responsive"></div>
+            <div><img src="../../images/ez-iata.png" class="center-block img-responsive"></div>
+        </div>
+        <div class="col-md-12 text-center copyright">
+            <p>Copyright © 2018-2028 | 万事通 Lulutrip | All Rights Reserved.</p>
+            <p>美国万事通有限公司 | 粤ICP备13084118号-11</p>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+</footer>
+<!--边栏-->
+<aside class="ez-aside">
+    <div class="aside-box text-center">
+        <div class="aside-shopcart">
+            <a href="#"><i class="iconfont icon-shopcart"></i></a>
+            <div class="shop-text">购</div>
+            <div class="shop-text">物</div>
+            <div class="shop-text">车</div>
+            <div class="shop-num">2</div>
+        </div>
+        <div class="aside-contact">
+            <!--电话-->
+            <div style="position: relative;">
+                <i class="iconfont icon-phonecall ez-btn-phone"></i>
+                <div class="tooltip left in ez-tooltip ez-tooltip-phonecall" role="tooltip" style="display: none">
+                    <div class="tooltip-arrow"></div>
+                    <div class="tooltip-inner text-center">
+                        <h4 class="title text-blue">电话客服</h4>
+                        <p class="text-gray">留下您的电话，我们会立刻回复哦</p>
+                        <form class="form-horizontal" onsubmit="">
+                            <div class="form-group">
+                                <select class="form-control">
+                                    <option value="">选择国家</option>
+                                    <option value="1">中国</option>
+                                    <option value="2">美国</option>
+                                    <option value="3">日本</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="输入电话号码">
+                            </div>
+                        </form>
+                        <a class="btn ez-btn-parmary ez-btn-xl">确定</a>
+                        <p class="text-gray">全球7*24小时客服电话</p>
+                        <p class="text-darkgray">400-666-8888</p>
+                    </div>
+                </div>
+            </div>
+            <!--腾讯qq-->
+            <div style="position: relative;">
+                <i class="iconfont icon-qq ez-btn-qq" style="font-weight: bold"></i>
+                <div class="tooltip left in ez-tooltip ez-tooltip-qq" role="tooltip" style="display: none;">
+                    <div class="tooltip-arrow"></div>
+                    <div class="tooltip-inner text-center">
+                        <h4 class="title text-blue">QQ</h4>
+                        <div class="tooltip-icon-qq">
+                            <i class="iconfont icon-qq-s"></i>
+                        </div>
+                        <a class="btn ez-btn-parmary ez-btn-xl">点我，联系我们</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="back-to-top text-center">
+        <a class="btn-back"><i class="iconfont icon-arrow-top"></i></a>
+    </div>
+</aside>
+</body>
+</html>

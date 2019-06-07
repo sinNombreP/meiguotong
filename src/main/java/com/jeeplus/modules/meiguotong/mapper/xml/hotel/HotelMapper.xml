@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.hotel.HotelMapper">
+    
+	<sql id="hotelColumns">
+		a.id AS "id",
+		a.hotelNo AS "hotelNo",
+		a.img_url AS "imgUrl",
+		a.level AS "level",
+		a.city_id AS "cityId",
+		a.longitude AS "longitude",
+		a.latitude AS "latitude",
+		a.status AS "status",
+		a.address AS "address",
+		a.name AS "name",
+		a.language_id AS "languageId",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.agentid AS "agentid",
+		b.city_name AS "cityName"
+	</sql>
+	
+	<sql id="hotelJoins">
+		LEFT JOIN com_city b ON a.city_id = b.id
+	</sql>
+	<!--  根据城市及搜索条件获取酒店 -->
+    <select id="getHotelByCity" resultType="Hotel" >
+		SELECT 
+			a.id as "id",
+			a.img_url AS "imgUrl",
+			a.level AS "level",
+			a.name AS "name",
+			a.address AS "address",
+			ifnull((select hrt.money from hotel_room_time hrt 
+						left join hotel_room hr on hr.id=hrt.hotel_room_id
+				where hr.hotel_id=a.id 
+				order by hrt.money limit 1
+				),0) as "price"
+		FROM hotel a
+		<where>
+			a.del_flag = 0 and a.status=3 AND a.language_id = #{languageId}
+			and a.city_id=#{cityId}
+			<if test="stars != null and stars != ''">
+				AND FIND_IN_SET(a.level,#{stars})>0  
+			</if>
+			<!-- 判断酒店在当前日期有房间 -->
+			AND EXISTS
+					(SELECT b.id FROM hotel_room b 
+					left join hotel_room_date hrd on hrd.hotel_room_id=b.id 
+						and DATE_FORMAT(hrd.price_date, '%Y-%m-%d')=DATE_FORMAT(#{date}, '%Y-%m-%d')
+					WHERE b.hotel_id=a.id and b.del_flag=0 and b.status=3
+					and hrd.stock_num>0)
+			<!-- 判断酒店在当前日期有单人房 -->
+			<if test="oneNum != 0">
+				AND EXISTS
+					(SELECT b.id FROM hotel_room b 
+					left join hotel_room_date hrd on hrd.hotel_room_id=b.id 
+						and DATE_FORMAT(hrd.price_date, '%Y-%m-%d')=DATE_FORMAT(#{date}, '%Y-%m-%d')
+					WHERE b.hotel_id=a.id and b.del_flag=0 and b.status=3
+					and b.people=1 and hrd.stock_num>=#{oneNum})
+			</if>
+			<if test="twoNum != 0">
+				AND EXISTS
+					(SELECT b.id FROM hotel_room b 
+					left join hotel_room_date hrd on hrd.hotel_room_id=b.id 
+						and DATE_FORMAT(hrd.price_date, '%Y-%m-%d')=DATE_FORMAT(#{date}, '%Y-%m-%d')
+					WHERE b.hotel_id=a.id and b.del_flag=0 and b.status=3
+					and b.people=2 and hrd.stock_num>=#{twoNum})
+			</if>
+			<if test="threeNum != 0">
+				AND EXISTS
+					(SELECT b.id FROM hotel_room b 
+					left join hotel_room_date hrd on hrd.hotel_room_id=b.id 
+						and DATE_FORMAT(hrd.price_date, '%Y-%m-%d')=DATE_FORMAT(#{date}, '%Y-%m-%d')
+					WHERE b.hotel_id=a.id and b.del_flag=0 and b.status=3
+					and b.people=3 and hrd.stock_num>=#{threeNum})
+			</if>
+			<if test="fourNum != 0">
+				AND EXISTS
+					(SELECT b.id FROM hotel_room b 
+					left join hotel_room_date hrd on hrd.hotel_room_id=b.id 
+						and DATE_FORMAT(hrd.price_date, '%Y-%m-%d')=DATE_FORMAT(#{date}, '%Y-%m-%d')
+					WHERE b.hotel_id=a.id and b.del_flag=0 and b.status=3
+					and b.people=4 and hrd.stock_num>=#{fourNum})
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!--  根据语言获取酒店 -->
+    <select id="getHotelByLanguage" resultType="Hotel" >
+		SELECT 
+			a.id as "id",
+			a.img_url AS "imgUrl",
+			a.level AS "level",
+			a.name AS "name",
+			a.address AS "address"
+		FROM hotel a
+		<where>
+			a.del_flag = 0 and a.status=3 AND a.language_id = #{languageId}
+			<if test="name != null and name != ''">
+				AND a.name like concat('%',#{name},'%')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="get" resultType="Hotel" >
+		SELECT 
+			<include refid="hotelColumns"/>
+		FROM hotel a
+		<include refid="hotelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Hotel" >
+		SELECT 
+			<include refid="hotelColumns"/>
+		FROM hotel a
+		<include refid="hotelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="name != null and name != ''">
+				AND (a.name LIKE concat('%',#{name},'%') OR a.hotelNo = #{name})
+			</if>
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if>
+			<if test="agentid != null">
+				AND a.agentid = #{agentid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Hotel" >
+		SELECT 
+			<include refid="hotelColumns"/>
+		FROM hotel a
+		<include refid="hotelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hotel(
+			agentid,
+			hotelNo,
+			img_url,
+			level,
+			city_id,
+			longitude,
+			latitude,
+			status,
+			address,
+			name,
+			language_id,
+			update_by,
+			update_date,
+			create_date,
+			create_by,
+			del_flag,
+			del_date,
+			del_by
+		) VALUES (
+			#{agentid},
+			#{hotelNo},
+			#{imgUrl},
+			#{level},
+			#{cityId},
+			#{longitude},
+			#{latitude},
+			1,
+			#{address},
+			#{name},
+			#{languageId},
+			#{updateBy.id},
+			#{updateDate},
+			#{createDate},
+			#{createBy.id},
+			#{delFlag},
+			#{delDate},
+			#{delBy}
+		)
+		<selectKey keyProperty="id" order="AFTER" resultType="java.lang.String">
+	        SELECT LAST_INSERT_ID()
+	    </selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE hotel SET 	
+			hotelNo = #{hotelNo},
+			img_url = #{imgUrl},
+			level = #{level},
+			city_id = #{cityId},
+			longitude = #{longitude},
+			latitude = #{latitude},
+			status = #{status},
+			address = #{address},
+			name = #{name},
+			language_id = #{languageId},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_date = #{delDate},
+			del_by = #{delBy}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 修改酒店编号 -->
+	<update id="updateHotelNo">
+		UPDATE hotel SET 	
+			hotelNo = #{hotelNo}
+		WHERE id = #{id}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hotel
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hotel SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Hotel" statementType="STATEMENT">
+		select * FROM hotel  where ${propertyName} = '${value}'
+	</select>
+	
+	<!--修改星级、评论数-->
+	<update id="changeCommnetNum">
+		UPDATE hotel SET 	
+			star=(select truncate(sum(level)/count(id),1) from com_comment where type=9 and type_id=#{id}),
+			comment_num=comment_num+1
+		WHERE id = #{id}
+	</update>
+</mapper>

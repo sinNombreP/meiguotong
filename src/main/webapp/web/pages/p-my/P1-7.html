@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>P1-7财务管理</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/E-publc.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../vendor/calendar/calendar-pro.css">
+    <link rel="stylesheet" href="../../css/common.css" />
+
+    <!--[if lt IE 9]>
+        <script src="../../vendor/html5.js"></script>
+        <script src="../../vendor/respond.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div id="app" v-cloak>
+    <ez-header></ez-header>
+    <ez-container></ez-container>
+<!--content-->
+
+<div class="container ez-container ez-user-content">
+    <ez-myinfo></ez-myinfo>
+    <div class="content-right finance-content-right">
+        <div class="panel-header">
+            <div class="pull-left panel-header-title">财务管理</div>
+        </div>
+        <div class="finance-panel">
+            <h5>余额</h5>
+            <span class="balance-text text-orange"><i>¥</i>123,666</span>
+            <span class="finance-panel-btn">
+                <a class="btn btn-md text-bold">提现申请</a>
+            </span>
+        </div>
+
+        <table class="table text-center finance-table">
+            <tr>
+                <th>时间</th>
+                <th>金额</th>
+                <th>类型</th>
+                <th>备注</th>
+            </tr>
+            <tr>
+                <td>2018-09-09 09:09:19</td>
+                <td class="text-orange">¥234</td>
+                <td>定制行程</td>
+                <td>费城，华盛顿广场，尼古拉瀑布，时代广场7日游（纽约出发）</td>
+            </tr>
+            <tr>
+                <td>2018-09-09 09:09:19</td>
+                <td class="text-orange">¥888</td>
+                <td>定制行程</td>
+                <td>费城，华盛顿广场，尼古拉瀑布，时代广场7日游（纽约出发）</td>
+            </tr>
+            <tr>
+                <td>2018-09-09 09:09:19</td>
+                <td class="text-orange">¥299</td>
+                <td>定制行程</td>
+                <td>费城，华盛顿广场，尼古拉瀑布，时代广场7日游（纽约出发）</td>
+            </tr>
+            <tr>
+                <td>2018-09-09 09:09:19</td>
+                <td class="text-orange">¥999</td>
+                <td>定制行程</td>
+                <td>费城，华盛顿广场，尼古拉瀑布，时代广场7日游（纽约出发）</td>
+            </tr>
+        </table>
+        <nav class="text-center">
+            <ul class="pagination ez-navigation">
+                <li class="active"><a href="#">1</a></li>
+                <li><a href="#">2</a></li>
+                <li><a href="#">3</a></li>
+                <li><a href="#">4</a></li>
+                <li><a href="#">5</a></li>
+                <li><a href="#">6</a></li>
+                <li><a href="#">...</a></li>
+                <li>
+                    <a href="#" class="page-next" aria-label="Next">
+                        <span aria-hidden="true">Next &gt;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+</div>
+
+<!-- 绑定邮箱弹出框（Modal） -->
+<div class="modal fade emailBind ez-modal" id="emailBind" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <!--<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>-->
+                <button type="button" class="modal-close" data-dismiss="modal" aria-hidden="true"><i class="iconfont icon-close"></i></button>
+                <h4 class="modal-title text-center" id="myModalLabel">绑定邮箱</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="form-group clearfix">
+                        <span class="col-sm-3 control-label required">邮箱</span>
+                        <div class="col-sm-7" >
+                            <input class="form-control" type="text" value="xxxx@qq.com" required>
+                            <div><a class="btn ez-btn btn-md ez-mt-10">获取验证码</a></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group clearfix">
+                        <span class="col-sm-3 control-label required">验证码</span>
+                        <div class="col-sm-7" >
+                            <input class="form-control" type="text" value="5657" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group clearfix">
+                        <span class="col-sm-3"></span>
+                        <div class="col-sm-6" >
+                            <a class="btn btn-lg ez-btn-parmary ez-mr-md" style="border-radius: 4px">绑定</a>
+                        </div>
+                    </div>
+                </form>
+                <div class="clearfix"></div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 绑定邮箱弹出框 /.modal -->
+
+
+    <ez-footer></ez-footer>
+    <ez-aside></ez-aside>
+
+</div>
+</body>
+</html>
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-pro.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+<script type="text/javascript">
+    const app = new Vue({
+        el:"#app",
+        data:{
+
+        },
+        mounted() {
+
+        },
+        methods: {
+
+        },
+    })
+</script>
+

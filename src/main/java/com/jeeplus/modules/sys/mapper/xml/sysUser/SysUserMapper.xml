@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.sysUser.SysUserMapper">
+    
+	<sql id="sysUserColumns">
+		a.id AS "id",
+		a.user_type AS "userType",
+		a.fatherid AS "fatherid",
+		a.agentid AS "agentid",
+		a.company_id AS "companyId",
+		a.office_id AS "office.id",
+		a.login_name AS "loginName",
+		a.password AS "password",
+		a.no AS "no",
+		a.name AS "name",
+		a.email AS "email",
+		a.phone AS "phone",
+		a.mobile AS "mobile",
+		a.photo AS "photo",
+		a.login_ip AS "loginIp",
+		a.login_date AS "loginDate",
+		a.login_flag AS "loginFlag",
+		a.create_by AS "createBy.id",
+		(SELECT login_name FROM sys_user b WHERE a.create_by=b.id  ) AS "createBy.loginName",
+		a.create_date AS "createDate",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		a.qrcode AS "qrcode",
+		a.sign AS "sign",
+		a.company_logo AS "companyLogo",
+		a.company_name AS "companyName",
+		a.company_content AS "companyContent",
+		a.address AS "address",
+		a.address_details AS "addressDetails",
+		a.companyimg AS "companyimg",
+		(SELECT COUNT(1) FROM sys_user WHERE fatherid=a.agentid) AS "number",
+		office.name AS "office.name"
+	</sql>
+	<!-- 删除用户和角色关联表数据 -->
+	<delete id="deleteUserRole">
+		DELETE FROM sys_user_role WHERE user_id = #{id}
+	</delete>
+
+	<!-- 插入用户和角色关联表数据 -->
+	<insert id="insertUserRole">
+		INSERT INTO sys_user_role(user_id, role_id)
+		<foreach collection="roleList" item="role" separator=" union all ">
+			SELECT #{id}, #{role.id}  ${dual} 
+		</foreach>
+	</insert>
+
+	<!-- 删除用户和角色关联表数据 -->
+	<delete id="delRole">
+		DELETE FROM sys_user_role WHERE user_id = #{userid} AND role_id = #{roleid}
+	</delete>
+
+	<!-- 插入用户和角色关联表数据 -->
+	<insert id="addRole">
+		INSERT INTO sys_user_role(user_id, role_id) VALUES ( #{userid}, #{roleid})
+	</insert>
+
+	<sql id="sysUserJoins">
+		
+		LEFT JOIN sys_office office ON office.id = a.office_id
+	</sql>
+	
+	<select id="getByName" resultType="SysUser">
+		SELECT
+			a.login_name AS "loginName",
+			a.password AS "password"
+		FROM sys_user a
+		WHERE a.login_name = #{loginName} AND a.del_flag = #{DEL_FLAG_NORMAL} limit 0,1
+	</select>
+    
+	<select id="get" resultType="SysUser" >
+		SELECT 
+			<include refid="sysUserColumns"/>
+		FROM sys_user a
+		<include refid="sysUserJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SysUser" >
+		SELECT 
+			<include refid="sysUserColumns"/>,
+			(select group_concat(DISTINCT b.name) 
+			 from sys_role b 
+			 left join sys_user_role c on c.role_id = b.id 
+			 where c.user_id = a.id and b.del_flag = 0
+
+			 ) as "roles",
+			 (SELECT group_concat(c.name)
+			 FROM sys_user_type b
+			 LEFT JOIN sys_role c ON b.type = c.user_type
+			 WHERE b.agentid = a.agentid  AND b.userType = 1
+			 ) AS "companyType"
+		FROM sys_user a
+		<include refid="sysUserJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+			<if test="loginName != null and loginName != ''">
+				AND a.login_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{loginName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{loginName},'%')</if>
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			 <if test="roles != null and roles != ''">
+				AND (select count(role_id) from sys_user_role 
+					where role_id=#{roles} and user_id=a.id)>0
+			</if>
+			<if test="userType != null ">
+				AND a.user_type =#{userType}
+			</if>
+			<if test="fatherid != null ">
+				AND a.fatherid =#{fatherid}
+			</if>
+			<if test="loginFlag != null and loginFlag != ''">
+				AND a.login_flag = #{loginFlag}
+			</if>
+			<if test="companyType != null and companyType != ''">
+				AND FIND_IN_SET(#{companyType},
+						(SELECT group_concat(b.type)
+						 FROM sys_user_type b
+			 			WHERE b.agentid = a.agentid AND b.userType = 1)) >0
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where>
+		ORDER BY a.create_date DESC
+	</select>
+	
+	<!-- 根据父ID查询子账号 -->
+	<select id="findListByfathid" resultType="SysUser">
+		SELECT 
+			a.login_name AS "loginName",
+			a.password AS "password",
+			(select group_concat(sr.name) from sys_user_role sur 
+					left join sys_role sr on sr.id=sur.role_id
+					where sur.user_id=a.id) as "roles"
+		FROM sys_user  a
+		WHERE a.fatherid =#{agentid} AND a.del_flag=0
+	</select>
+	
+	<!-- 根据agentid查询用户信息-->
+	<select id="findByAgentId" resultType="SysUser">
+		SELECT 
+			a.id AS "id",
+				a.company_name AS "companyName"
+		FROM sys_user  a
+		WHERE a.agentid =#{agentid} AND a.del_flag=0 AND a.fatherid =0 
+		ORDER BY a.create_date DESC LIMIT 1
+	</select>
+	
+	<!-- 获取最大的供应商ID -->
+	<select id="getMaxAgentid" resultType="Integer">
+		SELECT IFNULL(MAX(a.agentid),0)+1
+		FROM sys_user a
+		WHERE a.del_flag = 0 
+		ORDER BY a.create_date DESC LIMIT 1
+	</select>
+	
+	<!-- 根据type查询该类型的供应商信息 -->
+	<select id="getNameByType" resultType="SysUser">
+		SELECT 
+			b.company_name AS "companyName",
+			b.agentid AS "agentid"
+		FROM sys_user_type a LEFT JOIN sys_user b ON a.agentid = b.agentid 
+		WHERE a.type = #{type} AND b.del_flag = 0 AND b.fatherid = 0 AND b.login_flag = 1 AND a.userType = 1
+	</select>
+	
+	<select id="findAllList" resultType="SysUser" >
+		SELECT 
+			<include refid="sysUserColumns"/>
+		FROM sys_user a
+		<include refid="sysUserJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+<insert id="insert">
+		INSERT INTO sys_user(
+			id,
+			user_type,
+			fatherid,
+			agentid,
+			company_id,
+			office_id,
+			login_name,
+			password,
+			no,
+			name,
+			email,
+			phone,
+			mobile,
+			photo,
+			login_ip,
+			login_date,
+			login_flag,
+			create_by,
+			create_date,
+			update_by,
+			update_date,
+			remarks,
+			del_flag,
+			qrcode,
+			sign,
+			company_logo,
+			company_name,
+			company_content,
+			address,
+			address_details,
+			companyimg
+		) VALUES (
+			#{id},
+			#{userType},
+			#{fatherid},
+			#{agentid},
+			#{companyId},
+			#{office.id},
+			#{loginName},
+			#{password},
+			#{no},
+			#{name},
+			#{email},
+			#{phone},
+			#{mobile},
+			#{photo},
+			#{loginIp},
+			#{loginDate},
+			#{loginFlag},
+			#{createBy.id},
+			#{createDate},
+			#{updateBy.id},
+			#{updateDate},
+			#{remarks},
+			#{delFlag},
+			#{qrcode},
+			#{sign},
+			#{companyLogo},
+			#{companyName},
+			#{companyContent},
+			#{address},
+			#{addressDetails},
+			#{companyimg}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_user SET 	
+			user_type = #{userType},
+			fatherid = #{fatherid},
+			agentid = #{agentid},
+			company_id = #{companyId},
+			office_id = #{office.id},
+			login_name = #{loginName},
+			password = #{password},
+			no = #{no},
+			name = #{name},
+			email = #{email},
+			phone = #{phone},
+			mobile = #{mobile},
+			photo = #{photo},
+			login_ip = #{loginIp},
+			login_date = #{loginDate},
+			login_flag = #{loginFlag},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			remarks = #{remarks},
+			qrcode = #{qrcode},
+			sign = #{sign},
+			company_logo = #{companyLogo},
+			company_name = #{companyName},
+			company_content = #{companyContent},
+			address = #{address},
+			address_details = #{addressDetails},
+			companyimg = #{companyimg}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM sys_user
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE sys_user SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<!--启用账号-->
+	<update id="enable">
+		UPDATE sys_user SET 
+			login_flag = 1
+		WHERE id = #{id}
+	</update>
+	
+	<!--禁用账号-->
+	<update id="disable">
+		UPDATE sys_user SET 
+			login_flag = 0
+		WHERE id = #{id}
+	</update>
+
+	<!--修改状态-->
+	<update id="changeState">
+			UPDATE sys_user SET 
+			<if test="loginFlag == 0">
+				login_flag = 1
+			</if>
+			<if test="loginFlag == 1">
+				login_flag = 0
+			</if>	
+			WHERE id = #{id}
+	</update>
+	
+	<update id="updateAudit">
+		UPDATE sys_user 
+		<set>
+				<if test="audit !=null and audit != ''">
+					audit = #{audit}
+				</if>
+				<where>
+						id = #{id}
+				</where>
+		</set> 	
+	</update>
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SysUser" statementType="STATEMENT">
+		select * FROM sys_user  where ${propertyName} = '${value}'
+	</select>
+	
+	<!-- 查询某时间段供应商数量 -->
+	<select id="statisticsAgent" resultType="SysUser">
+		select t2.days as "createDate",IFNULL(t3.num,0) as "num" from 
+			(SELECT @cdate := date_add(@cdate,interval -1 day) days from 
+				(SELECT @cdate := date_format(#{beginDate},'%Y-%m-%d') from sys_log limit #{days}) t1) t2
+		LEFT JOIN 
+		(select DATE_FORMAT(a.create_date,'%Y-%m-%d') days,count(*) as "num" 
+		from sys_user a where a.user_type=2 
+		and DATE_FORMAT(a.create_date,'%Y%m')=DATE_FORMAT(#{currentDate},'%Y%m')
+		group by days) T3 ON t2.days=t3.days order by t2.days
+	</select>
+	
+</mapper>

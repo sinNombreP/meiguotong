@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.insurance.OrderInsuranceMapper">
+    
+	<sql id="orderInsuranceColumns">
+		a.id AS "id",
+		a.order_sys1  AS "orderSys1",
+		a.order_sys2  AS "orderSys2",
+		a.name AS "name",
+		a.insuranceid AS "insuranceid",
+		a.agentid AS "agentid",
+		a.after_no AS "afterNo",
+		a.order_no AS "orderNo",
+		a.member_id AS "memberId",
+		a.use_date AS "useDate",
+		a.price AS "price",
+		a.status AS "status",
+		a.contacts AS "contacts",
+		a.contact_mobile AS "contactMobile",
+		a.contact_remark AS "contactRemark",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.pay_way AS "payWay",
+		a.pay_date AS "payDate",
+		a.num AS "num",
+		a.refund_info AS "refundInfo",
+		a.refund_reason AS "refundReason",
+		a.refund_price AS "refundPrice",
+		a.start_date AS "startDate",
+		c.company_name AS "companyName",
+			a.price2 AS "price2"
+			
+			
+	</sql>
+	
+	<sql id="orderInsuranceJoins">
+		LEFT JOIN insurance b ON a.insuranceid = b.id
+		LEFT JOIN sys_user c ON a.agentid = c.agentid AND c.fatherid = 0
+	</sql>
+	
+    
+	<select id="get" resultType="OrderInsurance" >
+		SELECT 
+			<include refid="orderInsuranceColumns"/>,
+			o.adult_num AS "adultNum",
+		o.child_num AS "childNum",
+		o.remark AS "remark",
+		b.name as "insuranceName",
+		b.price as "insurancePrice"
+		FROM order_insurance a
+		<include refid="orderInsuranceJoins"/>
+		left join order_sys o on a.order_sys1=o.id
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderInsurance" >
+		SELECT 
+			<include refid="orderInsuranceColumns"/>,
+			m.type as "memberType",
+			m.mobile AS "mobile",
+			if(m.type=1,d.nick_name,e.company_name) AS "nickName"
+		FROM order_insurance a
+		<include refid="orderInsuranceJoins"/>
+		left join member m  on m.id=a.member_id
+		LEFT JOIN member_information d ON a.member_id = d.memberid
+		left join member_travel e on a.member_id = e.memberid
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="agentid != null">
+				AND a.agentid = #{agentid}
+			</if>
+			<if test="type==1">
+				AND a.status &lt;= 6
+			</if>
+			<if test="type==2">
+				AND a.status &gt;=7
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND (a.order_no LIKE concat('%',#{searchContent},'%')
+				OR b.name LIKE concat('%',#{searchContent},'%')
+				OR a.member_id =#{searchContent}
+				OR a.insuranceid =#{searchContent})
+			</if>
+			<if test="dataFlag==1">
+				AND to_days(a.create_date)= to_days(now())
+			</if>
+			<if test="dataFlag==2">
+				AND to_days(a.start_date)= to_days(now())
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+				AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(a.start_date, '%Y-%m-%d')
+				and DATE_FORMAT(a.start_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+			</if>
+			<if test="memberType != null and memberType!=''">
+				AND m.type = #{memberType}
+			</if>
+			<if test="nickName != null and nickName!=''">
+				AND if(m.type=1,d.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderInsurance" >
+		SELECT 
+			<include refid="orderInsuranceColumns"/>
+		FROM order_insurance a
+		<include refid="orderInsuranceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_insurance(
+			order_sys1 ,
+		order_sys2,
+			name,
+			refund_price,
+			insuranceid,
+			agentid,
+			after_no,
+			order_no,
+			member_id,
+			use_date,
+			price,
+			status,
+			contacts,
+			contact_mobile,
+			contact_remark,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			pay_way,
+			pay_date,
+			num,
+			refund_info,
+			refund_reason,
+			price2
+		) VALUES (
+			#{orderSys1},
+		#{orderSys2},
+			#{name},
+			#{refundPrice},
+			#{insuranceid},
+			#{agentid},
+			#{afterNo},
+			#{orderNo},
+			#{memberId},
+			#{useDate},
+			#{price},
+			#{status},
+			#{contacts},
+			#{contactMobile},
+			#{contactRemark},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{payWay},
+			#{payDate},
+			#{num},
+			#{refundInfo},
+			#{refundReason},
+				#{price2}
+		)
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+			select LAST_INSERT_ID() as id
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE order_insurance SET 	
+			name = #{name},
+			refund_price = #{refundPrice},		
+			insuranceid = #{insuranceid},
+			agentid = #{agentid},
+			after_no = #{afterNo},
+			order_no = #{orderNo},
+			member_id = #{memberId},
+			use_date = #{useDate},
+			price = #{price},
+			status = #{status},
+			contacts = #{contacts},
+			contact_mobile = #{contactMobile},
+			contact_remark = #{contactRemark},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			pay_way = #{payWay},
+			pay_date = #{payDate},
+			num = #{num},
+			refund_info = #{refundInfo},
+			refund_reason = #{refundReason}
+		WHERE id = #{id}
+	</update>
+	<!-- 修改保险状态 -->
+	<update id="stataus">
+	 UPDATE order_insurance SET
+	 status = #{status},
+	 update_date = #{updateDate},
+	update_by = #{updateBy.id}
+	WHERE id = #{id}
+	 </update>
+
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_insurance
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_insurance SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderInsurance" statementType="STATEMENT">
+		select * FROM order_insurance  where ${propertyName} = '${value}'
+	</select>
+	
+	<resultMap id="OrderInsuranceResultMap" type="com.jeeplus.modules.meiguotong.entity.insurance.OrderInsurance">
+		<id property="id" column="id"  />
+		<result property="orderSys1" column="order_sys1" />
+		<result property="orderSys2" column="order_sys2" />
+		<result property="name" column="name" />
+		<result property="insuranceid" column="insuranceid" />
+		<result property="agentid" column="agentid" />
+		<result property="afterNo" column="after_no" />
+		<result property="orderNo" column="order_no" />
+		<result property="memberId" column="member_id" />
+		<result property="useDate" column="use_date" />
+		<result property="price" column="price" />
+		<result property="status" column="status" />
+		<result property="contacts" column="contacts" />
+		<result property="contactMobile" column="contact_mobile" />
+		<result property="contactRemark" column="contact_remark" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />
+		<result property="delDate" column="del_date" />
+		<result property="delBy" column="del_by" />
+		<result property="delFlag" column="del_flag" />
+		<result property="languageId" column="language_id" />
+		<result property="payWay" column="pay_way" />
+		<result property="payDate" column="pay_date" />
+		<result property="num" column="num" />
+		<result property="refundInfo" column="refund_info" />
+		<result property="refundReason" column="refund_reason" />
+		<result property="refundPrice" column="refund_price" />
+		<result property="payNo" column="pay_no" />
+				<result property="price2" column="price2" />
+	</resultMap>
+	
+	<!-- 定义可重用的SQL代码段，可以包含在其他语句中 -->
+	<sql id="base_column">
+		 id ,order_sys1 ,order_sys2 ,name ,insuranceid ,agentid ,after_no ,order_no ,member_id ,use_date ,price ,status ,contacts ,contact_mobile ,contact_remark ,create_date ,update_date ,del_date ,del_by ,del_flag ,language_id ,pay_way ,pay_date ,num ,refund_info ,refund_reason ,refund_price ,pay_no ,price2
+	</sql>
+	
+	<sql id="base_value_column">
+		 #{id},#{orderSys1},#{orderSys2},#{name},#{insuranceid},#{agentid},#{afterNo},#{orderNo},#{memberId},#{useDate},#{price},#{status},#{contacts},#{contactMobile},#{contactRemark},#{createDate},#{updateDate},#{delDate},#{delBy},#{delFlag},#{languageId},#{payWay},#{payDate},#{num},#{refundInfo},#{refundReason},#{refundPrice},#{payNo},#{price2}
+	</sql>
+	
+	<!-- 设置语句 -->
+	<sql id="set_column">
+		<if test="id != null ">
+			id = #{id,jdbcType=INTEGER},
+		</if>
+		<if test="orderSys1 != null ">
+			order_sys1 = #{orderSys1,jdbcType=INTEGER},
+		</if>
+		<if test="orderSys2 != null ">
+			order_sys2 = #{orderSys2,jdbcType=INTEGER},
+		</if>
+		<if test="name != null ">
+			name = #{name,jdbcType=VARCHAR},
+		</if>
+		<if test="insuranceid != null ">
+			insuranceid = #{insuranceid,jdbcType=INTEGER},
+		</if>
+		<if test="agentid != null ">
+			agentid = #{agentid,jdbcType=INTEGER},
+		</if>
+		<if test="afterNo != null ">
+			after_no = #{afterNo,jdbcType=VARCHAR},
+		</if>
+		<if test="orderNo != null ">
+			order_no = #{orderNo,jdbcType=VARCHAR},
+		</if>
+		<if test="memberId != null ">
+			member_id = #{memberId,jdbcType=INTEGER},
+		</if>
+		<if test="useDate != null ">
+			use_date = #{useDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="price != null ">
+			price = #{price,jdbcType=DOUBLE},
+		</if>
+		<if test="status != null ">
+			status = #{status,jdbcType=INTEGER},
+		</if>
+		<if test="contacts != null ">
+			contacts = #{contacts,jdbcType=VARCHAR},
+		</if>
+		<if test="contactMobile != null ">
+			contact_mobile = #{contactMobile,jdbcType=VARCHAR},
+		</if>
+		<if test="contactRemark != null ">
+			contact_remark = #{contactRemark,jdbcType=VARCHAR},
+		</if>
+		<if test="createDate != null ">
+			create_date = #{createDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="createBy != null ">
+			create_by = #{createBy,jdbcType=VARCHAR},
+		</if>
+		<if test="updateDate != null ">
+			update_date = #{updateDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="updateBy != null ">
+			update_by = #{updateBy,jdbcType=VARCHAR},
+		</if>
+		<if test="delDate != null ">
+			del_date = #{delDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="delBy != null ">
+			del_by = #{delBy,jdbcType=VARCHAR},
+		</if>
+		<if test="delFlag != null ">
+			del_flag = #{delFlag,jdbcType=INTEGER},
+		</if>
+		<if test="languageId != null ">
+			language_id = #{languageId,jdbcType=INTEGER},
+		</if>
+		<if test="payWay != null ">
+			pay_way = #{payWay,jdbcType=INTEGER},
+		</if>
+		<if test="payDate != null ">
+			pay_date = #{payDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="num != null ">
+			num = #{num,jdbcType=INTEGER},
+		</if>
+		<if test="refundInfo != null ">
+			refund_info = #{refundInfo,jdbcType=VARCHAR},
+		</if>
+		<if test="refundReason != null ">
+			refund_reason = #{refundReason,jdbcType=VARCHAR},
+		</if>
+		<if test="refundPrice != null ">
+			refund_price = #{refundPrice,jdbcType=DOUBLE},
+		</if>
+		<if test="payNo != null ">
+			pay_no = #{payNo,jdbcType=VARCHAR},
+		</if>
+				<if test="price2 != null ">
+			price = #{price2,jdbcType=DOUBLE},
+		</if>
+	</sql>
+			<!-- 修改 -->
+	<update id="updateObject" parameterType="com.jeeplus.modules.meiguotong.entity.insurance.OrderInsurance">
+		UPDATE	ORDER_INSURANCE
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+		
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+	
+	</update>
+		<!-- 修改 -->
+	<update id="updateObject2" parameterType="com.jeeplus.modules.meiguotong.entity.insurance.OrderInsurance">
+		UPDATE	ORDER_INSURANCE
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+		
+		<if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+		<if test="orderSys2 != null ">
+			and order_sys2 = #{orderSys2,jdbcType=INTEGER}
+		</if>
+	
+	</update>
+	
+	
+	
+	   <!-- 分页查询-->
+   <select id="findListByPage" resultMap="OrderInsuranceResultMap">
+		SELECT
+		<include refid="base_column" />
+		FROM ORDER_INSURANCE
+	    WHERE	1=1
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+		
+       <if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+		<if test="orderSys2 != null ">
+			and order_sys2 = #{orderSys2,jdbcType=INTEGER}
+		</if>
+					
+	     <if test="order != null and order != ''">
+		order by  ${order}
+	     </if>
+	     
+		<if test="pageNumber != null  and pageSize !=null ">
+			limit  #{pageNumber,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	     </if>
+	</select>
+	
+	<select id="findOrderInsuranceByOrderSys" resultType="OrderInsurance" >
+		SELECT 
+			<include refid="orderInsuranceColumns"/>
+		FROM order_insurance a
+		<include refid="orderInsuranceJoins"/>
+		<where>
+			a.order_sys1 = #{orderSys1}
+		</where>		
+	</select>
+	<!-- 根据ordersys2查询保险信息 -->
+	<select id="findInsuranceByOrderSys2" resultType="OrderInsurance" >
+		SELECT 
+			<include refid="orderInsuranceColumns"/>
+		FROM order_insurance a
+		<include refid="orderInsuranceJoins"/>
+		<where>
+			a.order_sys2 = #{orderSys2}
+		</where>		
+	</select>
+	
+</mapper>

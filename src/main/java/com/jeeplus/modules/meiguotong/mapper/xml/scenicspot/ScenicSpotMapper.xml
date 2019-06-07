@@ -1,0 +1,645 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.scenicspot.ScenicSpotMapper">
+    
+	<sql id="scenicSpotColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.status AS "status",
+		a.img_url AS "imgUrl",
+		a.address AS "address",
+		a.supplier_id AS "supplierId",
+		a.supplier_id AS "agentid",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.player_time AS "playerTime",
+		a.season AS "season",
+		a.content AS "content",
+		a.recommend AS "recommend",
+		a.introduce AS "introduce",
+		a.reserve_info AS "reserveInfo",
+		a.look_num AS "lookNum",
+		a.collection_num AS "collectionNum",
+		a.comment_num AS "commentNum",
+		a.finish_num AS "finishNum",
+		a.star AS "star",
+		a.city_id AS "cityId",
+		a.label_attrid as "labelAttrid",
+		a.price as "price",
+		a.price_infor as "priceInfor"
+	</sql>
+	
+	<sql id="scenicSpotJoins">
+		
+	</sql>
+	<!-- 获取常规路线/当地参团的途径景点 -->
+	<select id="getScenicSpotRoute" resultType="ScenicSpot" >
+		SELECT 
+			<include refid="scenicSpotColumns"/>
+		FROM scenic_spot a
+		<include refid="scenicSpotJoins"/>
+		WHERE FIND_IN_SET(a.id,#{scenic})>0 
+	</select>
+
+	<!--获取所有景点供应商-->
+	<select id="getUser" resultType="SysUser">
+		SELECT
+			a.login_name as "loginName",
+			a.company_name as "companyName",
+			a.agentid as "agentid"
+		FROM sys_user a
+		where a.del_flag = 0 and a.user_type=2 and a.fatherid=0
+		and (select count(b.user_id) from sys_user_role b where b.user_id=a.id 
+				and b.role_id="e864b0cf9beb46ada9e8ff895aba7813")>0 
+		<if test="loginName != null and loginName !='' ">
+			AND a.login_name = #{loginName}
+		</if>
+	</select>
+	
+
+	<!--根据城市获取景点列表-->
+	<select id="findListByCityId" resultType="ScenicSpot">
+		SELECT
+			<include refid="scenicSpotColumns"/>,
+		       b.city_name AS "cityName",
+		       c.title AS "countryName",
+		       d.content AS "languageName",
+		       su.login_name as "sceniciCompany"
+		FROM scenic_spot a
+		  LEFT JOIN com_city b ON a.city_id = b.id
+		  LEFT JOIN country c ON b.province_id = c.id
+		  LEFT JOIN com_language d ON c.language_id = d.id
+		  left join sys_user su on su.agentid=a.supplier_id and su.fatherid=0 and su.user_type=2
+ 		<where>
+            a.del_flag = #{DEL_FLAG_NORMAL}
+            ${dataScope}
+			<if test="languageId != null and languageId !='' ">
+				AND a.language_id = #{languageId}
+			</if>
+			<if test="cityId != null and cityId !='' ">
+				AND a.city_id = #{cityId}
+			</if>
+            <if test="name != null and name != ''">
+                AND a.name LIKE concat('%',#{name},'%')
+            </if>
+		</where>
+	</select>
+
+
+	<!-- 获取景点列表 -->
+	<select id="getScenicSpotList" resultType="ScenicSpot">
+		SELECT
+			<include refid="scenicSpotColumns"/>
+		FROM scenic_spot a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where>
+		ORDER BY a.update_date DESC
+	</select>
+	
+	<!-- 根据语言获取景点 -->
+	<select id="getScenicSpot" resultType="ScenicSpot">
+		SELECT
+			<include refid="scenicSpotColumns"/>
+		FROM scenic_spot a
+		where
+			a.del_flag = 0 AND a.language_id = #{languageId}
+			AND a.status = 3
+	</select>
+    <!-- 景点详情接口  -->
+    <select id="getScenicDetails" resultType="ScenicSpot" >
+		SELECT 
+			a.id as "id",
+			a.img_url as "imgUrl",
+			a.address as "address",
+			a.name as "name",
+			a.content as "content",
+			cc.city_name as "cityName",
+			co.title as "countryName",
+			a.comment_num as "commentNum",
+			a.star as "star",
+			<!-- ifnull((select sst.price from scenic_spot_ticket sst 
+				where sst.scenicid=a.id and sst.status=1
+				order by sst.price limit 1
+				),0) as "price", -->
+			a.price as "price",
+			a.price_infor as "priceInfor",
+			a.recommend as "recommend",
+			ifnull((SELECT  group_concat(b.content) FROM com_tag b 
+				WHERE FIND_IN_SET(b.id,a.label_attrid) > 0 ),"") AS "tagContent",
+			a.introduce as "introduce",
+			a.reserve_info as "reserveInfo",
+			if((select count(pc.id) from product_collection pc where pc.type=5 and 
+				pc.typeid=a.id and pc.memberid=#{memberid})>0,1,2) as "ifcollection"
+		FROM scenic_spot a
+			left join com_city cc on cc.id=a.city_id
+			left join country co on co.id=cc.province_id
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取景点名称，id -->
+	<select id="getScenicSpotName" resultType="ScenicSpot" >
+		SELECT 
+			1 as "type",
+			a.id as "scenicpotid",
+			a.name as "busiInfo",
+			a.address AS "address",
+			a.price as "price",
+			a.player_time AS "playerTime"
+		FROM scenic_spot a
+		WHERE a.id = #{id}
+	</select>
+	<select id="get" resultType="ScenicSpot" >
+		SELECT 
+			<include refid="scenicSpotColumns"/>,
+			su.company_name as "sceniciCompany",
+			cl.content as "languageName"
+		FROM scenic_spot a
+		left join sys_user su on su.agentid=a.supplier_id and su.fatherid=0 and su.user_type=2
+		left join com_language cl on cl.id=a.language_id
+		<include refid="scenicSpotJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取导游当地的景点列表接口 -->
+	<select id="getCityScenic" resultType="ScenicSpot" >
+		SELECT 
+			a.id AS "scenicSpotid",
+			a.name AS "name"
+		FROM scenic_spot a
+		<where>
+			a.del_flag = 0 and a.language_id = #{languageId} and a.status=3
+			<if test="cityId != null and cityId != '' ">
+				and a.city_id = #{cityId}
+			</if>
+		</where>
+
+	</select>
+	<select id="findList" resultType="ScenicSpot" >
+		SELECT 
+			<include refid="scenicSpotColumns"/>,
+			su.company_name as "sceniciCompany",
+			cl.content as "languageName",
+			(select max(sst.validity_date) from scenic_spot_ticket sst 
+					where sst.scenicid=a.id) as "validityDate"
+			<if test="agentid != null and agentid != ''">
+				,#{agentid} as "loginAgentid"
+			</if>
+		FROM scenic_spot a
+		<include refid="scenicSpotJoins"/>
+		left join sys_user su on su.agentid=a.supplier_id and su.fatherid=0 and su.user_type=2
+		left join com_language cl on cl.id=a.language_id
+		<where>
+			a.del_flag = 0
+			${dataScope}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="status != null and status != ''">
+				<if test="status != 4">
+					AND a.status = #{status}
+				</if>
+				<if test="status == 4">
+					AND (a.status = 4 or a.status=5)
+				</if>
+			</if>
+			<if test="agentid != null and agentid != ''">
+				AND a.supplier_id = #{agentid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--  定制景点介绍 -->
+	<select id="getScenic" resultType="ScenicSpot" >
+		SELECT 
+		    a.id as "id",
+			a.img_url as "imgUrl",
+			a.name as "name",
+			a.address as "address",
+			a.player_time as "playerTime",
+			a.season as "season",
+			a.content as "content",
+			<!-- ifnull((select sst.price from scenic_spot_ticket sst 
+				where sst.scenicid=a.id and sst.status=1
+				order by sst.price limit 1
+				),0) as "price" -->
+			a.price as "price"
+		FROM scenic_spot a
+		where a.id = #{id}
+	</select>
+	<!--  定制景点关键字搜索 -->
+	<select id="getScenicByTitle" resultType="ScenicSpot" >
+		SELECT 
+		    a.id as "id",
+			a.img_url as "imgUrl",
+			a.name as "name",
+			a.address as "address",
+			a.player_time as "playerTime",
+			a.season as "season",
+			a.content as "content",
+			<!-- ifnull((select sst.price from scenic_spot_ticket sst 
+				where sst.scenicid=a.id and sst.status=1
+				order by sst.price limit 1
+				),0) as "price" -->
+			a.price as "price"
+		FROM scenic_spot a
+		<where>
+			a.del_flag = 0 and a.status=3
+			and a.language_id = #{languageId}
+			and a.city_id = #{cityId}
+			<if test="name != null and name != ''">
+			AND a.name LIKE concat('%',#{name},'%')
+			</if>
+		</where>
+		ORDER BY a.update_date DESC
+	</select>
+	<!-- 景点名称关键字匹配搜索列表 -->
+	<select id="selectScenicTitle" resultType="ScenicSpot" >
+		SELECT 
+		    a.id as "id",
+			a.img_url as "imgUrl",
+			a.name as "name",
+			cc.city_name as "cityName"
+		FROM scenic_spot a
+		left join com_city cc on cc.id=a.city_id
+		<where>
+			a.del_flag = 0 and a.status=3
+			and a.language_id = #{languageId}
+			${dataScope}
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+			<if test="cityId != null and cityId != ''">
+				AND a.city_id =#{cityId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 景点列表搜索 -->
+	<select id="selectScenicList" resultType="ScenicSpot" >
+		SELECT 
+		    a.id as "id",
+			a.img_url as "imgUrl",
+			a.address as "address",
+			a.name as "name",
+			a.content as "content",
+			cc.city_name as "cityName",
+			co.title as "countryName",
+			a.comment_num as "commentNum",
+			a.star as "star",
+			ifnull((SELECT  group_concat(b.content) FROM com_tag b 
+				WHERE FIND_IN_SET(b.id,a.label_attrid) > 0 ),"") AS "tagContent",
+			<!-- ifnull((select sst.price from scenic_spot_ticket sst 
+				where sst.scenicid=a.id and sst.status=1
+				order by sst.price limit 1
+				),0) as "price" -->
+			a.price as "price"
+		FROM scenic_spot a
+		left join com_city cc on cc.id=a.city_id
+		left join country co on co.id=cc.province_id
+		<where>
+			a.del_flag = 0 and a.status=3
+			and a.language_id = #{languageId}
+			${dataScope}
+			<if test="cityId != null and cityId != ''">
+				AND a.city_id =#{cityId}
+			</if>
+			<if test="attrList != null and attrList != ''">
+				and 
+				(<foreach item="attr" index="index" collection="attrList" separator="or">
+	                find_in_set(#{attr},a.label_attrid)>0
+				</foreach>)
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<when test="orderByType !=null and orderByType != '' and orderByType==1">
+				ORDER BY a.finish_num desc
+			</when>
+			<when test="orderByType !=null and orderByType != '' and orderByType==2">
+				<!-- ORDER BY ifnull((select sst.price from scenic_spot_ticket sst 
+				where sst.scenicid=a.id and sst.status=1
+				order by sst.price limit 1
+				),0) desc -->
+				order by a.price desc
+			</when>
+			<when test="orderByType !=null and orderByType != '' and orderByType==3">
+				<!-- ORDER BY ifnull((select sst.price from scenic_spot_ticket sst 
+				where sst.scenicid=a.id and sst.status=1
+				order by sst.price limit 1
+				),0)  -->
+				order by a.price
+			</when>
+			<when test="orderByType !=null and orderByType != '' and orderByType==4">
+				ORDER BY a.star desc
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!-- 获取景点 -->
+	<select id="getTripScenic" resultType="ScenicSpot" >
+		SELECT 
+				a.id AS "id",
+				a.name AS "name"
+			<if test="scenicIds != null and scenicIds != ''">
+			,if(FIND_IN_SET(a.id,#{scenicIds})>0,1,0) AS "checkFlag"
+			</if>
+		FROM scenic_spot a
+		<where>
+			a.del_flag = 0 AND a.status = 3
+			${dataScope}
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if>
+			<if test="cityId != null">
+				AND a.city_id = #{cityId}
+			</if>
+			<if test="name != null and name != '' and scenicFlag > 0 ">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 获取路线途径景点 -->
+	<select id="getRouteScenic" resultType="ScenicSpot" >
+		SELECT 
+				a.id AS "id",
+				a.name AS "name"
+		FROM scenic_spot a
+		<where>
+			a.del_flag = 0 AND a.status = 3
+			${dataScope}
+			<if test="scenicIds != null and scenicIds != ''">
+				and FIND_IN_SET(a.id,#{scenicIds})=0
+			</if>
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if>
+			<if test="cityId != null">
+				AND a.city_id = #{cityId}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE concat('%',#{name},'%')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 获取城市景点 -->
+	<select id="getCitySpot" resultType="ScenicSpot">
+		SELECT 
+				a.id AS "id",
+				a.name AS "name"
+		FROM scenic_spot a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} AND a.status = 3
+		 	  AND a.city_id = #{cityId}
+	</select>
+	
+	
+	<select id="findAllList" resultType="ScenicSpot" >
+		SELECT 
+			<include refid="scenicSpotColumns"/>
+		FROM scenic_spot a
+		<include refid="scenicSpotJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO scenic_spot(
+			name,
+			price,
+			validity_date,
+			status,
+			img_url,
+			address,
+			supplier_id,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			player_time,
+			season,
+			content,
+			recommend,
+			introduce,
+			reserve_info,
+			city_id,
+			look_num,
+			collection_num,
+			comment_num,
+			finish_num,
+			star,
+			label_attrid,
+			price_infor 
+		) VALUES (
+			#{name},
+			#{price},
+			#{validityDate},
+			#{status},
+			#{imgUrl},
+			#{address},
+			#{supplierId},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{playerTime},
+			#{season},
+			#{content},
+			#{recommend},
+			#{introduce},
+			#{reserveInfo},
+			#{cityId},
+			0,
+			0,
+			0,
+			0,
+			5,
+			#{labelAttrid},
+			#{priceInfor}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE scenic_spot SET 	
+			name = #{name},
+			price = #{price},
+			validity_date = #{validityDate},
+			status = #{status},
+			img_url = #{imgUrl},
+			address = #{address},
+			supplier_id = #{supplierId},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			player_time = #{playerTime},
+			season = #{season},
+			content = #{content},
+			recommend = #{recommend},
+			introduce = #{introduce},
+			reserve_info = #{reserveInfo},
+			city_id = #{cityId},
+			label_attrid = #{labelAttrid},
+			price_infor = #{priceInfor}
+		WHERE id = #{id}
+	</update>
+	<!-- 修改状态 -->
+	<update id="status">
+	UPDATE scenic_spot SET 
+	status=#{status},
+	update_date = #{updateDate}
+	WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM scenic_spot
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE scenic_spot SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<!--配置景点供应商-->
+	<update id="updateUser">
+		UPDATE scenic_spot SET 
+			supplier_id = #{supplierId}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ScenicSpot" statementType="STATEMENT">
+		select * FROM scenic_spot  where ${propertyName} = '${value}'
+	</select>
+	
+	<select id="findScenicsByName" resultType="ScenicSpot" >
+		select id,name 
+		from scenic_spot 
+		where status=3 and del_flag=0
+		<if test="name != null and name != ''">
+		and name like concat('%',#{name},'%')
+		</if>
+		<if test="cityId != null and cityId != ''">
+		and city_id=#{cityId} 
+		</if>
+		<if test="scenicids != null and scenicids != ''">
+		and !find_in_set(id,#{scenicids})>0 
+		</if>
+		
+	</select>
+	<select id="findScenicsByscenicTop" resultType="ScenicSpot" >
+		select id,name 
+		from scenic_spot 
+		where status=3 and del_flag=0 and find_in_set(id,#{scenicTop})>0 
+		
+	</select>
+	
+	<select id="findScenicsByscenicTop2" resultType="ScenicSpot" >
+		select a.id,a.name,a.img_url,a.star,a.comment_num,
+		ifnull((select min(sst.price) from scenic_spot_ticket sst 
+			where sst.del_flag=0 and sst.if_custom=1 and sst.status=1 
+			and sst.scenicid=a.id
+		),0) as "price"
+		from scenic_spot a
+		where a.status=3 and a.del_flag=0 and find_in_set(a.id,#{scenicTop})>0 
+		<if test="order != null and order != ''">
+			order by  ${order}
+	    </if>
+	</select>
+	
+	<!-- 根据定制ID和城市id查询景点  -->
+    <select id="findScenicByCityId" resultType="ScenicSpot" >
+		select s.name,a.price from order_travel_details a left join scenic_spot s on a.scenic=s.id
+		where a.order_trvel_id=#{orderTrvelId} and a.city=#{city} and a.type=1 
+		and DATE_FORMAT(a.use_date, '%Y-%m-%d')=DATE_FORMAT(#{useDate}, '%Y-%m-%d')
+	</select>
+	
+	<!--修改星级、评论数-->
+	<update id="changeCommnetNum">
+		UPDATE scenic_spot SET 	
+			star=(select truncate(sum(level)/count(id),1) from com_comment where type=7 and type_id=#{id}),
+			comment_num=comment_num+1
+		WHERE id = #{id}
+	</update>
+	
+	<!--修改查看数量-->
+	<update id="changeLookNum">
+		update scenic_spot set look_num=look_num+1 where id=#{id}
+	</update>
+	
+	<!--修改收藏数量-->
+	<update id="changecollectionNum">
+		update scenic_spot set collection_num=collection_num+#{collectionNum} where id=#{id}
+	</update>
+</mapper>

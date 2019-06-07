@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.ordercar.OrderCarInfoMapper">
+    
+	<sql id="orderCarInfoColumns">
+		a.id AS "id",
+		a.orderid AS "orderid",
+		a.car_name AS "carName",
+		a.seat_num AS "seatNum",
+		a.bag_num AS "bagNum",
+		a.comfort AS "comfort"
+	</sql>
+	
+	<sql id="orderCarInfoJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderCarInfo" >
+		SELECT 
+			<include refid="orderCarInfoColumns"/>
+		FROM order_car_info a
+		<include refid="orderCarInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderCarInfo" >
+		SELECT 
+			<include refid="orderCarInfoColumns"/>
+		FROM order_car_info a
+		<include refid="orderCarInfoJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+		<!-- 根据订单Id查询车辆信息 -->
+	<select id="getInfo" resultType="OrderCarInfo">
+		SELECT 
+			e.car_name AS "carName",
+			e.seat_num AS "seatNum",
+			e.bag_num AS "bagNum",
+			e.comfort AS "comfort"
+		FROM order_sys a
+		INNER  JOIN order_sys b ON a.fatherid = b.id 
+		INNER  JOIN order_sys c ON a.fatherid = c.fatherid 
+		LEFT JOIN  order_car d ON c.orderid = d.id
+		LEFT JOIN order_car_info e ON d.id = e.orderid 
+		WHERE   a.orderid = #{id}  AND a.type= 11 AND c.fatherid = b.id  AND c.type = 1 LIMIT 1
+	</select>
+	
+	<select id="findAllList" resultType="OrderCarInfo" >
+		SELECT 
+			<include refid="orderCarInfoColumns"/>
+		FROM order_car_info a
+		<include refid="orderCarInfoJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_car_info(
+			bag_num,
+			orderid,
+			car_name,
+			seat_num,
+			comfort
+		) VALUES (
+			#{bagNum},
+			#{orderid},
+			#{carName},
+			#{seatNum},
+			#{comfort}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE order_car_info SET 	
+			bag_num = #{bagNum},
+			orderid = #{orderid},
+			car_name = #{carName},
+			seat_num = #{seatNum},
+			comfort = #{comfort}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_car_info
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_car_info SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderCarInfo" statementType="STATEMENT">
+		select * FROM order_car_info  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

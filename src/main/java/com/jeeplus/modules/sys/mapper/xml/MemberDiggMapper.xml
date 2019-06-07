@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.MemberDiggMapper">
+    
+	<sql id="memberDiggColumns">
+		a.id AS "id",
+		a.memberid AS "memberid",
+		a.type AS "type",
+		a.typeid AS "typeid",
+		a.create_date AS "createDate"
+	</sql>
+	
+	<sql id="memberDiggJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="MemberDigg" >
+		SELECT 
+			<include refid="memberDiggColumns"/>
+		FROM member_digg a
+		<include refid="memberDiggJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="getCount" resultType="Integer" >
+		SELECT 
+			count(a.id)
+		FROM member_digg a
+		WHERE  memberId = #{memberid} and type=#{type} and typeId=#{typeid}
+	</select>
+	
+	<select id="findList" resultType="MemberDigg" >
+		SELECT 
+			<include refid="memberDiggColumns"/>
+		FROM member_digg a
+		<include refid="memberDiggJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="MemberDigg" >
+		SELECT 
+			<include refid="memberDiggColumns"/>
+		FROM member_digg a
+		<include refid="memberDiggJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO member_digg(
+			memberid,
+			type,
+			typeid,
+			create_date
+		) VALUES (
+			#{memberid},
+			#{type},
+			#{typeid},
+			#{createDate}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE member_digg SET 	
+			memberid = #{memberid},
+			type = #{type},
+			typeid = #{typeid}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM member_digg
+		WHERE memberId = #{memberid} and type=#{type} and typeId=#{typeid}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE member_digg SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="MemberDigg" statementType="STATEMENT">
+		select * FROM member_digg  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

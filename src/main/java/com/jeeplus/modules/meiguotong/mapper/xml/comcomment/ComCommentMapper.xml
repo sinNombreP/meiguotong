@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.comcomment.ComCommentMapper">
+    
+	<sql id="comCommentColumns">
+		a.id AS "id",
+		a.father_id AS "fatherId",
+		a.content AS "content",
+		a.member_id AS "memberId",
+		a.status AS "status",
+		a.type AS "type",
+		a.type_id AS "typeId",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.level AS "level",
+		a.dig_num AS "digNum"
+	</sql>
+	
+	<sql id="comCommentJoins">
+		
+	</sql>
+	
+    <!-- 获取各类型产品的评论 -->
+    <select id="selectRouteComment" resultType="ComComment" >
+		SELECT 
+			a.id AS "commentid",
+			a.content AS "content",
+			if(me.type=1,mi.nick_name,mt.company_name) AS "memberName",
+			if(me.type=1,mi.photo,mt.company_logo) AS "memberPhoto",
+			a.create_date AS "createDate",
+			a.level AS "level",
+			if((select count(id) from com_dig where member_id=#{memberId}
+				and type=1 and type_id=a.id)>0,1,2) as "ifdig",
+			(select count(c.id) from com_comment c where c.father_id=a.id and c.status=1 and c.del_flag=0) as "childNum"
+		FROM com_comment a
+		left join member me on me.id=a.member_id
+		left join member_information mi on mi.memberid=a.member_id
+		left join member_travel mt on mt.memberid=a.member_id
+		<where>
+			 a.del_flag = 0 and a.father_id = 0 and a.status=1
+			 and a.type=#{type} and a.language_id=#{languageId} 
+			 and a.type_id = #{typeId}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	 <!-- 获取评论的子评论 -->
+    <select id="selectChildComment" resultType="ComComment" >
+		SELECT 
+			a.id AS "commentid",
+			a.content AS "content",
+			if(me.type=1,mi.nick_name,mt.company_name) AS "memberName",
+			if(me.type=1,mi.photo,mt.company_logo) AS "memberPhoto",
+			a.create_date AS "createDate"
+		FROM com_comment a
+		left join member me on me.id=a.member_id
+		left join member_information mi on mi.memberid=a.member_id
+		left join member_travel mt on mt.memberid=a.member_id
+		<where>
+			 a.del_flag = 0 and a.status=1
+			and a.father_id = #{fatherId} 
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="get" resultType="ComComment" >
+		SELECT 
+			<include refid="comCommentColumns"/>
+		FROM com_comment a
+		<include refid="comCommentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取邮轮用户评论列表接口 -->
+		<select id="findCruiseCommentList" resultType="ComComment" >
+		SELECT 
+			<include refid="comCommentColumns"/>,
+			mi.nick_name AS "nickName"
+		FROM com_comment a
+		left join member_information mi on mi.memberid=a.member_id
+		WHERE a.type_id = #{typeId} and a.type=6
+		and a.status=1
+	</select>
+		<!-- 获取导游用户评论列表接口 -->
+		<select id="findCommentList" resultType="ComComment" >
+		SELECT 
+			<include refid="comCommentColumns"/>,
+			mi.nick_name AS "nickName"
+		FROM com_comment a
+		left join member_information mi on mi.memberid=a.member_id
+		WHERE a.type_id = #{typeId} and a.type=#{type}
+		and a.status=1
+	</select>
+	<!-- 获取消息中心评论消息接口 -->
+	<select id="getCommentList" resultType="ComComment" >
+		SELECT 
+			mi.nick_name as "memberName",
+			mi.photo as "memberPhoto",
+			a.content as "content",
+			a.create_date as "createDate",
+			cc.content as "fatherComment"
+		FROM com_comment a
+		left join com_comment cc on cc.id=a.father_id
+		left join member_information mi on mi.memberid=a.member_id
+		<where>
+			a.del_flag = 0 and cc.member_id=#{memberId} and a.father_id!=0
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findList" resultType="ComComment" >
+		SELECT
+			<include refid="comCommentColumns"/>,
+		ifnull(mi.nick_name,mt.nick_name) AS "memberName",
+		ifnull(mi.photo,mt.photo) AS "memberPhoto"
+		FROM com_comment a
+		left join member_information mi on mi.memberid=a.member_id
+		left join member_travel mt on mt.memberid=a.member_id
+		<include refid="comCommentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="content != null and content != ''">
+				AND a.content = #{content}
+			</if>
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if>
+			<if test="fatherId != null and fatherId != ''">
+				AND a.father_id = #{fatherId}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 攻略评论表数据 -->
+	<select id="strategyComment" resultMap="getCommentDateMap2" >
+				SELECT 
+			<include refid="comCommentColumns"/>,
+			if(c.create_type=1,c.mobile,c.email) AS "account",
+			b.nick_name AS "nickName"
+		FROM com_comment a
+			LEFT JOIN member_information b  ON a.member_id = b.memberid
+				LEFT JOIN member c ON b.memberid = c.id
+		<where>
+		 a.del_flag = #{DEL_FLAG_NORMAL} 	
+		 AND a.father_id = 0   and a.type=13
+		 	<if test="typeId != null and typeId != ''">
+				AND a.type_id = #{typeId}
+			</if>
+		</where>
+	</select>
+	<resultMap id="getCommentDateMap2" type="ComComment" >
+		<id property="id" column="id" />
+		<result property="id" column="id"/>
+		<result property="typeId" column="typeId"/>
+	    <collection property="strategyCommentList" column="{id=id,typeId=typeId}" javaType="ArrayList" 
+                ofType="ComComment" select="getCommentDateTwo2"/>
+	</resultMap>
+	
+	<!-- 根据父评论id获取子评论 -->
+	<select id="getCommentDateTwo2" resultType="ComComment">
+		SELECT 
+			<include refid="comCommentColumns"/>,
+			if(c.create_type=1,c.mobile,c.email) AS "account",
+			b.nick_name AS "nickName"
+		FROM com_comment a
+			LEFT JOIN member_information b  ON a.member_id = b.memberid
+				LEFT JOIN member c ON b.memberid = c.id
+		<where>
+		 a.del_flag = 0  and a.type=13
+		 AND a.father_id = #{id} AND a.type_id = #{typeId}
+		</where>
+	</select>
+	
+	<!-- 城市评论表数据 -->
+	<select id="cityComment" resultMap="getCommentDateMap1" >
+				SELECT 
+			<include refid="comCommentColumns"/>,
+			if(c.create_type=1,c.mobile,c.email) AS "account",
+			b.nick_name AS "nickName"
+		FROM com_comment a
+			LEFT JOIN member_information b  ON a.member_id = b.memberid
+				LEFT JOIN member c ON b.memberid = c.id
+		<where>
+		 a.del_flag = #{DEL_FLAG_NORMAL} 	
+		 AND a.father_id = 0   and a.type=14
+		 	<if test="typeId != null and typeId != ''">
+				AND a.type_id = #{typeId}
+			</if>
+		</where>
+	</select>
+	<resultMap id="getCommentDateMap1" type="ComComment" >
+		<id property="id" column="id" />
+		<result property="id" column="id"/>
+		<result property="typeId" column="typeId"/>
+	    <collection property="cityCommentList" column="{id=id,typeId=typeId}" javaType="ArrayList" 
+                ofType="ComComment" select="getCommentDateTwo1"/>
+	</resultMap>
+	
+	<!-- 根据父评论id获取子评论 -->
+	<select id="getCommentDateTwo1" resultType="ComComment">
+		SELECT 
+			<include refid="comCommentColumns"/>,
+			if(c.create_type=1,c.mobile,c.email) AS "account",
+			b.nick_name AS "nickName"
+		FROM com_comment a
+			LEFT JOIN member_information b  ON a.member_id = b.memberid
+				LEFT JOIN member c ON b.memberid = c.id
+		<where>
+		 a.del_flag = 0  and a.type=14
+		 AND a.father_id = #{id} AND a.type_id = #{typeId}
+		</where>
+	</select>
+		
+	
+	<!-- 邮轮评论表数据 -->
+	<select id="CruiseComment" resultType="ComComment" >
+		SELECT 
+			<include refid="comCommentColumns"/>
+		FROM com_comment a
+		<include refid="comCommentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and a.type=3
+			${dataScope}
+			<if test="content != null and content != ''">
+				AND a.content = #{content}
+			</if>
+			<if test="typeId != null and typeId != ''">
+				AND a.type_id = #{typeId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+		<!-- 邮轮子类评论表数据 -->
+	<select id="CruiseChildComment" resultType="ComComment" >
+		SELECT 
+			<include refid="comCommentColumns"/>
+		FROM com_comment a
+		<include refid="comCommentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and a.type=3
+			${dataScope}
+			<if test="content != null and content != ''">
+				AND a.content = #{content}
+			</if>
+			<if test="typeId != null and typeId != ''">
+				AND a.type_id = #{typeId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 景点评论列表 -->
+	<select id="SceniceComment" resultMap="getCommentDateMapSc" >
+				SELECT 
+			<include refid="comCommentColumns"/>,
+			if(c.create_type=1,c.mobile,c.email) AS "account",
+			b.nick_name AS "nickName"
+		FROM com_comment a
+			LEFT JOIN member_information b  ON a.member_id = b.memberid
+				LEFT JOIN member c ON b.memberid = c.id
+		<where>
+		 a.del_flag = #{DEL_FLAG_NORMAL} 	
+		 AND a.father_id = 0   and a.type=7
+		 	<if test="typeId != null and typeId != ''">
+				AND a.type_id = #{typeId}
+			</if>
+		</where>
+	</select>
+	<resultMap id="getCommentDateMapSc" type="ComComment" >
+		<id property="id" column="id" />
+		<result property="id" column="id"/>
+		<result property="typeId" column="typeId"/>
+	    <collection property="sceniceCommentList" column="{id=id,typeId=typeId}" javaType="ArrayList" 
+                ofType="ComComment" select="getCommentDateTwoSc"/>
+	</resultMap>
+	
+	<!-- 根据父评论id获取子评论 -->
+	<select id="getCommentDateTwoSc" resultType="ComComment">
+		SELECT 
+			<include refid="comCommentColumns"/>,
+			if(c.create_type=1,c.mobile,c.email) AS "account",
+			b.nick_name AS "nickName"
+		FROM com_comment a
+			LEFT JOIN member_information b  ON a.member_id = b.memberid
+				LEFT JOIN member c ON b.memberid = c.id
+		<where>
+		 a.del_flag = 0  and a.type=7
+		 AND a.father_id = #{id} AND a.type_id = #{typeId}
+		</where>
+	</select>
+		<!-- 当地玩家评论表数据 -->
+	<select id="playerComment" resultMap="getCommentDateMap5" >
+					SELECT 
+			<include refid="comCommentColumns"/>,
+			if(c.create_type=1,c.mobile,c.email) AS "account",
+			b.nick_name AS "nickName"
+		FROM com_comment a
+			LEFT JOIN member_information b  ON a.member_id = b.memberid
+				LEFT JOIN member c ON b.memberid = c.id
+		<where>
+		 a.del_flag = #{DEL_FLAG_NORMAL} 	
+		 AND a.father_id = 0   and a.type=8
+		 	<if test="typeId != null and typeId != ''">
+				AND a.type_id = #{typeId}
+			</if>
+		</where>
+	</select>
+	<resultMap id="getCommentDateMap5" type="ComComment" >
+		<id property="id" column="id" />
+		<result property="id" column="id"/>
+		<result property="typeId" column="typeId"/>
+	    <collection property="playerCommentList" column="{id=id,typeId=typeId}" javaType="ArrayList" 
+                ofType="ComComment" select="getCommentDateTwo5"/>
+	</resultMap>
+	
+	<!-- 根据父评论id获取子评论 -->
+	<select id="getCommentDateTwo5" resultType="ComComment">
+		SELECT 
+			<include refid="comCommentColumns"/>,
+			if(c.create_type=1,c.mobile,c.email) AS "account",
+			b.nick_name AS "nickName"
+		FROM com_comment a
+			LEFT JOIN member_information b  ON a.member_id = b.memberid
+				LEFT JOIN member c ON b.memberid = c.id
+		<where>
+		 a.del_flag = 0  and a.type=8
+		 AND a.father_id = #{id} AND a.type_id = #{typeId}
+		</where>
+	</select>
+	
+	<!-- 获取父评论列表数据 -->
+	<select id="getCommentDate" resultMap="getCommentDateMap">
+		SELECT 
+			<include refid="comCommentColumns"/>,
+			if(c.create_type=1,c.mobile,c.email) AS "account",
+			b.nick_name AS "nickName"
+		FROM com_comment a
+			LEFT JOIN member_information b ON a.member_id = b.memberid
+				LEFT JOIN member c ON b.memberid = c.id
+		<where>
+		 a.del_flag = #{DEL_FLAG_NORMAL} 	
+		 AND a.father_id = 0
+			<if test="content != null and content != ''">
+				AND (a.content LIKE concat('%',#{content},'%') OR 
+				if(c.create_type=1,c.mobile,c.email) LIKE concat('%',#{content},'%'))
+			</if>
+			<if test="typeId != null">
+				AND a.type_id = #{typeId}
+			</if>
+			<if test="type != null">
+				<if test="type = 1">
+					AND (a.type = 1 or a.type = 2 or a.type = 3)
+				</if>
+				<if test="type != 1">
+					AND a.type = #{type}
+				</if>
+				
+			</if>
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if>
+		</where>
+	</select>
+	
+	<resultMap id="getCommentDateMap" type="ComComment" >
+		<id property="id" column="id" />
+		<result property="id" column="id"/>
+	    <collection property="comCommentList" column="id" javaType="ArrayList" 
+                ofType="ComComment" select="getCommentDateTwo"/>
+	</resultMap>
+	
+	<!-- 根据父评论id获取子评论 -->
+	<select id="getCommentDateTwo" resultType="ComComment">
+		SELECT 
+			<include refid="comCommentColumns"/>,
+			if(c.create_type=1,c.mobile,c.email) AS "account",
+			b.nick_name AS "nickName"
+		FROM com_comment a
+			LEFT JOIN member_information b  ON a.member_id = b.memberid
+				LEFT JOIN member c ON b.memberid = c.id
+		<where>
+		 a.del_flag = 0
+		 AND a.father_id = #{id}
+		</where>
+	</select>
+	
+	<!-- 启用禁用 -->
+	<update id="updateStatus">
+		UPDATE com_comment
+		<set>
+			<choose>
+				<when test="status==1">
+					status = 0
+				</when>
+				<otherwise>
+					status = 1
+				</otherwise>
+			</choose>
+		</set>
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findAllList" resultType="ComComment" >
+		SELECT 
+			<include refid="comCommentColumns"/>
+		FROM com_comment a
+		<include refid="comCommentJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+		<!--修改状态-->
+	<update id="status">
+		UPDATE com_comment SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	<insert id="insert">
+		INSERT INTO com_comment(
+			father_id,
+			content,
+			member_id,
+			status,
+			type,
+			type_id,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			level,
+			dig_num
+		) VALUES (
+			#{fatherId},
+			#{content},
+			#{memberId},
+			#{status},
+			#{type},
+			#{typeId},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{level},
+			0
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_comment SET 	
+			father_id = #{fatherId},
+			content = #{content},
+			member_id = #{memberId},
+			status = #{status},
+			type = #{type},
+			type_id = #{typeId},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			level = #{level}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_comment
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_comment SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComComment" statementType="STATEMENT">
+		select * FROM com_comment  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<!--修改点赞数-->
+	<update id="changeDigNum">
+		UPDATE com_comment SET 	
+			dig_num=dig_num+#{digNum} 
+		WHERE id = #{id}
+	</update>
+</mapper>

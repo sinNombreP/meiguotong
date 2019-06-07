@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>k1-4-2</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/E-publc.css">
+    <link rel="stylesheet" href="../../me/css/xl.css" />
+    <link rel="stylesheet" href="../../css/common.css" />
+
+</head>
+
+<body>
+    <div id="app" v-cloak>
+        <ez-header></ez-header>
+        <ez-container></ez-container>
+        <!--content-->
+        <div class="content ez-travel-payment">
+            <div class="content-order">
+                <div class="content-order-icon">
+                    <div style="border: 1px solid #f99905;"><i style="color:#f99905;" class="iconfont icon-dagou"></i><label>确认订单</label></div>
+                    <div style="border: 1px solid #f99905;"><i style="color:#f99905;" class="iconfont icon-dagou"></i><label>确认付款</label></div>
+                    <div><i class="iconfont icon-dagou"></i><label>完成订单</label></div>
+                    <p></p>
+                </div>
+                <div class="content-order-state">
+                    <div class="content-order-state-left">
+                        <i class="iconfont icon-shijian"></i>
+                        <h4>恭喜你，订单提交成功！</h4>
+                        <p>请在 19 小时 56 分钟内完成支付</p>
+                    </div>
+                    <div class="content-order-state-right" @click="orderShowClick">
+                        <a>订单详情 <i class="iconfont icon-down"></i></a>
+                    </div>
+                </div>
+
+                <div class="content-order-details">
+                    <div class="content-order-details-left" v-show="orderShow">
+                        <h3>订单详情</h3>
+
+                        <div class="content-order-details-basis-info">
+                            <h4>基础信息</h4>
+                            <p>订单编号:<br />R13214129482103210</p>
+                            <p>下单时间:<br />2018-02-22 18:10:16</p>
+                        </div>
+
+                        <div class="content-order-details-basis-info">
+                            <h4>客户信息</h4>
+                            <p>订单编号:<br />R13214129482103210</p>
+                            <p>下单时间:<br />2018-02-22 18:10:16</p>
+                            <p>下单时间:<br />2018-02-22 18:10:16</p>
+                        </div>
+
+                        <dl class="dl-horizontal">
+                            <dt>出行信息</dt>
+                            <dd>性别：男，年龄：18，所在地区广东广州</dd>
+                            <dd>擅长：本地人</dd>
+                            <dd>个人简介：阿斯顿打撒打撒萨达撒旦</dd>
+                        </dl>
+
+                        <dl class="dl-horizontal">
+                            <dt>油轮</dt>
+                            <dd><b>三亚将满足你对一场饱含山盟海誓的恋爱的全部幻想；</b></dd>
+                            <dd><i class="icon-dian dian"></i>广州上船出去看海</dd>
+                            <dd><i class="icon-dian dian"></i>广州上船出去看海</dd>
+
+                        </dl>
+
+                        <div class="content-order-details-tourguide">
+                            <dl class="dl-horizontal">
+                                <dt style="font-size:1.8rem;font-weight: 600">船票</dt>
+                                <dd><span>内测3人房</span><span>内测3人房</span></dd>
+                                <dd><span>内测3人房</span><span>内测3人房</span></dd>
+
+                            </dl>
+                        </div>
+
+                        <dl class="dl-horizontal">
+                            <dt>保险信息</dt>
+                            <dd>美国国立博物馆、杜莎夫人蜡像馆、林肯纪念堂...</dd>
+                            <dd>美国国立博物馆、杜莎夫人蜡像馆、林肯纪念堂...</dd>
+                        </dl>
+                        <dl class="dl-horizontal">
+                            <dt>出游人信息</dt>
+                            <dd>美国国立博物馆、杜莎夫人蜡像馆、林肯纪念堂...</dd>
+                            <dd>美国国立博物馆、杜莎夫人蜡像馆、林肯纪念堂...</dd>
+                            <dd>美国国立博物馆、杜莎夫人蜡像馆、林肯纪念堂...</dd>
+                        </dl>
+
+                        <div class="content-order-details-order-price">订单价格</div>
+
+
+                        <div class="content-order-details-custom-sum">
+                            <dl class="content-order-details-custom">
+                                <dt>油轮</dt>
+                                <dd><span>内测3人房</span>￥800*3天</dd>
+                                <dd><span>内测3人房</span>￥800*3天</dd>
+                            </dl>
+
+                        </div>
+
+
+
+                        <div class="content-order-details-custom-sum">
+                            <dl class="content-order-details-custom">
+                                <dt>保险</dt>
+                                <dd><span>石头</span>￥800*3天</dd>
+                                <dd><span>石头</span>￥800*3天</dd>
+                            </dl>
+                            <dl class="content-order-details-custom">
+                                <dt>人数</dt>
+                                <dd><span>石头</span>￥800*3天</dd>
+                                <dd><span>石头</span>￥800*3天</dd>
+                            </dl>
+                        </div>
+
+                        <h4 class="content-order-details-price-sun">总计金额 <b>{{currencySign}}122,780</b></h4>
+                    </div>
+
+                    <div class="content-order-details-right" v-show="orderShow">
+                        <div class="content-order-details-print-info" @click="doPrint()">打印订单</div>
+                    </div>
+
+
+
+
+                </div>
+                <div class="content-order-details-pay">
+                    <h4><b>选择支付方式</b></h4>
+
+                    <span>应付金额 <b>{{currencySign}}122,780</b></span>
+
+                    <div class="content-order-details-pay-way">
+                        <div :class="payType==list.id?'content-order-details-pay-way-style':''" @click="payTypeClick(list.id)"
+                            v-for="(list, index) in payTypeList" :key="index">
+                            <i></i><span>{{list.name}}</span>
+                        </div>
+                    </div>
+
+                    <div class="content-order-details-pay-next">下一步</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- /content-->
+        <ez-website></ez-website>
+    </div>
+</body>
+
+</html>
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-k.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+<script type="text/javascript">
+
+    new Vue({
+        el: "#app",
+        data: {
+            orderShow: false,  //订单详情显示隐藏
+            payType: 1,  //选择的支付方式
+            orderid: "",  //订单ID
+        },
+        mounted() {
+            this.orderid = localStorage.getItem("orderid");
+            this.getOrderInfo();
+        },
+        methods: {
+            //订单详情
+            getOrderInfo: function () {
+                // requestGet(getRoutePriceDetailsUrl, {
+                //     routeid: this.routeList[index].routeid,
+                //     priceDate: priceDate,
+                // }, function (data) {
+                //     nthis.calendar({
+                //         ele: '.date-box', //依附dom
+                //         title: '',
+                //         data: data.body.list
+                //     });
+                // })
+            },
+            //点击订单详情
+            orderShowClick: function () {
+                this.orderShow = !this.orderShow;
+            },
+            //支付方式
+            payTypeClick: function (index) {
+                this.payType = index;
+            },
+            //打印
+            doPrint: function () {
+                window.print();
+            },
+        },
+    })
+
+</script>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>k1-3</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/E-publc.css">
+    <link rel="stylesheet" type="text/css" href="../../vendor/calendar/calendar-pro.css">
+    <link rel="stylesheet" href="../../me/css/xl.css" />
+    <link rel="stylesheet" href="../../css/common.css" />
+</head>
+
+<body>
+
+        <div id="app" v-cloak>
+                <ez-header></ez-header>
+                <ez-container></ez-container>
+
+<!--content-->
+<!--<div class="container ez-container" style="height: 500px;background: #00a0e9 "></div>-->
+
+
+<div class="content ez-travel-info ez-travel-tuxedo">
+    <div class="travel-info">
+        <div class="travel-info-local">
+            <div class="local-info-left floatl">
+                <img :src="linerline.imgUrl | splitVc(0)">
+                <div>
+                    <div class="travel-plan-content">
+                        <i class="iconfont icon-prev travel-plan-content-prev"></i>
+                        <div class="travel-plan-content-list_a">
+                        <div class=" travel-plan-content-list_b">
+                            <ul>
+                                <li v-for="(imgUrl, index) in (linerline.imgUrl || '').split(',')" :key="index" :class="{'kun':index==0}">
+                                    <a><img :src="imgUrl" alt=""></a>
+                                </li>
+                            </ul>
+                        </div>
+                       </div>
+                        <i class="iconfont icon-next travel-plan-content-next"></i>
+                    </div>  
+
+               <div class="ma22 ma5">
+              <p class="zi_c" >世界梦想号</p>
+              <p class="ma1 zi_ee">所属公司：{{liner.company}}</p>
+              <ul class="fu4 lis_a ma1 memgx" style="width: 300px;">
+                  <li class="zi_ee bo_24 ma6">首航：{{liner.startDate}}</li>
+                  <li class="zi_ee bo_24 ma6">吨位：{{liner.weight}}吨</li>
+                  <li class="zi_ee ma6">载客：{{liner.passengersNum}}位</li>
+                  <li class="zi_ee bo_24 ma6">长度：{{liner.length}}米</li>
+                  <li class="zi_ee bo_24 ma6">宽度：{{liner.width}}米</li>
+                  <li class="zi_ee ma6">楼层：{{liner.heigth}}层</li>
+              </ul>
+             </div>              
+                </div>
+
+               
+            </div>
+            <div class="local-info-right floatl">
+                    <p class="font-f1">{{linerline.name}}</p>
+                    <!-- <p class="font-f2">时尚半自助出游新选择！将团队游的实惠、便捷与自由行的轻松、惬意完美结合～</p> -->
+                    <p>编号{{linerline.lineNo}}：本产品由{{linerline.companyName}}及具有资质的合作旅行社提供相关服务</p>
+                    <p><label v-for="(tag,index) in (linerline.tagContent || '').split(',')">{{tag}}</label></p>
+                    <p>{{linerline.infor}}</p>
+                    <div class="time-price-con floatl">
+                        <div class="text-orange ez-price floatl">{{currencySign}}{{linerline.price}}<span class="text-gray">/元起</span> <span class="text-gray">价格说明</span></div>
+                        <span class="floatl" @click.stop="refundTips()" id="refundTips">退款说明</span>
+                        <div class="floatr">
+                        <i class="iconfont icon-star" v-for="num in 5" v-if="linerline.star > num - 1 "></i>
+                        <u>{{linerline.commentNum}}条评价</u>
+                    </div>
+                    </div>
+                <div class="local-content">
+                   <div class="local-time">
+                        <div class="local-time-title time-number-title floatl">出发城市</div>
+                        <div class="local-time-con time-number-con floatl">{{linerline.startCityName}}</div>
+                    </div>
+                    <div class="local-time">
+                        <div class="local-time-title time-number-title floatl">出发时间</div>
+                        <div class="calendar-box date-box time-info" id="test6" style="display: none; margin-top:-30rem;"></div>
+                        <div class="local-time-con time-number-con floatl">
+                            <input type="text" class="demo-input" placeholder="选择日期"
+                             id="test6" @click="calendarClick" v-model="beginDate" readonly>
+                        </div>
+                    </div>
+                   
+
+                    
+                    <div class="local-price">
+                       
+                <div class=" qingchu overflow">
+                   <ul class="fu4 qingchu">
+                   <input class="beisen bo_2 ze_f ba0_b_w ma55 fff ma25 ma30 " type="button" value="开始预订" @click.stop="addOrder">
+                   <input class="baise goue ze_f ba0_b_w sssss  ma22 " type="button" value="加入购物车" @click.stop="addCar">
+                 </ul>
+                 </div>
+
+                    </div> 
+                </div>
+
+                <div class="local-bottom-list">
+                    <dl class="dl-horizontal">
+                      <dt><img src="../../images/news.png" alt=""></dt>
+                      <dd>“产品经理推荐”</dd>
+                      <dd>{{linerline.recommend}}</dd>
+                    </dl>
+                </div>
+                <!-- <div class="fu1 ma28 qingchu ma56 zi_ee lans">查看更多</div> -->
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="travel-info-con col-md-12 ez-index-wrap ez-index-public ez-index-5">
+        <div class="travel-info-con-title">
+            <ul>
+                <li class="travel-info-con-title-style"><span>服务详情</span></li>
+                <li><span>用户点评（{{linerline.commentNum}}）</span></li>
+                <li><span>用户咨询</span></li>
+                <li><span>视频资料</span></li>
+            </ul>
+        </div>
+        <div class="travel-info-con-left pull-left">
+            <div class="travel-title-con">
+                <div class="travel-title-con-left floatl"><img src="../../images/user.png" alt=""></div>
+                <div class="travel-title-con-right floatl">
+                    <i  v-for="(list, index) in scenicNameList" :key="index">
+                        <span>{{list}}</span>
+                        <i v-if="index < scenicNameList.length-1">></i>
+                    </i>
+                </div>
+            </div>
+            <div class="travel-trip-info">
+                <div class="travel-trip floatl">
+                    <ul>
+                        <li :class="{'travel-trip-style':index==tripIndex}" v-for="index in tripList.length" :key="index" @click="tripIndexClick(index)">
+                            <span>第{{index}}天</span><b>●</b>
+                        </li>
+                    </ul>
+                </div>
+                <div class="travel-time-plan floatl" v-for="(item, index) in tripList" :key="index" :class="tripIndex != index+1?'hidden-info':''">
+                    <div class="travel-time-node" v-for="(list, index1) in item.contentList" :key="index1">
+                        <div class="travel-time"><b>{{list.tripDate}}</b></div>
+                        <div class="travel-node">
+                                <p v-if="list.tripType == 1">用餐时间：约30分钟</p>
+                                <p v-if="list.tripType == 1">酒店用餐</p>
+                                <p v-if="list.tripType == 2">浏览时间：约30分钟</p>
+                                <p v-if="list.tripType == 3">其他时间：约30分钟</p>
+                                <p v-if="list.tripType != 1">
+                                    <b>{{list.scenicName}}</b>
+                                </p>
+                                <p v-if="list.tripType != 1">{{list.content}}</p>
+                        </div>
+                    </div>
+                </div>
+
+                </div>
+        
+            <!-- 用户评论 -->
+            <div class="travel-list" id="comment">
+                    <div class="travel-service floatl"><img src="../../images/user.png" alt=""></div>
+                    <div class="travel-list-con" v-for="(comment, index) in commentList" :key="index" style="float: right;">
+                        <div class="floatl"><img :src="comment.memberPhoto?comment.memberPhoto:'../../images/news.png'"
+                                alt="用户头像"></div>
+                        <div class="content floatl">
+                            <div>{{comment.memberName}}
+                                <i class="iconfont icon-star" v-for="(item, index) in 5" v-if="comment.level > index"></i>
+                                {{comment.level}}分<span class="floatr">{{comment.createDate}}</span></div>
+                            <p>{{comment.content}}</p>
+                        </div>
+                    </div>
+
+                    <div id="travel-content-main-list-paging1" class="pagination" style="float:right"></div>
+            </div>
+
+            <!-- 用户咨询 -->
+            <div class="travel-list">
+                    <div style="margin-bottom: 50px;">
+                        <span type="button" class="consulting" data-toggle="modal" data-target="#exampleModal"
+                            data-whatever="@getbootstrap">用户咨询</span>
+                        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                                aria-hidden="true">&times;</span></button>
+                                        <h4 class="modal-title" id="exampleModalLabel">用户咨询</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form>
+                                            <div class="form-group">
+                                                <textarea class="form-control" rows="3" placeholder="咨询问题详细"
+                                                    v-model.trim="content" maxlength="150"></textarea>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="form-inline">
+                                                    <label class="sr-only" for="exampleInputName2">姓名</label>
+                                                    <input type="text" class="form-control" id="exampleInputName2"
+                                                        placeholder="姓名" v-model.trim="name" maxlength="20">
+                                                </div>
+                                                <div class="form-inline">
+                                                    <label class="sr-only" for="exampleInputName2">电话</label>
+                                                    <input type="text" class="form-control" id="exampleInputName2"
+                                                        placeholder="电话" v-model.trim="mobile" maxlength="20">
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" @click="addConsult">提交</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="travel-service floatl"><img src="../../images/user.png" alt=""></div>
+                    <div class="travel-list-con travel-consulting" v-for="(consult, index) in consultList" style="float: right;">
+                        <div class="font-hei floatl">咨询问题：</div>
+                        <div class="content floatl">
+                            <div>{{consult.content}}</div>
+                            <p class="text-reply">客服回复：{{consult.contentRetply}}</p>
+                            <p></p>
+                        </div>
+                    </div>
+
+                    <div id="travel-content-main-list-paging2" class="pagination" style="float:right"></div>
+
+                </div>
+
+            <!-- 视频资料 -->
+            <div class="travel-list">
+                <div class="travel-service travel-list-video-left floatl"><img src="../../images/user.png" alt=""></div>
+                <div class="travel-list-video">
+                    <video :src="linerline.content" controls="controls" class='ez-video'></video>
+                </div>
+            </div>
+
+        </div>
+          <div class="box-right pull-right">
+            <div class="ez-aside-banner">
+                <img src="../../images/bg-baner-2.png">
+                <ul class="list-inline text-center">
+                    <div class="title text-left">热门常规旅行</div>
+                    <div class="sub-title text-left">THE SITIES YOU CANT MISS</div>
+                    <li><a href="#" class="btn btn-type-lg">迈阿密·西海岸 </a></li>
+                    <li><a href="#" class="btn btn-type-lg">夏威夷·东海岸</a></li>
+                    <li><a href="#" class="btn btn-type-lg">墨西哥·边境墙</a></li>
+                </ul>
+            </div>
+            <div class="ez-aside-banner">
+                <img src="../../images/bg-baner-2.png">
+                <ul class="list-inline text-center">
+                    <div class="title text-left">热门常规旅行</div>
+                    <div class="sub-title text-left">THE SITIES YOU CANT MISS</div>
+                    <li><a href="#" class="btn btn-type-lg">迈阿密·西海岸 </a></li>
+                    <li><a href="#" class="btn btn-type-lg">夏威夷·东海岸</a></li>
+                    <li><a href="#" class="btn btn-type-lg">墨西哥·边境墙</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<ez-footer></ez-footer>
+
+
+</div>
+</body>
+
+</html>
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-k.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+<script>
+    const app = new Vue({
+        el:"#app",
+        data:{
+            lineid:localStorage.getItem("lineid"),
+            linerline:{},  //邮轮路线详情
+            liner:{},  //邮轮详情
+            tripList:{},  //行程列表
+            scenicNameList:[],  //景点列表
+            tripIndex:1,  //展示的行程天数
+            totalPage1: 1,  //评论总页数
+            commentList: [],  //评论集合
+            consultList: [],  //用户咨询列表
+            totalPage2: 1,  //咨询总页数
+            content: "",  //咨询内容
+            name: "",  //姓名
+            mobile: "", //电话
+            refundMsg:"",  //退款提示
+            linerRoomList:[],  //邮轮房间
+            tep:"",  //房间模板信息
+            beginDate:"",  //选择的时间
+            roomIds:[],  //选择的房间id
+        },
+        mounted() {
+            this.getInfo();
+            this.getTrip();
+            this.selectComment(1,1);
+            this.getConsult(1,1);
+            this.getRefundInfo();
+            // this.getLinerRoom();
+        },
+        methods:{
+            //加入购物车
+            addCar:function(){
+                layerMsg("加入购物车成功");
+            },
+            //预约
+            addOrder:function(){
+                if(!this.beginDate){
+                    layerMsg("请选择日期");
+                    return;
+                }
+                if(!this.roomIds.length){
+                    layerMsg("请选择房间");
+                    return;
+                }
+                localStorage.removeItem("roomIds");
+                localStorage.removeItem("lineid");
+                localStorage.removeItem("beginDate");
+                localStorage.setItem("roomIds",this.roomIds);
+                localStorage.setItem("lineid",this.lineid);
+                localStorage.setItem("beginDate",this.beginDate);
+                location.href = "./K1-4.html";
+            },
+            //获取房间
+            getLinerRoom:function(){
+                requestGet(linerRoomListUrl,{
+                    lineid:this.lineid,
+                },function(data){
+                    app.linerRoomList = data.body.list;
+                    let tep = "";
+                    $(".ht-bottom ul").empty();
+                    for (const list of Object.values(app.linerRoomList)) {
+                       tep += `<li class="tripRoomSelect" data-id="${list.id}"><img src="${list.imgUrl}" alt="房间图片"/>
+                        <span class="selectSpan"></span>
+                        <p>${list.name}</p><p>${list.spec} 须入住${list.peopleNumber}人 ${list.floor}层</p>
+                        <span class="text-orange" data-money="113">${app.currencySign}${list.price}/人</span></li>`;
+                    }
+                    $(".ht-bottom ul").append(tep);
+                  //  app.tep = tep;
+                    console.log(tep);
+                })
+            },
+            //获取日期
+            calendarClick :function(){
+                this.roomIds = [];
+                $('.calendar-box').show();
+                let priceDate = calendarDate.year + "-" + (calendarDate.month > 9 ? calendarDate.month : "0" + calendarDate.month);
+                console.log(priceDate);
+                requestGet(getLinePriceDetailsUrl,{
+                    lineid:this.lineid,
+                    priceDate:priceDate,
+                },function(data){
+                    let list = data.body.list;
+                    $(".date-box").calendar({
+                        ele: '.date-box', //依附dom
+                        title: '',
+                        data: list
+                    });
+                })
+            },
+            //退款提示
+            refundTips: function () {
+                layer.tips(this.refundMsg, '#refundTips', {
+                    tips: [1, '#3595CC'],
+                    maxWidth:280,
+                    time: 4000
+                });
+            },
+            //获取退款说明
+            getRefundInfo: function () {
+                requestGet(refundInforUrl, {
+                    productType: 6,  //1.包车租车2.短程接送3.接送机4常规路线5.当地参团6.游轮7.景点门票
+                                    //9.酒店10.保险11.当地玩家12.旅游定制-导游13.旅游定制-司兼导14包车/租车-导游//15包车/租车-司兼导
+                    productid: this.lineid,
+                }, function (data) {
+                    let refundMsg = "";
+                    for (const iterator of Object.values(data.body.list)) {
+                        refundMsg += `订单确认后，提前${iterator.refundDay}天退单，返回${iterator.refundNum}%;<br/>`;
+                    }
+                    app.refundMsg = refundMsg;
+                })
+            },
+            //添加用户咨询
+            addConsult: function () {
+                if (!this.mobile || !this.name || !this.content) {
+                    layerMsg("请完善数据");
+                    return;
+                }
+                requestGet(saveConsultUrl, {
+                    typeid: this.lineid,
+                    proType: 6,
+                    content: this.content,
+                    name: this.name,
+                    mobile: this.mobile,
+                }, function (data) {
+                    $('#exampleModal').modal('hide');
+                    layerMsg("提交用户咨询成功");
+                    app.content = "";
+                    app.name = "";
+                    app.mobile = "";
+                });
+            },
+            //初始化咨询列表
+            pageCreate2: function () {
+                $('#travel-content-main-list-paging2').jqPaginator({
+                    totalPages: this.totalPage2,
+                    visiblePages: 6,
+                    currentPage: 1,
+                    onPageChange: function (num, type) {
+                        if(type == "change"){
+                            app.getConsult(2, num);
+                        }
+                    }
+                });
+            },
+            //用户咨询列表
+            getConsult: function (type, pageNo) {
+                requestGet(getConsultUrl, {
+                    pageNo: pageNo,
+                    typeid: this.lineid,
+                    proType: 6,
+                }, function (data) {
+                    app.consultList = data.body.list;
+                    app.totalPage2 = data.body.totalPage;
+                    if (type == 1) {
+                        app.pageCreate2();
+                    }
+                });
+            },
+            //初始化一级评论分页
+            pageCreate1: function () {
+                $('#travel-content-main-list-paging1').jqPaginator({
+                    totalPages: this.totalPage1,
+                    visiblePages: 6,
+                    currentPage: 1,
+                    onPageChange: function (num, type) {
+                        if(type == "change"){
+                            app.selectComment(2, num);
+                        }
+                    }
+                });
+            },
+            //获取评论列表
+            selectComment: function (type, pageNo) {
+                requestGet(selectCommentUrl, {
+                    pageNo: pageNo,
+                    typeid: this.lineid,
+                    proType: 6,
+                }, function (data) {
+                    app.commentList = data.body.list;
+                    app.totalPage1 = data.body.totalPage;
+                    if (type == 1) {
+                        app.pageCreate1();
+                    }
+                });
+            },
+            //点击行程天数
+            tripIndexClick:function(index){
+                this.tripIndex = index;
+            },
+            //邮轮行程列表
+            getTrip:function(){
+                requestGet(tripListUrl,{
+                    lineid:this.lineid
+                },function(data){
+                   app.tripList  =  data.body.list;
+                   let list = [];
+                   Object.values(app.tripList).forEach(list1 =>{
+                       Object.values(list1.contentList).forEach(list2 =>{
+                           list.push(list2.scenicName);
+                       })
+                   })
+                   app.scenicNameList = list;
+                })
+            },
+            //邮轮路线详情
+            getInfo:function(){
+                requestGet(linerlineDetailsUrl,{
+                    lineid:this.lineid
+                },function(data){
+                    app.linerline  = data.body.linerline;
+                    app.liner  = data.body.liner;
+                })
+            },
+        },
+    })
+
+    $(function(){
+        $("#app").on("click",".ht-bottom li",function(e){
+            console.log(e);
+            $(this).toggleClass("tripRoomSelectFlag");
+            let id = $(this).attr("data-id");
+            if($(this).hasClass("tripRoomSelectFlag")){
+                app.roomIds.push(id);
+            }else{
+                for (const [key,value] of Object.entries(app.roomIds)) {
+                    if(value == id){
+                        Vue.delete(app.roomIds, key);
+                    }
+                }
+            }
+            console.log(app.roomIds);
+        })
+    })
+
+
+</script>
+<script>
+    // //五星评分
+    // $('.ez-star').raty({
+    //     path: '../../images' ,
+    //     score:4,
+    // });
+
+
+    // $(".calendar-min").calendar({
+    //     ele : '.date-box', //依附dom
+    //     title : '',
+    //     //beginDate : '2017-10-07',
+    //     //endDate : '2017-12-04',
+    //     data : [
+    //         {date:'2018-08-07',price:'100',state:'充足'},
+    //         {date:'2018-08-08',price:'108',state:'充足'},
+    //         {date:'2018-08-09',price:'1888',state:'充足'},
+    //         {date:'2018-08-10',price:'110',state:'充足'},
+    //         {date:'2018-08-11',price:'111',state:'少量'},
+    //         {date:'2018-08-12',price:'112',state:'充足'},
+    //         {date:'2018-08-14',price:'113',state:'较少'},
+    //         {date:'2018-08-26',price:'899',state:'充足'},
+    //         {date:'2018-09-28',price:'5500',state:'充足'}
+    //     ]
+    // });
+
+    $(document).bind('click', function(e) {
+        var e = e || window.event; //浏览器兼容性 
+        var elem = e.target || e.srcElement;
+        while (elem) { //循环判断至跟节点，防止点击的是div子元素 
+            if (elem.id && elem.id == 'calendar-box' || elem.id == 'test6') {
+                return;
+            }
+            elem = elem.parentNode;
+        }
+        $('.calendar-box').css('display', 'none'); //点击的不是div或其子元素 
+        let beginDate = $('.calendar-box').calendarGetActive().date.split("-");
+        let month = parseInt(beginDate[1]);
+        let day = parseInt(beginDate[2]);
+        app.beginDate = beginDate[0] + "-" + ( month> 9 ? month : "0" + month) + "-" + (day > 9 ? day : "0" + day) ;
+    });
+
+
+
+    // //预订
+    // function orderTicket(){
+    //     $('.calendar-box').show();
+    //     $('.calendar-box').calendar({
+    //         ele : '.date-box', //依附dom
+    //         title : '',
+    //         //beginDate : '2017-10-07',
+    //         //endDate : '2017-12-04',
+    //         data : [
+    //             {date:'2018-08-07',price:'100',state:'充足'},
+    //             {date:'2018-08-08',price:'108',state:'充足'},
+    //             {date:'2018-08-09',price:'1888',state:'充足'},
+    //             {date:'2018-08-10',price:'110',state:'充足'},
+    //             {date:'2018-08-11',price:'111',state:'少量'},
+    //             {date:'2018-08-12',price:'112',state:'充足'},
+    //             {date:'2018-08-14',price:'113',state:'较少'},
+    //             {date:'2018-08-26',price:'899',state:'充足'},
+    //             {date:'2018-09-28',price:'5500',state:'充足'}
+    //         ]
+    //     });
+    // }
+    // //加入购物车
+    // $('.toShopcart').click(function(){
+    //     var selectDate=$('.calendar-box').calendarGetActive();//获取选中的日期
+    //     console.log(selectDate);
+    // })
+
+
+</script>

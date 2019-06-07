@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.conutry.CountryMapper">
+    
+	<sql id="countryColumns">
+		a.id AS "id",
+		a.language_id AS "languageId",
+		a.status AS "status",
+		a.del_flag AS "delFlag",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.title AS "title",
+		a.title_en AS "titleEn",
+		cl.content as "languageName"
+	</sql>
+	
+	<sql id="countryJoins">
+		left join com_language cl on cl.id=a.language_id
+	</sql>
+	<!--修改状态-->
+	<update id="status">
+		UPDATE country SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+    
+    <select id="getListByLanguage" resultType="Country" >
+		SELECT 
+			<include refid="countryColumns"/>
+		FROM country a
+		<include refid="countryJoins"/>
+		WHERE a.language_id = #{languageId} and a.del_flag=0 and a.status=1
+	</select>
+	<select id="get" resultType="Country" >
+		SELECT 
+			<include refid="countryColumns"/>
+		FROM country a
+		<include refid="countryJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 根据语言查询国家城市集合接口 -->
+	<select id="getCountry" resultMap="cityList" >
+		SELECT 
+			a.id as "value",
+			a.title AS "label"
+		FROM country a
+		where a.del_flag = 0 and a.language_id = #{languageId} and a.status=1
+	</select>
+	<resultMap id="cityList" type="Country">
+		<result property="label" column="label"/>
+		<result property="value" column="value"/>
+			 <collection property="children" column="value" javaType="ArrayList"
+		                ofType="ComCity" select="findCityList"/>
+	</resultMap>
+	<select id="findCityList" resultType="ComCity">
+		select
+			a.id as "value",
+			a.city_name as "label"
+		from com_city a
+		where a.province_id=#{countryid} and a.del_flag = 0 and a.status=1
+	</select>
+	
+	<select id="findList" resultType="Country" >
+		SELECT 
+			<include refid="countryColumns"/>
+		FROM country a
+		<include refid="countryJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id = #{languageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Country" >
+		SELECT 
+			<include refid="countryColumns"/>
+		FROM country a
+		<include refid="countryJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO country(
+			language_id,
+			status,
+			del_flag,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			title,
+			title_en
+		) VALUES (
+			#{languageId},
+			1,
+			#{delFlag},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{title},
+			#{titleEn}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE country SET 	
+			language_id = #{languageId},
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			title = #{title},
+			title_en = #{titleEn}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM country
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE country SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="Country" statementType="STATEMENT">
+		select * FROM country  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

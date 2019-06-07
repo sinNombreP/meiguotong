@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>商务定制</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/E-publc.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../vendor/calendar/calendar-pro.css">
+    <link rel="stylesheet" href="../../css/common.css" />
+</head>
+
+<body>
+    <div id="app" v-cloak>
+
+        <ez-header></ez-header>
+        <ez-container></ez-container>
+        <!--content-->
+
+        <div class="container ez-container text-darkgray">
+            
+            <!--part1 start-->
+            <section class="col-md-12 ez-index-wrap ez-custom-search">
+                <form class="form-horizontal">
+                    <div class="col-md-4 col-sm-4 col-xs-4">
+                        <h4 class="ez-mb-md">地点</h4>
+                        <div class="form-group">
+                            <label class="control-label col-sm-4">出发地</label>
+                            <div class="col-sm-8">
+                                <input class="form-control" type="text" v-model.trim="startCityName" readonly="readonly"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-4">详细地点</label>
+                            <div class="col-sm-8">
+                                <input class="form-control " v-model.trim="startAddress"  />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-4">
+                        <h4 class="ez-mb-md">日期</h4>
+                        <div class="form-group">
+                                <label class="control-label col-sm-4">开始日期</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control " type="date" v-model="startDate" />
+                                </div>
+                        </div>
+                        <div class="form-group">
+                                <label class="control-label col-sm-4">结束日期</label>
+                                <div class="col-sm-8">
+                                    <input class="form-control " type="date" v-model="endDate" />
+                                </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-4">
+                        <h4 class="ez-mb-md">人数</h4>
+                        <div class="form-group">
+                                <label class="control-label col-sm-3">成人</label>
+                                <div class="col-sm-3">
+                                    <input class="form-control " type="number" v-model.number="adultNum" />
+                                </div>
+                                <label class="control-label col-sm-3">儿童</label>
+                                <div class="col-sm-3">
+                                    <input class="form-control " type="number" v-model.number="childNum" />
+                                </div>
+                        </div>
+                        <div class="form-group">
+                                <label class="control-label col-sm-3">行李</label>
+                                <div class="col-sm-9">
+                                    <input class="form-control " type="number" v-model.number="bagNum" />
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 col-sm-12 col-xs-12">
+                        <a class="btn ez-btn-parmary pull-right" @click="goSet">立即定制</a>
+                    </div>
+                </form>
+            </section>
+            <!-- part1 end -->
+
+            <ez-module :html-name = "orderTypeFlag" html-seal = "内容模块"></ez-module>
+            <!-- part3 end -->
+        </div>
+
+        <ez-footer></ez-footer>
+        <ez-aside></ez-aside>
+
+    </div>
+
+</body>
+
+</html>
+
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-pro.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+
+<script>
+    const app = new Vue({
+        el: "#app",
+        data: {
+            startCity:1,  //城市ID
+            startCityName:"广州",  //城市名称
+            startAddress:"",  //详细地点
+            startDate:"",  //开始时间
+            endDate:"",  //结束时间
+            adultNum:0,  //成人数量
+            childNum:0,  //儿童数量
+            bagNum:0,  //行李数量
+            orderType: localStorage.getItem("orderType"),  //1.旅游定制  2.商务定制   3.旅游定制和商务定制
+        },
+        computed: {
+            orderTypeFlag(){
+                if(this.orderType == 1) return "旅游定制";
+                else if(this.orderType == 2) return "商务定制";
+                else if(this.orderType == 3) return "旅游定制+商务定制";
+                else "";
+            }
+        },
+        watch:{
+            adultNum:function(){
+                if(this.adultNum == '') this.adultNum = 0;
+                if(this.adultNum < 0)  this.adultNum = 0;
+            },
+            childNum:function(){
+                if(this.childNum == '') this.childNum = 0;
+                if(this.childNum < 0)  this.childNum = 0;
+            },
+            bagNum:function(){
+                if(this.bagNum == '') this.bagNum = 0;
+                if(this.bagNum < 0)  this.bagNum = 0;
+            },
+        },
+        methods:{
+            //点击立即定制
+            goSet:function(){
+                if(!this.startCityName || !this.startCity){
+                    layerMsg("请选择城市"); return;
+                }
+                if(!this.startDate || !this.endDate){
+                    layerMsg("请选择时间"); return;
+                }
+                if(this.adultNum + this.adultNum < 1){
+                    layerMsg("请选择人数"); return;
+                }
+                if(new Date(this.endDate).getTime() - new Date(this.startDate).getTime() <= 0){
+                    layerMsg("请选择正确的时间"); return;
+                }
+                localStorage.removeItem("startCity");
+                localStorage.removeItem("startCityName");
+                localStorage.removeItem("startAddress");
+                localStorage.removeItem("startDate");
+                localStorage.removeItem("endDate");
+                localStorage.removeItem("adultNum");
+                localStorage.removeItem("childNum");
+                localStorage.removeItem("bagNum");
+                localStorage.setItem("startCity",this.startCity);
+                localStorage.setItem("startCityName",this.startCityName);
+                localStorage.setItem("startAddress",this.startAddress);
+                localStorage.setItem("startDate",this.startDate);
+                localStorage.setItem("endDate",this.endDate);
+                localStorage.setItem("adultNum",this.adultNum);
+                localStorage.setItem("childNum",this.childNum);
+                localStorage.setItem("bagNum",this.bagNum);
+                location.href = "./J2-1.html";
+            },
+        }
+    })
+</script>

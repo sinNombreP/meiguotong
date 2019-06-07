@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.comcurrency.ComCurrencyMapper">
+    
+	<sql id="comCurrencyColumns">
+		a.id AS "id",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.status AS "status",
+		a.rate AS "rate",
+		a.currency AS "currency",
+		a.sign as "sign"
+	</sql>
+	
+	<sql id="comCurrencyJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComCurrency" >
+		SELECT 
+			<include refid="comCurrencyColumns"/>
+		FROM com_currency a
+		<include refid="comCurrencyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取货币接口 -->
+	<select id="getCurrency" resultType="ComCurrency" >
+		SELECT 
+			a.id AS "currencyid",
+			a.rate AS "rate",
+			a.currency AS "currency",
+			a.sign as "sign"
+		FROM com_currency a
+		where a.del_flag = 0 and a.status=1
+	</select>
+	<select id="findList" resultType="ComCurrency" >
+		SELECT 
+			<include refid="comCurrencyColumns"/>
+		FROM com_currency a
+		<include refid="comCurrencyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="currency != null and currency != ''">
+				AND a.currency = #{currency}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComCurrency" >
+		SELECT 
+			<include refid="comCurrencyColumns"/>
+		FROM com_currency a
+		<include refid="comCurrencyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_currency(
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			status,
+			rate,
+			currency,
+			sign
+		) VALUES (
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			1,
+			#{rate},
+			#{currency},
+			#{sign}
+		)
+	</insert>
+	<!--修改状态-->
+	<update id="status">
+		UPDATE com_currency SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	<update id="update">
+		UPDATE com_currency SET 	
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			status = #{status},
+			rate = #{rate},
+			currency = #{currency},
+			sign = #{sign}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_currency
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_currency SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComCurrency" statementType="STATEMENT">
+		select * FROM com_currency  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

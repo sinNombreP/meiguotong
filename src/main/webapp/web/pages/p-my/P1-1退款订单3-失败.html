@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>P1-1退款订单3</title>
+    <script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+    <script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../js/ez-public.js"></script>
+    <script type="text/javascript" src="../../js/ez-page.js"></script>
+    <script type="text/javascript" src="../../js/ez-slider.js"></script>
+
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/E-publc.css">
+
+    <!--[if lt IE 9]>
+        <script src="../../vendor/html5.js"></script>
+        <script src="../../vendor/respond.js"></script>
+    <![endif]-->
+</head>
+<body>
+<header class="ez-header">
+    <div class="container ez-container ez-navbar-header">
+        <!-- Brand-->
+        <div class="navbar-header header-logo">
+            <a class="ez-logo" href="#">
+                <img alt="万事通美国" src="../../images/logo.png">
+            </a>
+        </div>
+        <div class="navbar-header header-border"></div>
+        <div class="navbar-header header-phone">
+            <div>
+                <div><img class="" src="../../images/service-time.png"></div>
+                <span><i class="iconfont icon-phone"></i>617-652-8008（美国）</span>
+            </div>
+            <div>
+                <div class="title-tel">服务热线</div>
+                <span><i class="iconfont icon-phone"></i>021-672816809（中国）</span>
+            </div>
+        </div>
+
+        <ul class="nav navbar-nav navbar-right ez-navbar">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <span class="ez-avatar">
+                        <img alt="..." src="../../images/avatar.png">
+                        <b class="text-black">Admin</b>
+                    </span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="#">个人资料</a></li>
+                    <li><a href="#">玩家中心</a></li>
+                    <li><a href="#">关于我们</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#">登出</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#">
+                    <div class="ez-shopcart text-center">
+                        <span class="iconfont icon-shopcart"></span>
+                        <i class="on">6</i>
+                    </div>
+                </a>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right ez-header-right">
+            <li class="dropdown">
+                <select class="select-left">
+                    <option value="0">美元</option>
+                    <option value="1">欧元</option>
+                </select>
+            </li>
+            <!--<li>
+                <select class="select-right">
+                    <option value="1">English</option>
+                    <option value="2">中文简体</option>
+                    <option value="3">中文繁体</option>
+                </select>
+            </li>-->
+            <li class="dropdown select-lang">
+                <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="false" aria-expanded="false">
+                    <div class="lang-name">中文简体</div>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><input type="radio" name="lng">English</li>
+                    <li><input type="radio" name="lng">中文简体</li>
+                    <li><input type="radio" name="lng">中文繁体</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</header>
+
+<!--content-->
+<div class="container ez-container ez-base-border ez-unsub-content">
+    <h3 class="title">退款订单</h3>
+    <div class="ez-unsub-box">
+        <div class="ez-order-step">
+            <div class="active"><i class="iconfont icon-dagou"></i><label>提交申请</label></div>
+            <div class="active"><i class="iconfont icon-dagou"></i><label>审核处理</label></div>
+            <div class="active"><i class="iconfont icon-dagou"></i><label>审核结果</label></div>
+            <p></p>
+        </div>
+
+        <div class="ez-unsub-msg">
+            <p class="text-center"><i class="iconfont icon-fail-s text-blue" style="font-size: 96px"></i></p>
+            <h3 class="text-center text-blue ez-mb-sm">订单退款失败</h3>
+            <p class="text-center ez-mb-lg">你的订单取消成功</p>
+        </div>
+
+        <table class="table table-bordered table-order text-lightgray">
+            <tr class="tr-line">
+                <td colspan="5" class="td-line">
+                    <span>下单时间：2018-02-21 09:47:11</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="" style="width: 410px">
+                    <div class="table-order-card">
+                        <img src="../../images/cruise-1.png">
+                        <div class="table-order-text">
+                            <h5 class="ez-mb-sm text-black">大众帕萨特-费城, 华盛顿, 康宁, 尼亚加拉瀑布,波士顿5日游（纽约出发）-大众帕萨特</h5>
+                            <p>时间：2017-08-12</p>
+                            <p><span class="ez-mr-md">人数：23 </span><span> 行李数：21</span></p>
+                        </div>
+                    </div>
+                </td>
+                <td class="" style="width: 150px">
+                    <p>姓名：李成寅</p>
+                    <p>电话：18620923097</p>
+                    <p>备注：我们有三个老人，2个小孩</p>
+                </td>
+                <td class="text-center" style="width: 100px">
+                    <p class="text-black">¥1320</p>
+                    <p>支付宝</p>
+                </td>
+                <td class=" text-center" style="width: 100px">退款成功</td>
+                <td class=" text-center" style="width: 100px"><a>服务详情</a></td>
+            </tr>
+        </table>
+
+        <form class="form-horizontal ez-unsub-form">
+            <div class="form-group">
+                <span class="label-txt required">退款金额</span>
+                <div class="form-content" >
+                    <span class="label-txt">11111</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="label-txt required">退款原因</span>
+                <div class="form-content" >
+                    <span class="label-txt">22222</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="label-txt required">退款说明</span>
+                <div class="form-content" >
+                    <span class="label-txt">33333</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <span class="label-txt required">取消时间</span>
+                <div class="form-content" >
+                    <span class="label-txt">2018-3-9</span>
+                </div>
+            </div>
+
+            <!--<div class="form-group">
+                <span class="label-txt"></span>
+                <div class="form-content" >
+                    <a class="btn btn-lg ez-btn-parmary">提交</a>
+                </div>
+            </div>-->
+
+        </form>
+    </div>
+
+
+</div>
+
+
+<!-- /content-->
+<footer class="ez-footer">
+    <div class="container ez-container ez-category">
+        <div class="footer-logo">
+            <img src="../../images/footer-logo.png">
+        </div>
+        <div class="footer-category text-center">
+            <div class="category-grid">
+                <p class="title">订购指南</p>
+                <ul class="category-list">
+                    <li><a href="#">订购流程</a></li>
+                    <li><a href="#">客户协议</a></li>
+                    <li><a href="#">更改取消</a></li>
+                    <li><a href="#">使用及隐私条款</a></li>
+                </ul>
+            </div>
+            <div class="category-grid">
+                <p class="title">用户中心</p>
+                <ul class="category-list">
+                    <li><a href="#">用户注册/登录</a></li>
+                    <li><a href="#">找回密码</a></li>
+                    <li><a href="#">付款方式</a></li>
+                    <li><a href="#">积分奖励</a></li>
+                    <li><a href="#">会员俱乐部</a></li>
+                    <li><a href="#">旅游保险</a></li>
+                </ul>
+            </div>
+
+            <div class="category-grid">
+                <p class="title">帮助中心</p>
+                <ul class="category-list">
+                    <li><a href="#">公司简介</a></li>
+                    <li><a href="#">签证服务</a></li>
+                    <li><a href="#">旅游保险</a></li>
+                    <li><a href="#">网站地图</a></li>
+                </ul>
+            </div>
+
+            <div class="category-grid">
+                <p class="title">新阳光合作</p>
+                <ul class="category-list">
+                    <li><a href="#">友情链接</a></li>
+                    <li><a href="#">商务合作</a></li>
+                    <li><a href="#">网站联盟</a></li>
+                </ul>
+            </div>
+
+            <div class="category-grid">
+                <p class="title">新阳光国际</p>
+                <ul class="category-list">
+                    <li><a href="#">关于我们</a></li>
+                    <li><a href="#">联系我们</a></li>
+                    <li><a href="#">招聘英才</a></li>
+                    <li><a href="#">版权</a></li>
+                </ul>
+            </div>
+
+        </div>
+        <div class="footer-qrcode text-center pull-right">
+            <img src="../../images/qrcode.png" class="center-block img-responsive">
+            <p>关注微信公众号</p>
+        </div>
+    </div>
+
+    <div class="container ez-container footer-bottom">
+        <div class="footer-about col-md-12">
+            <div><img src="../../images/ez-nta.png" class="center-block img-responsive"></div>
+            <div><img src="../../images/ez-iata.png" class="center-block img-responsive"></div>
+            <div><img src="../../images/ez-nta.png" class="center-block img-responsive"></div>
+            <div><img src="../../images/ez-iata.png" class="center-block img-responsive"></div>
+            <div><img src="../../images/ez-nta.png" class="center-block img-responsive"></div>
+            <div><img src="../../images/ez-iata.png" class="center-block img-responsive"></div>
+        </div>
+        <div class="col-md-12 text-center copyright">
+            <p>Copyright © 2018-2028 | 万事通 Lulutrip | All Rights Reserved.</p>
+            <p>美国万事通有限公司 | 粤ICP备13084118号-11</p>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+</footer>
+
+<!--边栏-->
+<aside class="ez-aside">
+    <div class="aside-box text-center">
+        <div class="aside-shopcart">
+            <a href="#"><i class="iconfont icon-shopcart"></i></a>
+            <div class="shop-text">购</div>
+            <div class="shop-text">物</div>
+            <div class="shop-text">车</div>
+            <div class="shop-num">2</div>
+        </div>
+        <div class="aside-contact">
+            <!--电话-->
+            <div style="position: relative;">
+                <i class="iconfont icon-phonecall ez-btn-phone"></i>
+                <div class="tooltip left in ez-tooltip ez-tooltip-phonecall" role="tooltip" style="display: none">
+                    <div class="tooltip-arrow"></div>
+                    <div class="tooltip-inner text-center">
+                        <h4 class="title text-blue">电话客服</h4>
+                        <p class="text-gray">留下您的电话，我们会立刻回复哦</p>
+                        <form class="form-horizontal" onsubmit="">
+                            <div class="form-group">
+                                <select class="form-control">
+                                    <option value="">选择国家</option>
+                                    <option value="1">中国</option>
+                                    <option value="2">美国</option>
+                                    <option value="3">日本</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="输入电话号码">
+                            </div>
+                        </form>
+                        <a class="btn ez-btn-parmary ez-btn-xl">确定</a>
+                        <p class="text-gray">全球7*24小时客服电话</p>
+                        <p class="text-darkgray">400-666-8888</p>
+                    </div>
+                </div>
+            </div>
+            <!--腾讯qq-->
+            <div style="position: relative;">
+                <i class="iconfont icon-qq ez-btn-qq" style="font-weight: bold"></i>
+                <div class="tooltip left in ez-tooltip ez-tooltip-qq" role="tooltip" style="display: none;">
+                    <div class="tooltip-arrow"></div>
+                    <div class="tooltip-inner text-center">
+                        <h4 class="title text-blue">QQ</h4>
+                        <div class="tooltip-icon-qq">
+                            <i class="iconfont icon-qq-s"></i>
+                        </div>
+                        <a class="btn ez-btn-parmary ez-btn-xl">点我，联系我们</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="back-to-top text-center">
+        <a class="btn-back"><i class="iconfont icon-arrow-top"></i></a>
+    </div>
+</aside>
+</body>
+</html>
+

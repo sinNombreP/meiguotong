@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>k1-4油轮</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/E-publc.css">
+    <link rel="stylesheet" href="../../me/css/xl.css" />
+    <link rel="stylesheet" href="../../css/common.css" />
+</head>
+
+<body>
+    <div id="app" v-cloak>
+        <ez-header></ez-header>
+        <ez-container></ez-container>
+        <!--content-->
+        <div class="content ez-travel-order">
+            <div class="content-order">
+                <div class="content-order-icon">
+                    <div style="border: 1px solid #f99905;"><i style="color:#f99905;" class="iconfont icon-dagou"></i><label>确认订单</label></div>
+                    <div><i class="iconfont icon-dagou"></i><label>确认付款</label></div>
+                    <div><i class="iconfont icon-dagou"></i><label>完成订单</label></div>
+                    <p></p>
+                </div>
+
+
+                <div class="content-order-details">
+                    <div class="content-order-details-left">
+                        <h3>订单详情</h3>
+
+                        <div class="content-order-details-contact-info">
+                            <h4>联系信息</h4>
+                            <div class="form-inline">
+                                <p>联系人</p>
+                                <input type="text" name="" class="form-control min-text" placeholder="联系人" v-model.trim="contactsName">
+                            </div>
+                            <div class="form-inline">
+                                <p>联系电话</p>
+                                <input type="text" name="" class="form-control min-text" placeholder="联系电话"
+                                    v-model.trim="contactsMobile">
+                            </div>
+                            <div class="">
+                                <p>备注信息</p>
+                                <input type="text" name="" class="form-control" v-model.trim="remark">
+                            </div>
+                        </div>
+
+                        <div class="content-order-details-travel-info">
+                            <h4>出行信息</h4>
+                            <div>
+                                <p>上船点</p>
+                                <input type="text" name="" class="form-control min-text" :value="linerline.startCityName"
+                                    readonly>
+                            </div>
+                            <div>
+                                <p>时间</p>
+                                <input type="text" name="" class="form-control min-text" :value="beginDate" readonly>
+                            </div>
+                            <div>
+                                <p>人数</p>
+                                <input type="text" name="" class="form-control min-text" :value="adultNum+'成人'+childNum+'小孩'" readonly>
+                            </div>
+                        </div>
+
+                        <div class="content-order-details-insurance ">
+                            <h4>邮轮</h4>
+                            <div class="ez-mb-md">
+                                <div>{{linerline.name}}</div>
+                                <div class="hius">编号{{linerline.lineNo}}：本产品由{{linerline.companyName}}及具有资质的合作旅行社提供相关服务</div>
+
+                            </div>
+                            <ul class="list-unstyled k_youl">
+                                <dd><i class="dian" style="margin-top: -1.2rem;"></i>{{linerline.infor}}</dd>
+                            </ul>
+                        </div>
+
+                        <div class="hhhhh pa_c  zs_b qingchu ma25">
+                            <h4>轮游信息</h4>
+                        </div>
+                        <div class=" qingchu daoche_wan zhong_a bo_3 overflow ">
+                            <UL class="fu4 lis_a ringt_aaaa beijihenh overflow hhhhh">
+                                <LI class="unyou_aa right_1_a ">房型</LI>
+                                <li class="tu_c right_1_a">单价</li>
+                                <li class=" right_1_a tu_c">人数</li>
+                                <li class=" right_1_a tu_c">房间数</li>
+                                <li class=" right_1_a tu_c">价格</li>
+                            </UL>
+                            <div class=" bo_25 overflow ma1 pa_qq" v-for="(list, index) in linerRoomList" :key="index">
+                                <div class="unyou_aa fu mei_a">
+                                    <div class="unyou_ba fu mei_a"><img :src="list.imgUrl"></div>
+                                    <div class="fu">
+                                        <ul class="lis_a ma47">
+                                            <li class="  zi_e hhhhh ">{{list.name}}</li>
+                                            <li class="zi_i  zi_e hius">{{list.spec}}</li>
+                                            <li class="zi_i  zi_e hius" v-if="list.checkInType == 1">可入住{{list.minPeopleNumber}}-{{list.maxPeopleNumber}}人</li>
+                                            <li class="zi_i  zi_e hius" v-if="list.checkInType == 2">必须入住{{list.peopleNumber}}人</li>
+                                            <li class="zi_i  zi_e hius">{{list.floor}}层</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="tu_c fu">
+                                    <p class="right_aaa sen_s zi_g ma38">{{currencySign}}{{list.price}} <samp class="hhhhh zi_e">起/人</samp></p>
+                                </div>
+                                <div class=" fu tu_c">
+                                    <p class="right_aaa hhhhh zi_e">成人</p>
+
+                                    <div class="ez-counter ez-mr-50" style="margin-left:1.2rem;margin-bottom:1rem;">
+                                        <li class="counter-minus  iconfont icon-minus fu lis_a" @click.stop="numChange(index,1,-1)"></li>
+                                        <input class="counter-num" type="number" v-model.number="list.adultNum"
+                                            readonly>
+                                        <li class="counter-add iconfont icon-add fu1 lis_a" @click.stop="numChange(index,1,1)"></li>
+                                    </div>
+
+                                    <p class="right_aaa hhhhh ma1 zi_e">儿童</p>
+                                    <div class="ez-counter ez-mr-50" style="margin-left:1.2rem;margin-bottom:1rem;">
+                                        <li class="counter-minus  iconfont icon-minus fu lis_a" @click.stop="numChange(index,2,-1)"></li>
+                                        <input class="counter-num" type="number" v-model.number="list.childNum"
+                                            readonly>
+                                        <li class="counter-add iconfont icon-add fu1 lis_a" @click.stop="numChange(index,2,1)"></li>
+                                    </div>
+                                </div>
+
+                                <div class="tu_c fu right_aaa">
+                                    <select class="ma38" style="width:50px;height: 30px;" v-model.trim="list.roomNum">
+                                        <option :value="num" v-for="num in 5">{{num}}</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div class="tu_c fu">
+                                    <p class="right_aaa sen_s zi_g ma38">{{currencySign}}{{list.price *
+                                        (list.adultNum+list.childNum) * list.roomNum}} </p>
+                                    <p class="hhhhh zi_d right_aaa ">人均{{currencySign}}{{list.price}}元</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="content-order-details-insurance">
+                            <h4>保险方案</h4>
+                            <div>
+                                <div v-for="(item, index) in insurancList" :key="index">
+                                    <input type="radio" :value="item.id" v-model="insurancId" >{{item.name}}
+                                    <a @click.stop="insurancContent(index)">（保险说明）</a> <span>{{currencySign}}{{item.price}}/人</span></div>
+                            </div>
+                        </div>
+
+                        <h4>出游人信息</h4>
+                        <div class="content-order-details-visitors-info" v-for="(list, index) in orderMember" :key="index">
+                            <div>
+                                <span><label>*</label>中文姓名</span>
+                                <input type="text" class="form-control min-text" maxlength="30" v-model.trim="list.chineseName"
+                                    placeholder="需要与证件一致" />
+                                <button type="button" class="btn btn-default" style="margin-left:20px;" data-toggle="modal"
+                                    data-target="#contactModal" @click="addOrderMember(index)">选择常用联系人</button>
+                                <button type="button" class="btn btn-default" style="margin-left:20px;" @click.stop="emptyOrderMemberByIndex(index)">清空</button>
+                            </div>
+                            <div>
+                                <span><label>*</label>英文姓名</span>
+                                <input type="text" class="form-control min-text" placeholder="姓（拼音或英文）" maxlength="20"
+                                    v-model.trim="list.key" />
+                                <input type="text" class="form-control min-text" placeholder="名（拼音或英文）" maxlength="20"
+                                    v-model.trim="list.value" />
+                            </div>
+                            <div>
+                                <span><label>*</label>证件类型</span>
+                                <select class="form-control min-text" v-model.trim="list.certType">
+                                    <option :value="item.id" v-for="(item, index) in certTypeSelectList" :key="index">{{item.name}}</option>
+                                </select>
+                                <input type="tetx" class="form-control min-text" placeholder="证件号码" maxlength="25"
+                                    v-model.trim="list.certNo" />
+                            </div>
+                            <div>
+                                <span><label>*</label>证件有效期</span>
+                                <input type="date" class="form-control max-text" placeholder="YYYY-MM-DD" maxlength="20"
+                                    v-model.trim="list.certValidDate" />
+                            </div>
+                            <div>
+                                <span><label>*</label>出生年月</span>
+                                <input type="date" class="form-control max-text" placeholder="YYYY-MM-DD" maxlength="20"
+                                    v-model.trim="list.birthday" />
+                            </div>
+                            <div>
+                                <span><label>*</label>手机号码</span>
+                                <select class="form-control min-text" v-model.trim="list.area">
+                                    <option :value="item.id" v-for="(item, index) in areaSelectList" :key="index">{{item.name}}</option>
+                                </select>
+                                <input type="number" class="form-control min-text" placeholder="出游人手机号" maxlength="20"
+                                    v-model.trim="list.mobile" />
+                            </div>
+                            <div v-if="list.typeShow">
+                                <span><label></label></span>
+                                <input type="checkbox" v-model="list.type" /> 保存到常用联系人
+                            </div>
+                            <hr style=" height:2px;border:none;border-top:2px dotted #C0C0C0;" v-if="index<(orderMember.length-1)" />
+                        </div>
+
+
+
+
+                    </div>
+
+
+
+                    <div class="content-order-details-right">
+                        <h3>订单价格</h3>
+
+                        <div>
+                            <h4>邮轮</h4>
+                            <p><label>{{beginDate}} - {{beginDate | endDayVC(linerline.travelDay)}}（共{{linerline.travelDay}}天）</label></p>
+                            <p><label>{{linerline.name}}</label></p>
+                            <p v-for="(list, index) in linerRoomList" :key="index">
+                                <label>{{list.name}}</label> <span>{{currencySign}}{{list.price}}*{{list.roomNum}}*{{list.adultNum + list.childNum}}</span>
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4>人数</h4>
+                            <p><label>人数</label> <span>{{adultNum}}成人{{childNum}}小孩</span></p>
+                        </div>
+                        <div v-if="insuranc">
+                                <h4>保险</h4>
+                                <p><label>{{insuranc.name}}</label> <span>{{currencySign}}{{insuranc.price}}*{{adultNum+childNum}}</span></p>
+                        </div>
+                        <p class="content-order-details-total">总计 <b>{{currencySign}}{{orderPrice}}</b></p>
+                        <a class="content-order-details-confirm-order" @click.stop="sureorder">确认订单</a>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 选择常用联系人（Modal） -->
+        <div class="modal fade contactModal ez-modal" id="contactModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <!--<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>-->
+                        <button type="button" class="modal-close" data-dismiss="modal" aria-hidden="true"><i class="iconfont icon-close"></i></button>
+                        <h4 class="modal-title text-bold">选择常用联系人</h4>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th> {{memberContactsIndex}}</th>
+                                    <th>中文名</th>
+                                    <th>英文名</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(list, index) in memberContactsList" :key="index">
+                                    <td><input type="radio" v-model="memberContactsIndex" name=" memberContacts" :value="index"></td>
+                                    <td>{{list.chineseName}}</td>
+                                    <td>{{list.englishName}}</td>
+                                </tr>
+                            </tbody>
+
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" @click="addMemberContact">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 选择常用联系人（Modal）  -->
+
+
+        <ez-website></ez-website>
+
+
+    </div>
+</body>
+
+</html>
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-k.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+<script>
+    const app = new Vue({
+        el: "#app",
+        data: {
+            roomIds: localStorage.getItem("roomIds"),  //选择的房间
+            lineid: localStorage.getItem("lineid"),  //路线ID
+            beginDate: localStorage.getItem("beginDate"),  //开始时间
+            linerRoomList: [],  //房间信息
+            linerline: "",  //邮轮路线详情
+            liner: "",  //邮轮详情
+            contactsName: "",  //联系人姓名
+            contactsMobile: "",  //联系人电话
+            remark: "",  //备注
+            // insuranceid: "",  //保险ID
+            orderMember: [],  //出游人集合
+            insurancList: [],  //保险集合
+            insurancId: "",  //选择的保险ID
+            insuranc: "",  //选择的保险信息
+            memberContactsList: [],  //常用联系人
+            orderMemberIndex: "",  //点击添加联系人的下标
+            memberContactsIndex: "", //选择的常用联系人的下标
+        },
+        computed: {
+            adultNum: function () {   //大人数量
+                let num = 0;
+                for (const list of Object.values(this.linerRoomList)) {
+                    num += list.adultNum;
+                }
+                return num;
+            },
+            childNum: function () {  //小孩数量
+                let num = 0;
+                for (const list of Object.values(this.linerRoomList)) {
+                    num += list.childNum;
+                }
+                return num;
+            },
+            orderPrice:function(){  //订单价格
+                let orderPrce = (this.insuranc == ''?0:this.insuranc.price * (this.childNum + this.adultNum)) 
+                + (this.linerline.price?this.linerline.price:0);
+                for (const list of Object.values(this.linerRoomList)) {
+                    orderPrce += (list.adultNum + list.childNum) * list.price * list.roomNum;
+                }
+                return orderPrce;
+            },
+        },
+        watch: {
+                //计算保险价格
+                insurancId: function () {
+                    for (const list of Object.values(this.insurancList)) {
+                        if (list.id == this.insurancId) {
+                            this.insuranc = list;
+                            return;
+                        }
+                    }
+                },
+            },
+        mounted() {
+            this.getInfo();
+            this.getInsurancData();
+            this.getLinerRoom();
+            this.getMemberContact();
+        },
+        methods: {
+                //确定订单
+                sureorder: function () {
+                    if (!this.contactsName || !this.contactsMobile) {
+                        layerMsg('请完善联系人信息'); return;
+                    }
+                    for (const list of Object.values(this.orderMember)) {
+                        for (const [key, value] of Object.entries(list)) {
+                            if (value === "") {
+                                console.log(`---------------${key}`);
+                                layerMsg('请完善出游人信息'); return;
+                            }
+                        }
+                    }
+                    let orderMember = this.orderMember;
+                    for (const list of Object.values(orderMember)) {
+                        Vue.set(list, "englishName", `${list.key}/${list.value}`);
+                    }
+                    requestGet(saveLineOrderUrl, {
+                        linerLineid: this.lineid,
+                        contactsName: this.contactsName,
+                        contactsMobile: this.contactsMobile,
+                        remark: this.remark,
+                        startDate: this.beginDate,
+                        adultNum: this.adultNum,
+                        childNum: this.childNum,
+                        insuranceid: this.insurancId,
+                        roomDetails:JSON.stringify(this.linerRoomList),
+                        orderMember: JSON.stringify(this.orderMember),
+                    }, function (data) {
+                        localStorage.setItem("orderid", data.body.orderid);
+                        location.href = "./K1-4-2.html";
+                    })
+                },
+            //人数修改
+            numChange: function (index, type, num) {
+                if (this.linerRoomList[index].checkInType == 1) {   //可入住
+                    let numFlag2 = this.linerRoomList[index].adultNum + this.linerRoomList[index].childNum + num;
+                    if (type == 1) {  //大人
+                        let numFlag1 = this.linerRoomList[index].adultNum + num;
+                        if (numFlag1 >= 0 && numFlag2 >= this.linerRoomList[index].minPeopleNumber
+                            && numFlag2 <= this.linerRoomList[index].maxPeopleNumber) {
+                            this.linerRoomList[index].adultNum = numFlag1;
+                        }
+                    } else if (type == 2) {
+                        let numFlag1 = this.linerRoomList[index].childNum + num;
+                        if (numFlag1 >= 0 && numFlag2 >= this.linerRoomList[index].minPeopleNumber
+                            && numFlag2 <= this.linerRoomList[index].maxPeopleNumber) {
+                            this.linerRoomList[index].childNum = numFlag1;
+                        }
+                    }
+                } else if (this.linerRoomList[index].checkInType == 2) {  //必须入住
+                    if(type == 1){
+                        let numFlag1 = this.linerRoomList[index].adultNum + num;
+                        if(numFlag1 >= 0 && numFlag1 <= this.linerRoomList[index].peopleNumber){
+                            this.linerRoomList[index].adultNum = numFlag1;
+                            this.linerRoomList[index].childNum = this.linerRoomList[index].peopleNumber - numFlag1;
+                        }
+                    }else if(type == 2){
+                        let numFlag1 = this.linerRoomList[index].childNum + num;
+                        if(numFlag1 >= 0 && numFlag1 <= this.linerRoomList[index].peopleNumber){
+                            this.linerRoomList[index].childNum = numFlag1;
+                            this.linerRoomList[index].adultNum = this.linerRoomList[index].peopleNumber - numFlag1;
+                        }
+                    }
+                }
+                this.orderMemberInit();
+            },
+            //获取房间
+            getLinerRoom: function () {
+                requestGet(linerRoomListUrl, {
+                    lineid: this.lineid,
+                }, function (data) {
+                    let linerRoomList = data.body.list;
+                    let roomIds = app.roomIds.split(",");
+                    let roomList = [];
+                    for (const list of Object.values(linerRoomList)) {
+                        if ($.inArray(list.id, roomIds) > -1) {
+                            list["adultNum"] = list.minPeopleNumber;
+                            list["childNum"] = 0;
+                            list["roomNum"] = 1;
+                            if (list.checkInType == 2) {
+                                list["adultNum"] = list.peopleNumber;
+                            }
+                            roomList.push(list);
+                        }
+                    }
+                    app.linerRoomList = roomList;
+                    app.orderMemberInit();
+                    console.log(app.linerRoomList);
+                })
+            },
+            //确定添加联系人
+            addMemberContact: function () {
+                if (this.memberContactsIndex === "") return;
+                let map = {};
+                Vue.set(map, "chineseName", this.memberContactsList[this.memberContactsIndex].chineseName);
+                //     Vue.set(map,"englishName","");
+                Vue.set(map, "key", this.memberContactsList[this.memberContactsIndex].englishName.split("/")[0]);
+                Vue.set(map, "value", this.memberContactsList[this.memberContactsIndex].englishName.split("/")[1]);
+                Vue.set(map, "certType", this.certTypeSelectList[0].id);
+                Vue.set(map, "certNo", this.memberContactsList[this.memberContactsIndex].certNo);
+                Vue.set(map, "certValidDate", this.memberContactsList[this.memberContactsIndex].certValidDate);
+                Vue.set(map, "birthday", this.memberContactsList[this.memberContactsIndex].birthday);
+                Vue.set(map, "area", this.areaSelectList[0].id);
+                Vue.set(map, "mobile", this.memberContactsList[this.memberContactsIndex].mobile);
+                Vue.set(map, "type", false);
+                Vue.set(map, "typeShow", false);
+                Vue.set(this.orderMember, this.orderMemberIndex, map);
+                $('#contactModal').modal('hide');
+                this.memberContactsIndex = "";
+                this.orderMemberIndex = "";
+            },
+            //点击添加联系人
+            addOrderMember: function (index) {
+                this.orderMemberIndex = index;
+            },
+            //获取常用联系人
+            getMemberContact: function () {
+                requestGet(getMemberContactUrl, {
+                    pageNo: 1,
+                }, function (data) {
+                    app.memberContactsList = data.body.memberContactsList;
+                })
+            },
+            //添加清空数据
+            emptyOrderMemberByIndex: function (index) {
+                let map = {};
+                Vue.set(map, "chineseName", "");
+                //     Vue.set(map,"englishName","");
+                Vue.set(map, "key", "");
+                Vue.set(map, "value", "");
+                Vue.set(map, "certType", this.certTypeSelectList[0].id);
+                Vue.set(map, "certNo", "");
+                Vue.set(map, "certValidDate", "");
+                Vue.set(map, "birthday", "");
+                Vue.set(map, "area", this.areaSelectList[0].id);
+                Vue.set(map, "mobile", "");
+                Vue.set(map, "type", false);
+                Vue.set(map, "typeShow", true);
+                Vue.set(this.orderMember, index, map);
+            },
+            //出游人集合初始化
+            orderMemberInit: function () {
+                let length = this.orderMember.length;
+                let num = this.adultNum + this.childNum;
+                if(length < num){
+                    this.emptyOrderMemberByIndex(length);
+                    this.orderMemberInit();
+                }
+                if(length > num){
+                    Vue.delete(this.orderMember,length - 1);
+                    this.orderMemberInit();
+                }
+            },
+            //保险说明
+            insurancContent: function (index) {
+                layer.open({
+                    type: 1,
+                    closeBtn: 0, //不显示关闭按钮
+                    anim: 2,
+                    shadeClose: true, //开启遮罩关闭
+                    content: this.insurancList[index].content
+                });
+            },
+            //获取保险数据
+            getInsurancData: function () {
+                requestGet(getInsuranceUrl, {
+                    productType: 6,   //1.包车租车2.短程接送3.接送机4常规路线5.当地参团6.游轮7.景点门票8.当地玩家9.旅游定制',
+                }, function (data) {
+                    app.insurancList = data.body.list;
+                })
+            },
+            //邮轮路线详情
+            getInfo: function () {
+                requestGet(linerlineDetailsUrl, {
+                    lineid: this.lineid
+                }, function (data) {
+                    app.linerline = data.body.linerline;
+                    app.liner = data.body.liner;
+                })
+            },
+            //计算时间
+            GetDateStr: function (AddDayCount) {
+                var dd = new Date(this.startDate);
+                dd.setDate(dd.getDate() + AddDayCount);//获取AddDayCount天后的日期 
+                var y = dd.getFullYear();
+                var m = dd.getMonth() + 1;//获取当前月份的日期 
+                var d = dd.getDate();
+                return y + "-" + m + "-" + d;
+            },
+        },
+    })
+</script>

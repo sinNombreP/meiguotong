@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.module.ModuleContentMapper">
+    
+	<sql id="moduleContentColumns">
+		a.id AS "id",
+		a.module_html_id AS "moduleHtmlId",
+		a.module_name_id AS "moduleNameId",
+		a.language_id AS "languageId",
+		a.sort AS "sort",
+		a.name AS "name",
+		a.typeid AS "typeid",
+		a.order_type AS "orderType",
+		a.one_footer_show AS "oneFooterShow",
+		a.one_footer AS "oneFooter",
+		a.two_footer_show AS "twoFooterShow",
+		a.two_footer AS "twoFooter",
+		a.three_footer_show AS "threeFooterShow",
+		a.three_footer AS "threeFooter",
+		a.img AS "img",
+		a.url AS "url"
+	</sql>
+	
+	<sql id="moduleNameColumns">
+		b.module_name AS "moduleName",
+		b.module_type AS "moduleType",
+		b.module_size AS "moduleSize",
+		b.type AS "type"
+	</sql>
+	
+	<sql id="moduleDetailsColumns">
+ 		c.id AS "id1", 
+		c.module_content_id AS "moduleContentId",
+		c.cityid AS "cityid",
+		c.tagid AS "tagid",
+		c.desid AS "desid",
+		c.first_type_content AS "firstTypeContent"
+	</sql>
+	
+	<sql id="moduleContentJoins">
+
+	</sql>
+
+	<!--删除模块-->
+	<delete id="deleteModule">
+		DELETE
+		FROM module_content
+		WHERE id = #{id}
+	</delete>
+
+	<!-- 获取模块数据 -->
+	<select id="getModuleDataInfo" resultMap="getModuleContentByIdMap">
+		SELECT 
+			<include refid="moduleContentColumns"/>,
+			<include refid="moduleNameColumns"/>,
+			<include refid="moduleDetailsColumns"/>,
+			0 as "index"
+		FROM module_content a
+		LEFT JOIN module_name b ON a.module_name_id = b.id
+		LEFT JOIN module_details c ON a.id = c.module_content_id
+		WHERE  a.language_id = #{languageId} AND a.module_html_id = #{moduleHtmlId}
+		ORDER BY a.sort
+	</select>
+	
+	<!-- 获取模块详情 -->
+	<select id="getModuleContentById" resultMap="getModuleContentByIdMap">
+		SELECT 
+			<include refid="moduleContentColumns"/>,
+			<include refid="moduleNameColumns"/>,
+			<include refid="moduleDetailsColumns"/>,
+			0 as "index"
+		FROM module_content a
+		LEFT JOIN module_name b ON a.module_name_id = b.id
+		LEFT JOIN module_details c ON a.id = c.module_content_id
+		WHERE a.language_id = #{languageId} AND a.module_html_id = #{moduleHtmlId}
+		ORDER BY a.sort
+	</select>
+	
+	<resultMap type="ModuleContent" id="getModuleContentByIdMap">
+		<id column="id" property="id"/>
+		<id column="index" property="index"/>
+		<id column="moduleHtmlId" property="moduleHtmlId"/>
+		<id column="moduleNameId" property="moduleNameId"/>
+		<id column="languageId" property="languageId"/>
+		<id column="sort" property="sort"/>
+		<id column="name" property="name"/>
+		<id column="typeid" property="typeid"/>
+		<id column="orderType" property="orderType"/>
+		<id column="oneFooterShow" property="oneFooterShow"/>
+		<id column="oneFooter" property="oneFooter"/>
+		<id column="twoFooterShow" property="twoFooterShow"/>
+		<id column="twoFooter" property="twoFooter"/>
+		<id column="threeFooterShow" property="threeFooterShow"/>
+		<id column="threeFooter" property="threeFooter"/>
+		<id column="img" property="img"/>
+		<id column="url" property="url"/>
+		<id column="moduleName" property="moduleName"/>
+		<id column="moduleType" property="moduleType"/>
+		<id column="moduleSize" property="moduleSize"/>
+		<id column="type" property="type"/>
+		<collection property="moduleDetails" ofType="ModuleDetails">
+			<id column="id1" property="id"/>
+			<id column="moduleContentId" property="moduleContentId"/>
+			<id column="cityid" property="cityid"/>
+			<id column="tagid" property="tagid"/>
+			<id column="desid" property="desid"/>
+			<id column="firstTypeContent" property="firstTypeContent"/>
+		</collection>
+	</resultMap>
+	
+	<!-- 获取最大排序 -->
+	<select id="getMaxSort" resultType="Integer">
+		SELECT IFNULL(MAX(a.sort),0) + 1
+		FROM module_content a
+		WHERE  a.language_id = #{languageId} AND a.module_html_id = #{moduleHtmlId}
+	</select>
+	
+	<!-- 获取关联模块 -->
+    <select id="getModuleHtmlNameList" resultType="ModuleContent" >
+		SELECT 
+			<include refid="moduleContentColumns"/>,
+			<include refid="moduleNameColumns"/>
+		FROM module_content a
+		LEFT JOIN module_name b ON a.module_name_id = b.id
+		WHERE a.language_id = #{languageId} AND a.module_html_id = #{moduleHtmlId}
+		ORDER By a.sort
+    </select>
+    
+    <select id="getCount" resultType="Integer" >
+		SELECT 
+			count(a.id)
+		FROM module_content a
+		WHERE a.language_id = #{languageId}
+	</select>
+	<select id="get" resultType="ModuleContent" >
+		SELECT 
+			<include refid="moduleContentColumns"/>
+		FROM module_content a
+		<include refid="moduleContentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ModuleContent" >
+		SELECT 
+			<include refid="moduleContentColumns"/>
+		FROM module_content a
+		<include refid="moduleContentJoins"/>
+		<where>
+			${dataScope}
+			<if test="languageId != null">
+				AND a.language_id = #{languageId}
+			</if>
+			<if test="moduleHtmlId != null">
+				AND a.module_html_id = #{moduleHtmlId}
+			</if>
+		</where>
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findAllList" resultType="ModuleContent" >
+		SELECT 
+			<include refid="moduleContentColumns"/>
+		FROM module_content a
+		<include refid="moduleContentJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" keyProperty="id" useGeneratedKeys="true">
+		INSERT INTO module_content(
+			module_html_id,
+			module_name_id,
+			language_id,
+			sort,
+			name,
+			typeid,
+			order_type,
+			one_footer_show,
+			one_footer,
+			two_footer_show,
+			two_footer,
+			three_footer_show,
+			three_footer,
+			img,
+			url
+		) VALUES (
+			#{moduleHtmlId},
+			#{moduleNameId},
+			#{languageId},
+			#{sort},
+			#{name},
+			#{typeid},
+			#{orderType},
+			#{oneFooterShow},
+			#{oneFooter},
+			#{twoFooterShow},
+			#{twoFooter},
+			#{threeFooterShow},
+			#{threeFooter},
+			#{img},
+			#{url}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE module_content SET 	
+			module_html_id = #{moduleHtmlId},
+			module_name_id = #{moduleNameId},
+			language_id = #{languageId},
+			sort = #{sort},
+			name = #{name},
+			typeid = #{typeid},
+			order_type = #{orderType},
+			one_footer_show = #{oneFooterShow},
+			one_footer = #{oneFooter},
+			two_footer_show = #{twoFooterShow},
+			two_footer = #{twoFooter},
+			three_footer_show = #{threeFooterShow},
+			three_footer = #{threeFooter},
+			img = #{img},
+			url = #{url}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM module_content
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE module_content SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ModuleContent" statementType="STATEMENT">
+		select * FROM module_content  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>商家注册</title>
+
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/E-publc.css">
+
+    <link rel="stylesheet" href="../../me/css/xl.css" />
+
+    <!--[if lt IE 9]>
+        <script src="../../vendor/html5.js"></script>
+        <script src="../../vendor/respond.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div id="app" v-cloak>
+
+        <ez-header></ez-header>
+
+        <!--成功支付****************************************-->
+        <div class=" width  overflow">
+
+
+
+            <div class="fu  duancheng_c  pa_qq overflow ">
+                <div class="overflow ma25 bo_3">
+                    <div class=" overflow ma25">
+                        <div class="ma31">创建商业账号</div>
+                        <div class="content ez-travel-payment">
+                            <div class="content-order">
+                                <div class="content-order-icon">
+                                    <div style="border: 1px solid #f99905;"><i style="color:#f99905;"
+                                            class="iconfont icon-dagou"></i><label>确认订单</label></div>
+                                    <div style="border: 1px solid #f99905;"><i style="color:#f99905;"
+                                            class="iconfont icon-dagou"></i><label>确认付款</label></div>
+                                    <div><i class="iconfont icon-dagou"></i><label>完成订单</label></div>
+                                    <p></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lx_zhan">
+                            <ul class="a_zhan">
+                                <li>类型</li>
+                                <li class="input_zhan"><input type="radio" value="1" name="sex" v-model="companyType">个人
+                                </li>
+                                <li class="input_zhan"><input type="radio" value="2" name="sex" v-model="companyType">公司
+                                </li>
+                            </ul>
+                            <input type="file"  @change="imgChange" id="img"  accept="image/*" v-show>
+                            <div v-if="companyType == 1">
+                                <ul class="b_zhan">
+                                    <li><i>昵称</i><input type="text" value="" placeholder="请输入昵称"  v-model.trim="nickName"/></li>
+                                </ul>
+                                <ul class="b_zhan ma1">
+                                    <li><i>真实姓名</i><input type="text" value="" placeholder="请输入真实姓名" v-model.trim="realName" /></li>
+                                </ul>
+                                <div class="fu4 lis ma25 qingchu overflow">
+                                    <ul>
+                                        <li class="zs_bb">个人头像</li>
+                                        <li class="ma22 bo_3"><img :src="photo ||'../../images/upload2.png'" @click="imgClick('photo')"/></li>
+
+                                        <!-- <li class="ma22  zs_bb"> <button class="button_zhan jia_chuan">上传图片</button> -->
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="fu4 lis ma25 overflow">
+                                    <ul>
+                                        <li class="zs_bb">身份证件</li>
+                                        <li class="ma22 bo_3"><img :src="cardsImg1[0] ||'../../images/upload2.png'" @click="imgClick('cardsImg1',0)"/></li>
+                                        <li class="ma22 bo_3"><img :src="cardsImg1[1] ||'../../images/upload2.png'" @click="imgClick('cardsImg1',1)"/></li>
+                                        <!-- <li class="ma22  zs_bb"> <button class="button_zhan jia_chuan">上传图片</button> -->
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="bu_zhan qingchu ma25">
+                                    <li class="fu"> 个人简介</li>
+                                    <textarea class="bu_a_zhan ma22" placeholder="输入呢容" v-model.trim="content"></textarea>
+                                </div>
+                            </div>
+                            <div v-if="companyType == 2">
+                                <ul class="b_zhan">
+                                    <li><i>企业名称</i><input type="text" value="" placeholder="请输入企业名称" v-model.trim="companyName"/></li>
+                                </ul>
+                                <ul class="b_zhan ma1">
+                                    <li><i>法人代表</i><input type="text" value="" placeholder="请输入法人代表" v-model.trim="legalPerson"/></li>
+                                </ul>
+
+
+                                <div class="fu4 lis ma25 qingchu overflow">
+                                    <ul>
+                                        <li class="zs_bb">企业logo</li>
+                                        <li class="ma22 bo_3"><img :src="companyLogo ||'../../images/upload2.png'" @click="imgClick('companyLogo')" /></li>
+
+                                        <!-- <li class="ma22  zs_bb"> <button class="button_zhan jia_chuan">上传图片</button> -->
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="fu4 lis ma25 qingchu overflow">
+                                    <ul>
+                                        <li class="zs_bb">营业执照</li>
+                                        <li class="ma22 bo_3"><img :src="companyImg ||'../../images/upload2.png'" @click="imgClick('companyImg')" /></li>
+
+                                        <!-- <li class="ma22  zs_bb"> <button class="button_zhan jia_chuan">上传图片</button> -->
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="fu4 lis ma25 qingchu overflow">
+                                    <ul>
+                                        <li class="zs_bb">法人身份证</li>
+                                        <li class="ma22 bo_3"><img :src="cardsImg2 ||'../../images/upload2.png'" @click="imgClick('cardsImg2')" /></li>
+
+                                        <!-- <li class="ma22  zs_bb"> <button class="button_zhan jia_chuan">上传图片</button> -->
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="bu_zhan qingchu ma25">
+                                    <li class="fu"> 企业简介</li>
+                                    <textarea class="bu_a_zhan ma22" placeholder="输入呢容" v-model.trim="content"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="shang_zhan overflow ">
+                                <p class="s_c_zhan ma1 qingchu ma28">
+                                    若贵方无法提供发票，请勾选“个人”，则携程将按照相关法律在支付佣金时代为交纳相应税款；若贵方能提供发票，请勾选“公司”，则我们不为代扣税。
+                                    扣税相关内容详见：http://u.ctrip.com/Union/H
+                                    elp/htm/commission.htm 提供发票的收款人帐号和收款人信息必须关联，若发现收款人信息不符，不予打款。</p>
+                                <div class="overflow qingchu" style="margin-bottom:2rem;">
+                                    <button class="s_a_zhan button bo_26_lans" onclick="window.history.go(-1)">上一步</button>
+                                    <button class="s_b_zhan button bo_26_lans" @click="BusinessRegisterClick">下一步</button>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!--右边*************************************************************************-->
+            <DIV class="a33_3 fu1">
+
+                <div class="a5_1_l overflow  ma25">
+                    <img src="../../images/bg-guide.png">
+                </div>
+
+                <div class="a5_1_l overflow  ma25">
+                    <img src="../../images/bg-guide.png">
+                </div>
+            </DIV>
+
+
+        </div>
+
+
+
+        <!--最**********************************************************************底部-->
+        <div class="width min zuidibu ">
+            <p class="right_aaa ccc zi_d ma5">Copyringht@2018-2028|万事通Lulutrip|All Reserved</p>
+            <p class="right_aaa ccc zi_d">美国万事通有限公司|粤ICP13803118号-11</p>
+        </div>
+    </div>
+</body>
+
+</html>
+
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-pro.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+<script>
+    const app = new Vue({
+        el: "#app",
+        data: {
+            registerType: localStorage.getItem("registerType"), //1.手机登录  2.邮箱登录
+            accountNumbe: localStorage.getItem("accountNumbe"), //登录账号
+            password: localStorage.getItem("password"), //密码
+            passwordCheck: localStorage.getItem("passwordCheck"), //确认密码
+            smsCode: localStorage.getItem("smsCode"), //验证码
+
+            companyType: 1, //个人  2公司
+            content: "", //简介
+
+            cardsImg1: [], //身份证照片
+            nickName: "", //昵称
+            realName: "", //真实姓名
+            photo: "",  //个人头像
+
+            cardsImg2: "", //身份证照片
+            companyName: "", //公司名称
+            legalPerson: "",  //法人代表
+            companyLogo: "", //公司Logo
+            companyImg: "", //公司营业执照
+
+            imgid:"",  //选择的imgid
+            imgIndex: 1, //选择的下标
+        },
+        created() {
+        
+        },
+        methods: {
+            //商家注册
+            BusinessRegisterClick() {
+                if(this.companyType == 1){
+                    if(isNull(this.nickName)){
+                        layerMsg("请输入昵称");
+                        return;
+                    }
+                    if(isNull(this.realName)){
+                        layerMsg("请输入真实姓名");
+                        return;
+                    }
+                    if(this.cardsImg1.length != 2){
+                        layerMsg("请上传身份证件照片");
+                        return;
+                    }
+                    if(isNull(this.photo)){
+                        layerMsg("请上传个人头像");
+                        return;
+                    }
+                    
+                }
+                if(this.companyType == 2){
+                    if(isNull(this.companyName)){
+                        layerMsg("请输入公司名称");
+                        return;
+                    }
+                    if(isNull(this.legalPerson)){
+                        layerMsg("请输入法人代表");
+                        return;
+                    }
+                    if(isNull(this.companyLogo)){
+                        layerMsg("请上传企业logo");
+                        return;
+                    }
+                    if(isNull(this.companyImg)){
+                        layerMsg("请上传公司营业执照");
+                        return;
+                    }
+                    if(isNull(this.cardsImg2)){
+                        layerMsg("请上传法人身份证");
+                        return;
+                    }
+                }
+                if(isNull(this.content)){
+                        layerMsg("请输入简介");
+                        return;
+                    }
+                requestPost(BusinessRegisterUrl, {
+                    accountNumbe: this.accountNumbe,
+                    password: hex_md5(this.password),
+                    passwordCheck: this.passwordCheck,
+                    smsCode: this.smsCode,
+                    registerType: this.registerType,
+                    source: 1,  //1安卓 2苹果 3 网页
+                    companyType: this.companyType,
+                    cardsImg: this.companyType == 1?this.cardsImg1.toString():this.cardsImg2,
+                    content: this.content,
+
+                    nickName: this.nickName,
+                    realName: this.realName,
+                    photo: this.photo,
+
+                    companyName: this.companyName,
+                    legalPerson: this.legalPerson,
+                    companyLogo: this.companyLogo,
+                    companyImg: this.companyImg,
+                }, function (data) {
+                    // layerMsg("注册成功");
+                     location.href = "./A1-4.html";
+                });
+            },
+            //点击图片
+            imgClick(id,index){
+                this.imgid = id;
+                this.imgIndex = index;
+                $("#img").click();
+            },
+            //上传图片
+            imgChange: function () {
+                let imgid = this.imgid;
+                console.log(imgid)
+                var e = window.event || arguments.callee.caller.arguments[0];
+                console.info(e.target.files[0]); //图片文件
+                var file = e.target.files[0];
+                var URL = window.URL || window.webkitURL;
+                // 通过 file 生成目标 url
+                var photo = URL.createObjectURL(file);
+                var image = new Image();
+                image.src = photo;
+                image.onload = function () {
+                var imgData = app.getImage(image);
+                requestPost(imgUploadUrl, {
+                    "file": imgData,
+                }, function (data) {
+                    //更新图片数据
+                    //  Vue.set(app,id,data.body.imgUrl);
+                    if(imgid == "cardsImg1"){
+                        Vue.set(app[imgid],app.imgIndex, data.body.imgUrl);
+                    }else{
+                      app[imgid] = data.body.imgUrl;
+                    }
+                    
+
+                });
+                }
+            },
+            //压缩图片
+            getImage: function (image) {
+                var canvas = document.createElement("canvas");
+                var width = 250;
+                var height = 250;
+                canvas.width = width; /*设置新的图片的宽度*/
+                canvas.height = height; /*设置新的图片的长度*/
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(image, 0, 0, width, height); /*绘图*/
+                var dataURL = canvas.toDataURL("image/jpeg", 0.6);
+                return dataURL.replace("data:image/jpeg;base64,", "");
+            },
+        },
+    })
+</script>

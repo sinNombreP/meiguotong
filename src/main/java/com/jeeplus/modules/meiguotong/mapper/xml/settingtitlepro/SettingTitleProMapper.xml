@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.settingtitlepro.SettingTitleProMapper">
+    
+	<sql id="settingTitleProColumns">
+		a.id AS "id",
+		a.titleid AS "titleid",
+		a.proid AS "proid",
+		a.content AS "content"
+	</sql>
+	
+	<sql id="settingTitleProJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="SettingTitlePro" >
+		SELECT 
+			<include refid="settingTitleProColumns"/>
+		FROM setting_title_pro a
+		<include refid="settingTitleProJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="SettingTitlePro" >
+		SELECT 
+			<include refid="settingTitleProColumns"/>
+		FROM setting_title_pro a
+		<include refid="settingTitleProJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="titleid != null and titleid != ''">
+				AND a.titleid = #{titleid}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="SettingTitlePro" >
+		SELECT 
+			<include refid="settingTitleProColumns"/>
+		FROM setting_title_pro a
+		<include refid="settingTitleProJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO setting_title_pro(
+			titleid,
+			proid,
+			content
+		) VALUES (
+			#{titleid},
+			#{proid},
+			#{content}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE setting_title_pro SET 	
+			titleid = #{titleid},
+			proid = #{proid},
+			content = #{content}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="deleteByTitleid">
+		DELETE FROM setting_title_pro
+		WHERE titleid = #{titleid}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM setting_title_pro
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE setting_title_pro SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="SettingTitlePro" statementType="STATEMENT">
+		select * FROM setting_title_pro  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.orderlinerroom.OrderLinerRoomMapper">
+    
+	<sql id="orderLinerRoomColumns">
+		a.id AS "id",
+		a.room_id AS "roomId",
+		a.adult_num AS "adultNum",
+		a.children_num AS "childrenNum",
+		a.room_num AS "roomNum",
+		a.order_id AS "orderId",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.name AS "name",
+		a.spec AS "spec",
+		a.floor AS "floor",
+		a.order_sys1 AS "orderSys1",
+		a.order_sys2 AS "orderSys2",
+		a.price AS "price"
+	</sql>
+	
+	<sql id="orderLinerRoomJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderLinerRoom" >
+		SELECT 
+			<include refid="orderLinerRoomColumns"/>
+		FROM order_liner_room a
+		<include refid="orderLinerRoomJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 查找评论房间数据 -->
+		<select id="findListById" resultType="OrderLinerRoom" >
+		SELECT 
+			<include refid="orderLinerRoomColumns"/>
+		FROM order_liner_room a
+		<include refid="orderLinerRoomJoins"/>
+		WHERE a.room_id = #{roomId}
+	</select>
+	<select id="findList" resultType="OrderLinerRoom" >
+		SELECT 
+			<include refid="orderLinerRoomColumns"/>
+		FROM order_liner_room a
+		<include refid="orderLinerRoomJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="OrderLinerRoom" >
+		SELECT 
+			<include refid="orderLinerRoomColumns"/>
+		FROM order_liner_room a
+		<include refid="orderLinerRoomJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_liner_room(
+			room_id,
+			adult_num,
+			children_num,
+			room_num,
+			order_id,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			name,
+			spec,
+			floor,
+			order_sys1,
+			order_sys2,
+			price
+		) VALUES (
+			#{roomId},
+			#{adultNum},
+			#{childrenNum},
+			#{roomNum},
+			#{orderId},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{name},
+			#{spec},
+			#{floor},
+			#{orderSys1},
+			#{orderSys2},
+			#{price}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE order_liner_room SET 	
+			room_id = #{roomId},
+			adult_num = #{adultNum},
+			children_num = #{childrenNum},
+			room_num = #{roomNum},
+			order_id = #{orderId},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			name = #{name},
+			floor = #{floor},
+			spec = #{spec},
+			order_sys1 = #{orderSys1},
+			order_sys2 = #{orderSys2},
+			price = #{price}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_liner_room
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_liner_room SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderLinerRoom" statementType="STATEMENT">
+		select * FROM order_liner_room  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	
+	<resultMap id="OrderLinerRoomResultMap" type="com.jeeplus.modules.meiguotong.entity.orderlinerroom.OrderLinerRoom">
+		<id property="id" column="id"  />
+		<result property="roomId" column="room_id" />
+		<result property="adultNum" column="adult_num" />
+		<result property="childrenNum" column="children_num" />
+		<result property="roomNum" column="room_num" />
+		<result property="orderId" column="order_id" />
+		<result property="createDate" column="create_date" />
+		<result property="updateDate" column="update_date" />
+		<result property="delDate" column="del_date" />
+		<result property="delBy" column="del_by" />
+		<result property="delFlag" column="del_flag" />
+		<result property="languageId" column="language_id" />
+		<result property="name" column="name" />
+		<result property="spec" column="spec" />
+		<result property="floor" column="floor" />
+		<result property="orderSys1" column="order_sys1" />
+		<result property="orderSys2" column="order_sys2" />
+		<result property="price" column="price" />
+	</resultMap>
+	
+	<!-- 定义可重用的SQL代码段，可以包含在其他语句中 -->
+	<sql id="base_column">
+		 id ,room_id ,adult_num ,children_num ,room_num ,order_id ,create_date ,update_date ,del_date ,del_by ,del_flag ,language_id ,name ,spec ,floor ,order_sys1 ,order_sys2 ,price 
+	</sql>
+	
+	<sql id="base_value_column">
+		 #{id},#{roomId},#{adultNum},#{childrenNum},#{roomNum},#{orderId},#{createDate},#{updateDate},#{delDate},#{delBy},#{delFlag},#{languageId},#{name},#{spec},#{floor},#{orderSys1},#{orderSys2},#{price}
+	</sql>
+	
+	<!-- 设置语句 -->
+	<sql id="set_column">
+		<if test="id != null ">
+			id = #{id,jdbcType=INTEGER},
+		</if>
+		<if test="roomId != null ">
+			room_id = #{roomId,jdbcType=INTEGER},
+		</if>
+		<if test="adultNum != null ">
+			adult_num = #{adultNum,jdbcType=INTEGER},
+		</if>
+		<if test="childrenNum != null ">
+			children_num = #{childrenNum,jdbcType=INTEGER},
+		</if>
+		<if test="roomNum != null ">
+			room_num = #{roomNum,jdbcType=INTEGER},
+		</if>
+		<if test="orderId != null ">
+			order_id = #{orderId,jdbcType=INTEGER},
+		</if>
+		<if test="createDate != null ">
+			create_date = #{createDate,jdbcType=TIMESTAMP},
+		</if>
+		
+		<if test="updateDate != null ">
+			update_date = #{updateDate,jdbcType=TIMESTAMP},
+		</if>
+		
+		<if test="delDate != null ">
+			del_date = #{delDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="delBy != null ">
+			del_by = #{delBy,jdbcType=VARCHAR},
+		</if>
+		<if test="delFlag != null ">
+			del_flag = #{delFlag,jdbcType=INTEGER},
+		</if>
+		<if test="languageId != null ">
+			language_id = #{languageId,jdbcType=INTEGER},
+		</if>
+		<if test="name != null ">
+			name = #{name,jdbcType=VARCHAR},
+		</if>
+		<if test="spec != null ">
+			spec = #{spec,jdbcType=VARCHAR},
+		</if>
+		<if test="floor != null ">
+			floor = #{floor,jdbcType=VARCHAR},
+		</if>
+		<if test="orderSys1 != null ">
+			order_sys1 = #{orderSys1,jdbcType=INTEGER},
+		</if>
+		<if test="orderSys2 != null ">
+			order_sys2 = #{orderSys2,jdbcType=INTEGER},
+		</if>
+		<if test="price != null ">
+			price = #{price,jdbcType=DECIMAL},
+		</if>
+	</sql>
+	
+		<!-- 修改 -->
+	<update id="updateObject" parameterType="com.jeeplus.modules.meiguotong.entity.orderlinerroom.OrderLinerRoom">
+		UPDATE	ORDER_LINER_ROOM
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+		
+	</update>
+
+
+		<!-- 修改 -->
+	<update id="updateObject2" parameterType="com.jeeplus.modules.meiguotong.entity.orderlinerroom.OrderLinerRoom">
+		UPDATE	ORDER_LINER_ROOM
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+
+		<if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+		<if test="orderSys2 != null ">
+			and order_sys2 = #{orderSys2,jdbcType=INTEGER}
+		</if>
+
+	</update>
+	
+	  <!-- 分页查询-->
+   <select id="findListByPage" resultMap="OrderLinerRoomResultMap">
+		SELECT
+		<include refid="base_column" />
+		FROM ORDER_LINER_ROOM
+          where  1=1
+					
+	     <if test="order != null and order != ''">
+		order by  ${order}
+	     </if>
+	     
+		<if test="pageNumber != null  and pageSize !=null ">
+			limit  #{pageNumber,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	     </if>
+	</select>
+	
+	<!-- 根据订单id获取房间信息-->
+   <select id="findRoomInfoByOrderId" resultMap="OrderLinerRoomResultMap">
+		select <include refid="orderLinerRoomColumns"/>
+		 from order_liner_room a where order_id=#{0}
+	</select>
+	
+	<select id="findLinerRoomDetailByOrderId" resultType="OrderLinerRoom" >
+		SELECT 
+			<include refid="orderLinerRoomColumns"/>
+		FROM order_liner_room a
+		<include refid="orderLinerRoomJoins"/>
+		WHERE a.order_id = #{orderId}
+	</select>
+</mapper>

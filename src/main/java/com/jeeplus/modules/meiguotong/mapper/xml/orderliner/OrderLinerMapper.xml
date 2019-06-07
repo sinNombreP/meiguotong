@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.orderliner.OrderLinerMapper">
+    
+	<sql id="orderLinerColumns">
+		a.id AS "id",
+		a.order_no AS "orderNo",
+		a.name AS "name",
+		a.liner_line_id AS "linerLineId",
+		a.product_name AS "productName",
+		a.member_id AS "memberId",
+		a.use_date AS "useDate",
+		a.price AS "price",
+		a.status AS "status",
+		a.contacts AS "contacts",
+		a.contact_mobile AS "contactMobile",
+		a.contact_remark AS "contactRemark",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.pay_way AS "payWay",
+		a.pay_date AS "payDate",
+		a.refund_info AS "refundInfo",
+		a.refund_reason AS "refundReason",
+		a.agentid AS "agentid",
+		a.cityid AS "cityid",
+		a.city_name AS "cityName",
+		a.portid AS "portid",
+		a.port_name AS "portName",
+		a.line_no AS "lineNo",
+		a.courseid AS "courseid",
+		a.course_name AS "courseName",
+		a.down_portid AS "downPortid",
+		a.down_port_name AS "downPortName",
+		a.order_sys1 AS "orderSys1",
+		a.order_sys2 AS "orderSys2"
+	</sql>
+	
+	<sql id="orderLinerJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderLiner" >
+		SELECT 
+			<include refid="orderLinerColumns"/>,
+			m.mobile AS "mobile",
+			mi.nick_name AS "nickName"			
+		FROM order_liner a
+		left join member m  on m.id=a.member_id
+		left join member_information mi  on mi.memberid=a.member_id
+		<include refid="orderLinerJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderLiner" >
+		SELECT 
+			<include refid="orderLinerColumns"/>,
+			li.company AS "curiseCompany",
+			s.company_name as 'companyName',
+		if(c.type=1,d.nick_name,e.company_name) AS "nickName",
+		c.type as "memberType"
+		FROM order_liner a
+		left join liner li on a.liner_line_id=li.id
+		left join sys_user s on a.agentid=s.agentid and s.fatherid=0 and s.del_flag=0
+		LEFT JOIN member c ON a.member_id = c.id
+		LEFT JOIN member_information d ON a.member_id = d.memberid
+		left join member_travel e on a.member_id = e.memberid
+		<include refid="orderLinerJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND (a.status =1 or a.status=2 or
+				a.status =3 or a.status=4 or
+				a.status =5 or a.status=6)
+			${dataScope}
+			<if test="productName != null and productName != ''">
+				AND a.product_name LIKE concat('%',#{productName},'%')
+			</if>
+			<if test="agentid != null and agentid != ''">
+				AND a.agentid =#{agentid} 
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status =#{status}
+			</if>
+			<if test="dataFlag != null and dataFlag==1">
+		and to_days(a.create_date)= to_days(now()) 
+		</if>
+		<if test="dataFlag != null and dataFlag==2">
+		and to_days(a.start_date)= to_days(now()) 
+		</if>
+		<if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+			AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(a.start_date, '%Y-%m-%d')
+			and DATE_FORMAT(a.start_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+		</if>
+		<if test="memberType != null and memberType!=''">
+			AND c.type = #{memberType}
+		</if>
+		<if test="nickName != null and nickName!=''">
+			AND if(c.type=1,d.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+		</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 售后订单列表数据 -->
+		<select id="AfterSale" resultType="OrderLiner" >
+		SELECT 
+			<include refid="orderLinerColumns"/>,
+			li.company AS "curiseCompany",
+			s.company_name as 'companyName',
+		if(c.type=1,d.nick_name,e.company_name) AS "nickName",
+		c.type as "memberType"
+		FROM order_liner a
+		left join liner li on a.liner_line_id=li.id
+		left join sys_user s on a.agentid=s.agentid and s.fatherid=0 and s.del_flag=0
+		LEFT JOIN member c ON a.member_id = c.id
+		LEFT JOIN member_information d ON a.member_id = d.memberid
+		left join member_travel e on a.member_id = e.memberid
+		<include refid="orderLinerJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND (a.status =7 or a.status=8 or
+				a.status =9 or a.status =10)
+			${dataScope}
+			<if test="productName != null and productName != ''">
+				AND a.product_name LIKE concat('%',#{productName},'%')
+			</if>
+			<if test="agentid != null and agentid != ''">
+				AND a.agentid =#{agentid} 
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status =#{status}
+			</if>
+			<if test="memberType != null and memberType!=''">
+			AND c.type = #{memberType}
+		</if>
+		<if test="nickName != null and nickName!=''">
+			AND if(c.type=1,d.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+		</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findAllList" resultType="OrderLiner" >
+		SELECT 
+			<include refid="orderLinerColumns"/>
+		FROM order_liner a
+		<include refid="orderLinerJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO order_liner(
+			order_no,
+			name,
+			liner_line_id,
+			product_name,
+			member_id,
+			use_date,
+			price,
+			status,
+			contacts,
+			contact_mobile,
+			contact_remark,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			pay_way,
+			pay_date,
+			refund_info,
+			refund_reason,
+			agentid,
+			cityid,
+			city_name,
+			portid,
+			port_name,
+			line_no,
+			courseid,
+			course_name,
+			down_portid,
+			down_port_name,
+			order_sys1,
+			order_sys2
+		) VALUES (
+			#{orderNo},
+			#{name},
+			#{linerLineId},
+			#{productName},
+			#{memberId},
+			#{useDate},
+			#{price},
+			#{status},
+			#{contacts},
+			#{contactMobile},
+			#{contactRemark},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{payWay},
+			#{payDate},
+			#{refundInfo},
+			#{refundReason},
+			#{agentid},
+			#{cityid},
+			#{cityName},
+			#{portid},
+			#{portName},
+			#{lineNo},
+			#{courseid},
+			#{courseName},
+			#{downPortid},
+			#{downPortName},
+			#{orderSys1},
+			#{orderSys2}
+		)
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+			select LAST_INSERT_ID() as id
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE order_liner SET 	
+			order_no = #{orderNo},
+			name = #{name},
+			liner_line_id = #{linerLineId},
+			product_name = #{productName},
+			member_id = #{memberId},
+			use_date = #{useDate},
+			price = #{price},
+			status = #{status},
+			contacts = #{contacts},
+			contact_mobile = #{contactMobile},
+			contact_remark = #{contactRemark},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			pay_way = #{payWay},
+			pay_date = #{payDate},
+			refund_info = #{refundInfo},
+			refund_reason = #{refundReason},
+			agentid = #{agentid},
+			cityid = #{cityid},
+			city_name = #{cityName},
+			portid = #{portid},
+			port_name = #{portName},
+			line_no = #{lineNo},
+			courseid = #{courseid},
+			course_name = #{courseName},
+			down_portid = #{downPortid},
+			down_port_name = #{downPortName},
+			order_sys1 = #{orderSys1},
+			order_sys2 = #{orderSys2}
+		WHERE id = #{id}
+	</update>
+		<!--修改状态-->
+	<update id="status">
+		UPDATE order_liner SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_liner
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_liner SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderLiner" statementType="STATEMENT">
+		select * FROM order_liner  where ${propertyName} = '${value}'
+	</select>
+	
+	<resultMap id="OrderLinerResultMap" type="com.jeeplus.modules.meiguotong.entity.orderliner.OrderLiner">
+		<id property="id" column="id"  />
+		<result property="orderNo" column="order_no" />
+		<result property="linerLineId" column="liner_line_id" />
+		<result property="name" column="name" />
+		<result property="productName" column="product_name" />
+		<result property="memberId" column="member_id" />
+		<result property="useDate" column="use_date" />
+		<result property="price" column="price" />
+		<result property="status" column="status" />
+		<result property="contacts" column="contacts" />
+		<result property="contactMobile" column="contact_mobile" />
+		<result property="contactRemark" column="contact_remark" />
+		<result property="createDate" column="create_date" />
+		
+		<result property="updateDate" column="update_date" />
+		
+		<result property="delDate" column="del_date" />
+		<result property="delBy" column="del_by" />
+		<result property="delFlag" column="del_flag" />
+		<result property="languageId" column="language_id" />
+		<result property="payWay" column="pay_way" />
+		<result property="payDate" column="pay_date" />
+		<result property="refundInfo" column="refund_info" />
+		<result property="refundReason" column="refund_reason" />
+		<result property="payNo" column="pay_no" />
+		<result property="agentid" column="agentid" />
+		<result property="cityid" column="cityid" />
+		<result property="cityName" column="city_name" />
+		<result property="portid" column="portid" />
+		<result property="portName" column="port_name" />
+		<result property="lineNo" column="line_no" />
+		<result property="courseid" column="courseid" />
+		<result property="courseName" column="course_name" />
+		<result property="downPortid" column="down_portid" />
+		<result property="downPortName" column="down_port_name" />
+		<result property="orderSys1" column="order_sys1" />
+		<result property="orderSys2" column="order_sys2" />
+	</resultMap>
+	
+	<!-- 定义可重用的SQL代码段，可以包含在其他语句中 -->
+	<sql id="base_column">
+		 id ,order_no ,liner_line_id ,name ,product_name ,member_id ,use_date ,price ,status ,contacts ,contact_mobile ,contact_remark ,create_date  ,update_date ,del_date ,del_by ,del_flag ,language_id ,pay_way ,pay_date ,refund_info ,refund_reason ,pay_no ,agentid ,cityid ,city_name ,portid ,port_name ,line_no ,courseid ,course_name ,down_portid ,down_port_name ,order_sys1 ,order_sys2 
+	</sql>
+	
+	<sql id="base_value_column">
+		 #{id},#{orderNo},#{linerLineId},#{name},#{productName},#{memberId},#{useDate},#{price},#{status},#{contacts},#{contactMobile},#{contactRemark},#{createDate},#{updateDate},#{delDate},#{delBy},#{delFlag},#{languageId},#{payWay},#{payDate},#{refundInfo},#{refundReason},#{payNo},#{agentid},#{cityid},#{cityName},#{portid},#{portName},#{lineNo},#{courseid},#{courseName},#{downPortid},#{downPortName},#{orderSys1},#{orderSys2}
+	</sql>
+	
+	<!-- 设置语句 -->
+	<sql id="set_column">
+		<if test="id != null ">
+			id = #{id,jdbcType=INTEGER},
+		</if>
+		<if test="orderNo != null ">
+			order_no = #{orderNo,jdbcType=VARCHAR},
+		</if>
+		<if test="linerLineId != null ">
+			liner_line_id = #{linerLineId,jdbcType=INTEGER},
+		</if>
+		<if test="name != null ">
+			name = #{name,jdbcType=VARCHAR},
+		</if>
+		<if test="productName != null ">
+			product_name = #{productName,jdbcType=VARCHAR},
+		</if>
+		<if test="memberId != null ">
+			member_id = #{memberId,jdbcType=INTEGER},
+		</if>
+		<if test="useDate != null ">
+			use_date = #{useDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="price != null ">
+			price = #{price,jdbcType=DOUBLE},
+		</if>
+		<if test="status != null ">
+			status = #{status,jdbcType=INTEGER},
+		</if>
+		<if test="contacts != null ">
+			contacts = #{contacts,jdbcType=VARCHAR},
+		</if>
+		<if test="contactMobile != null ">
+			contact_mobile = #{contactMobile,jdbcType=VARCHAR},
+		</if>
+		<if test="contactRemark != null ">
+			contact_remark = #{contactRemark,jdbcType=VARCHAR},
+		</if>
+		<if test="createDate != null ">
+			create_date = #{createDate,jdbcType=TIMESTAMP},
+		</if>
+		
+		<if test="updateDate != null ">
+			update_date = #{updateDate,jdbcType=TIMESTAMP},
+		</if>
+	
+		<if test="delDate != null ">
+			del_date = #{delDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="delBy != null ">
+			del_by = #{delBy,jdbcType=VARCHAR},
+		</if>
+		<if test="delFlag != null ">
+			del_flag = #{delFlag,jdbcType=INTEGER},
+		</if>
+		<if test="languageId != null ">
+			language_id = #{languageId,jdbcType=INTEGER},
+		</if>
+		<if test="payWay != null ">
+			pay_way = #{payWay,jdbcType=INTEGER},
+		</if>
+		<if test="payDate != null ">
+			pay_date = #{payDate,jdbcType=TIMESTAMP},
+		</if>
+		<if test="refundInfo != null ">
+			refund_info = #{refundInfo,jdbcType=VARCHAR},
+		</if>
+		<if test="refundReason != null ">
+			refund_reason = #{refundReason,jdbcType=VARCHAR},
+		</if>
+		<if test="payNo != null ">
+			pay_no = #{payNo,jdbcType=VARCHAR},
+		</if>
+		<if test="agentid != null ">
+			agentid = #{agentid,jdbcType=INTEGER},
+		</if>
+		<if test="cityid != null ">
+			cityid = #{cityid,jdbcType=INTEGER},
+		</if>
+		<if test="cityName != null ">
+			city_name = #{cityName,jdbcType=VARCHAR},
+		</if>
+		<if test="portid != null ">
+			portid = #{portid,jdbcType=INTEGER},
+		</if>
+		<if test="portName != null ">
+			port_name = #{portName,jdbcType=VARCHAR},
+		</if>
+		<if test="lineNo != null ">
+			line_no = #{lineNo,jdbcType=VARCHAR},
+		</if>
+		<if test="courseid != null ">
+			courseid = #{courseid,jdbcType=INTEGER},
+		</if>
+		<if test="courseName != null ">
+			course_name = #{courseName,jdbcType=VARCHAR},
+		</if>
+		<if test="downPortid != null ">
+			down_portid = #{downPortid,jdbcType=INTEGER},
+		</if>
+		<if test="downPortName != null ">
+			down_port_name = #{downPortName,jdbcType=VARCHAR},
+		</if>
+		<if test="orderSys1 != null ">
+			order_sys1 = #{orderSys1,jdbcType=INTEGER},
+		</if>
+		<if test="orderSys2 != null ">
+			order_sys2 = #{orderSys2,jdbcType=INTEGER},
+		</if>
+		</sql>
+		
+		
+		
+		<!-- 修改 -->
+	<update id="updateObject" parameterType="com.jeeplus.modules.meiguotong.entity.orderliner.OrderLiner">
+		UPDATE	ORDER_LINER
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+		
+	</update>
+
+
+		<!-- 修改 -->
+	<update id="updateObject2" parameterType="com.jeeplus.modules.meiguotong.entity.orderliner.OrderLiner">
+		UPDATE	ORDER_LINER
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+
+		<if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+		<if test="orderSys2 != null ">
+			and order_sys2 = #{orderSys2,jdbcType=INTEGER}
+		</if>
+
+	</update>
+	
+			
+		 <!-- 分页查询-->
+   <select id="findListByPage" resultMap="OrderLinerResultMap">
+		SELECT
+		<include refid="base_column" />
+		FROM ORDER_LINER
+		where  1=1
+					
+	     <if test="order != null and order != ''">
+		order by  ${order}
+	     </if>
+	     
+		<if test="pageNumber != null  and pageSize !=null ">
+			limit  #{pageNumber,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+	     </if>
+	</select>
+	
+	<select id="findLinerDetailByOrderSys2" resultType="OrderLiner" >
+		SELECT 
+			<include refid="orderLinerColumns"/>
+		from ORDER_LINER a
+		<include refid="orderLinerJoins"/>
+		WHERE a.order_sys2= #{orderSys2}
+	</select>
+	
+</mapper>

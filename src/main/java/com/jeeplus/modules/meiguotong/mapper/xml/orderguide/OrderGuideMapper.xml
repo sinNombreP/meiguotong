@@ -1,0 +1,645 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.orderguide.OrderGuideMapper">
+    
+	<sql id="orderGuideColumns">
+		a.id AS "id",
+		a.status AS "status",
+		a.name AS "name",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.price AS "price",
+		a.guide_route_id AS "guideRouteId",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.type AS "type",
+		a.typeid AS "typeid",
+		a.contacts_name AS "contactsName",
+		a.contacts_mobile AS "contactsMobile",
+		a.remark AS "remark",
+		a.order_no AS "orderNo",
+		a.after_no AS "afterNo",
+		a.adult_num AS "adultNum",
+		a.child_num AS "childNum",
+		a.end_city AS "endCity",
+		a.member_id AS "memberId",
+		a.pay_way AS "payWay",
+		a.pay_date AS "payDate",
+		a.refund_info AS "refundInfo",
+		a.refund_reason AS "refundReason",
+		a.refund_price  AS "refundPrice",
+		a.pay_no AS "payNo",
+		a.language_id AS "languageid",
+		a.order_sys1 AS "orderSys1",
+		a.order_sys2 AS "orderSys2",
+		a.scenice as "scenice",
+		a.guide_tag as "guideTag",
+		a.price2 as "price2",
+		a.day as "day"
+	
+	</sql>
+	<!-- 主订单表数据 -->
+	<sql id="orderSysColumns">
+		os.id AS "id",
+		os.type AS "type",
+		os.fatherid AS "fatherid",
+		os.orderid AS "orderid"
+	</sql>
+	<sql id="orderGuideJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderGuide" >
+		SELECT 
+			<include refid="orderGuideColumns"/>
+		FROM order_guide a
+		<include refid="orderGuideJoins"/>
+		WHERE a.id = #{id}
+	</select>
+		<select id="getGuide" resultType="OrderGuide" >
+		SELECT 
+			<include refid="orderGuideColumns"/>
+		FROM order_guide a
+		WHERE a.id = #{id} and a.type=#{type}
+	</select>
+	<select id="findListwww" resultType="OrderGuide" >
+		SELECT 
+		    os.id AS "orderSysid",
+			os.type AS "orderType",
+			case when os.type=1 then oc1.order_no
+			     when os.type=2 then oc2.order_no
+			     when os.type=3 then oc3.order_no
+			     when os.type=4 then oro1.orderNo
+			     when os.type=5 then oro2.orderNo
+			     when os.type=6 then ol.order_no
+			     when os.type=7 then oss.order_no
+			     when os.type=10 then oi.order_no
+			     when os.type=11 then otb.order_no
+			      end AS "orderNo",       <!-- 订单号 -->
+ 		    case  when os.type=1 then oc1.remark
+		          when os.type=2 then oc2.end_address
+		          when os.type=3 then oc3.end_address
+		          when os.type=4 then r1.infor
+		          when os.type=5 then r2.infor
+		          when os.type=6 then ol.product_name
+		          when os.type=7 then oss.product_name
+		          when os.type=10 then ins.name
+		          when os.type=11 then otb.address
+		          end AS "productName",     <!-- 产品名称 -->
+		     case when os.type=1 then oc1.remark
+		          when os.type=2 then oc2.remark
+		          when os.type=3 then oc3.remark
+		          when os.type=4 then oro1.remark
+		          when os.type=5 then oro2.remark
+		          when os.type=6 then ol.contact_remark
+		          when os.type=7 then oss.contact_remark
+		          when os.type=10 then oi.contact_remark
+		          when os.type=11 then otb.remark
+		          end AS  "remark",         <!--  联系信息  -->
+             case when os.type=1 and og.type=1  then og.memberid
+                  when os.type=10 and og.type=4 then og.memberid
+                  when os.type=11 and og.type=5 then og.memberid
+                  end AS "guideid",          <!--  导游ID -->
+             case when os.type=1 then oc1.member_id
+                  when os.type=2 then oc2.member_id
+                  when os.type=3 then oc3.member_id
+                  when os.type=4 then oro1.memberid
+                  when os.type=5 then oro2.memberid
+                  when os.type=6 then ol.member_id
+                  when os.type=7 then oss.member_id
+                  when os.type=10 then oi.member_id
+                  when os.type=11 then otb.member_id
+                  end AS "orderMemberId",    <!--  下单人ID -->
+             case when os.type=1 then oc1.create_date
+                  when os.type=2 then oc2.create_date
+                  when os.type=3 then oc3.create_date
+                  when os.type=4 then oro1.create_date
+                  when os.type=5 then oro2.create_date
+                  when os.type=6 then ol.create_date
+                  when os.type=7 then oss.create_date
+                  when os.type=10 then oi.create_date
+                  when os.type=11 then otb.create_date
+                  end AS "orderCreateDate",  <!--  下单时间 -->
+            case  when os.type=1 then oc1.use_date 
+                  when os.type=2 then oc2.use_date   
+                  when os.type=3 then oc3.use_date
+                  when os.type=4 then oro1.use_date
+                  when os.type=5 then oro2.use_date
+                  when os.type=6 then ol.use_date
+                  when os.type=7 then oss.use_date
+                  when os.type=10 then oi.use_date
+                  when os.type=11 then otb.use_date
+                  end AS "useDate",       <!--     使用时间 -->
+            case  when os.type=1 then oc1.price
+                  when os.type=2 then oc2.price
+                  when os.type=4 then oro1.price
+                  when os.type=5 then oro2.price
+                  when os.type=6 then ol.price
+                  when os.type=7 then oss.price
+                  when os.type=10 then oi.price
+                  when os.type=11 then otb.price
+                  end AS "orderPrice",   <!--      订单金额 -->
+            case  when os.type=1 then oc1.status
+                  when os.type=2 then oc2.status
+                  when os.type=3 then oc3.status
+                  when os.type=4 then oro1.status
+                  when os.type=5 then oro2.status
+                  when os.type=6 then ol.status
+                  when os.type=7 then oss.status
+                  when os.type=10 then oi.status
+                  when os.type=11 then otb.status
+                  end AS "orderStatus"  <!--   订单状态	 -->	
+		FROM order_sys os 
+		<!-- 导游 -->
+		left join order_guide og on os.orderid=og.id and os.type=12
+		<!-- 包车租车 -->
+		left join order_car oc1 on os.orderid=oc1.id and os.type=1 and oc1.type=1
+		left join car c on oc1.id=c.id and oc1.type=1
+		<!-- 短程接送 -->
+		left join order_car oc2 on os.orderid=oc2.id and os.type=2 and oc2.type=2
+		<!-- 接送机 -->
+		left join order_car oc3 on os.orderid=oc3.id and os.type=3 and oc3.type=3
+		<!-- 常规路线 -->
+		left join order_route oro1 on os.orderid=oro1.id and os.type=4 and oro1.typeid=1 and oro1.status!=8
+		left join route r1 on oro1.routeid=r1.id and r1.type=1
+		<!-- 当地参团 -->
+         left join order_route oro2 on os.orderid=oro2.id and os.type=5 and oro2.typeid=2
+         left join route r2 on oro2.routeid=r2.id and r2.type=2
+         <!-- 邮轮 -->
+         left join order_liner ol on os.orderid=ol.id and os.type=6
+        <!--  景点 -->
+        left join order_scenic_spot oss on os.orderid=oss.id and os.type=7
+        <!-- 保险 -->
+        left join order_insurance oi on os.orderid=oi.id and os.type=10
+        left join insurance ins on oi.insuranceid=ins.id 
+       <!--  旅游定制 -->
+       left join order_travel_business  otb on os.orderid=otb.id and os.type=11
+		<where>
+	    os.fatherid !=0 and 
+	    og.status =1 or og.status =2 or og.status =3 or og.status =4 or og.status =5 or og.status =6 or
+	    oc1.status =1 or oc1.status =2 or oc1.status =3 or oc1.status =4 or oc1.status =5 or oc1.status =6 or
+	    oc2.status =1 or oc2.status =2 or oc2.status =3 or oc2.status =4 or oc2.status =5 or oc2.status =6 or
+	    oc3.status =1 or oc3.status =2 or oc3.status =3 or oc3.status =4 or oc3.status =5 or oc3.status =6 or
+	    oro1.status =1 or oro1.status =2 or oro1.status =3 or oro1.status =4 or oro1.status =5 or oro1.status =6 or
+	    oro2.status =1 or oro2.status =2 or oro2.status =3 or oro2.status =4 or oro2.status =5 or oro2.status =6  or
+	    ol.status =1 or ol.status =2 or ol.status =3 or ol.status =4 or ol.status =5 or ol.status =6 or
+	    oss.status =1 or oss.status =2 or oss.status =3 or oss.status =4 or oss.status =5 or oss.status =6 or
+	    oi.status =1 or oi.status =2 or oi.status =3 or oi.status =4 or oi.status =5 or oi.status =6 or
+	    otb.status =1 or otb.status =2 or otb.status =3 or otb.status =4 or otb.status =5 or otb.status =6
+			${dataScope}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 当地玩家售后订单列表 -->
+		<select id="AfterSale" resultType="OrderGuide" >
+		SELECT 
+			<include refid="orderGuideColumns"/>,
+			 m.mobile AS "mobile",
+			 if(m.type=1,mi.nick_name,e.company_name) AS "nickName",
+			 mi2.nick_name as "guideNickName",
+			 m.type as "memberType"
+		FROM order_guide a
+		left join member m on m.id=a.member_id
+		left join member_information mi on a.member_id =mi.memberid
+		left join guide g on a.typeid=g.id
+		left join member_information mi2 on g.memberid=mi2.memberid
+		left join member_travel e on a.member_id = e.memberid
+		<include refid="orderGuideJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and (a.status =7 or a.status=8 or
+	                      a.status =9)
+			${dataScope}
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND (a.order_no LIKE concat('%',#{searchContent},'%') 
+				OR a.contacts_name LIKE concat('%',#{searchContent},'%') 
+				OR a.name LIKE concat('%',#{searchContent},'%'))
+			</if>
+			<if test="memberType != null and memberType!=''">
+				AND m.type = #{memberType}
+			</if>
+			<if test="nickName != null and nickName!=''">
+				AND if(m.type=1,mi.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+			</if>
+			<if test="typeid != null and typeid!=''">
+				AND a.typeid=#{typeid}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findAllList" resultType="OrderGuide" >
+		SELECT 
+			<include refid="orderGuideColumns"/>
+		FROM order_guide a
+		<include refid="orderGuideJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+		<select id="findList" resultType="OrderGuide" >
+		SELECT 
+			<include refid="orderGuideColumns"/>,
+			 m.mobile AS "mobile",
+			if(m.type=1,mi.nick_name,e.company_name) AS "nickName",
+			 mi2.nick_name as "guideNickName",
+			 m.type as "memberType"
+		FROM order_guide a
+		left join member m on m.id=a.member_id
+		left join member_information mi on a.member_id =mi.memberid
+		left join guide g on a.typeid=g.id
+		left join member_information mi2 on g.memberid=mi2.memberid
+		left join member_travel e on a.member_id = e.memberid
+		<include refid="orderGuideJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and a.status !=7 and a.status!=8 and
+	                      a.status !=9
+			${dataScope}
+			
+			<if test="dataFlag==1">
+				AND to_days(a.create_date)= to_days(now())
+			</if>
+			<if test="dataFlag==2">
+				AND to_days(a.begin_date)= to_days(now())
+			</if>
+			<if test="status != null">
+				AND a.status = #{status}
+			</if>
+			<if test="searchContent != null and searchContent != ''">
+				AND (a.order_no LIKE concat('%',#{searchContent},'%')
+				OR a.contacts_name LIKE concat('%',#{searchContent},'%')
+				OR a.name LIKE concat('%',#{searchContent},'%'))
+			</if>
+			<if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+				AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(a.begin_date, '%Y-%m-%d')
+				and DATE_FORMAT(a.begin_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+			</if>
+			<if test="memberType != null and memberType!=''">
+				AND m.type = #{memberType}
+			</if>
+			<if test="nickName != null and nickName!=''">
+				AND if(m.type=1,mi.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+			</if>
+			<if test="typeid != null and typeid!=''">
+				AND a.typeid=#{typeid}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 获取其他订单信息 -->
+	<select id="getOtherOrder">
+	select 
+	*
+	from order_guide a
+	left join order_sys os on a.id=os.orderid
+	
+	</select>
+	<!-- 当地玩家订单详情 -->
+	<select id="findOrderGuide" resultType="OrderGuide">
+	 select 
+	 <include refid="orderGuideColumns"/>,
+	
+	 g.real_name AS "realName",
+	 g.sex AS "sex",
+	 (mi.create_date-mi.birthday) AS "age",
+	 g.address AS  "area",
+	 g.deltails AS "deltails",
+	 m.mobile AS "mobile",
+	 mi.nick_name AS "nickName",
+	 os.remark as "orderMark"
+	FROM order_guide a
+		left join guide g on a.typeid =g.id
+		left join member m on m.id=a.member_id
+		left join member_information mi on a.member_id =mi.memberid
+		left join order_sys os on a.order_sys1=os.id
+	where a.id=#{id} 
+	</select>
+	<insert id="insert">
+		INSERT INTO order_guide(
+			status,
+			name,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			price,
+			guide_route_id,
+			begin_date,
+			end_date,
+			type,
+			typeid,
+			contacts_name,
+			contacts_mobile,
+			remark,
+			order_no,
+			after_no,
+			adult_num,
+			child_num,
+			end_city,
+			member_id,
+			pay_way,
+			pay_date,
+			refund_info,
+			refund_reason,
+			refund_price,
+			pay_no,
+			language_id,
+			order_sys1,
+			order_sys2,
+			scenice,
+			guide_tag,
+			price2,
+			day
+		) VALUES (
+			#{status},
+			#{name},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{price},
+			#{guideRouteId},
+			#{beginDate},
+			#{endDate},
+			#{type},
+			#{typeid},
+			#{contactsName},
+			#{contactsMobile},
+			#{remark},
+			#{orderNo},
+			#{afterNo},
+			#{adultNum},
+			#{childNum},
+			#{endCity},
+			#{memberId},
+			#{payWay},
+			#{payDate},
+			#{refundInfo},
+			#{refundReason},
+			#{refundPrice},
+			#{payNo},
+			#{languageid},
+			#{orderSys1},
+			#{orderSys2},
+			#{scenice},
+			#{guideTag},
+			#{price2},
+			#{day}
+		)
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+			select LAST_INSERT_ID() as id
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE order_guide SET 	
+			status = #{status},
+			name = #{name},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			price = #{price},
+			guide_route_id = #{guideRouteId},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			type=#{type},
+			typeid=#{typeid},
+			contacts_name=#{contactsName},
+			contacts_mobile=#{contactsMobile},
+			remark=#{remark},
+			order_no=#{orderNo},
+			after_no=#{afterNo},
+			adult_num=#{adultNum},
+			child_num=#{childNum},
+			end_city=#{endCity},
+			member_id=#{memberId},
+			pay_way = #{payWay},
+			pay_date = #{payDate},
+			refund_info = #{refundInfo},
+			refund_reason = #{refundReason},
+			refund_price=#{refundPrice},
+			pay_no=#{payNo},
+			language_id=#{languageid},
+			order_sys1=#{orderSys1},
+			order_sys2=#{orderSys2}
+		WHERE id = #{id}
+	</update>
+	<!-- 更改状态 -->
+	<update id="status">
+	update order_guide SET
+	status = #{status},
+	update_date = #{updateDate},
+	update_by = #{updateBy.id}
+	WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_guide
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_guide SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderGuide" statementType="STATEMENT">
+		select * FROM order_guide  where ${propertyName} = '${value}'
+	</select>
+	<!-- 查找定制导游信息 -->
+	<select id="findGuideByOrderSys" resultType="MemberInformation" >
+		select m.nick_name as "nickName",m.sex,YEAR(now())-YEAR(m.birthday) as "age",
+		c.title as "countryName",ci.city_name as "cityName"
+		from order_guide a 
+		left join guide g on a.typeid=g.id
+		left join member_information m on g.memberid=m.memberid
+		left join country c on m.countryid=c.id 
+		left join com_city ci on m.cityid=ci.id
+		where a.order_sys1=#{orderSys1}
+	</select>
+	
+	<!-- 前端查询导游信息 -->
+	<select id="findGuideDetailByOrderSys2" resultType="OrderGuide" >
+		SELECT 
+			<include refid="orderGuideColumns"/>,m.nick_name as "guideNickName",
+			m.sex,YEAR(now())-YEAR(m.birthday) as "age",g.introduction,
+			c.title as "countryName",cc.city_name as "cityName"
+		FROM order_guide a
+		<include refid="orderGuideJoins"/>
+		left join guide g on a.typeid=g.id 
+		left join member_information m on g.memberid=m.memberid
+		left join country c on m.countryid=c.id
+		left join com_city cc on m.cityid=cc.id 
+		WHERE a.order_sys2=#{orderSys2}
+	</select>
+	
+	<sql id="set_column">
+		<if test="orderSys1 != null ">
+			order_sys1 = #{orderSys1},
+		</if>
+		<if test="orderSys2 != null ">
+			order_sys2 = #{orderSys2},
+		</if>
+		<if test="status != null ">
+			status = #{status},
+		</if>
+		<if test="name != null ">
+			name = #{name},
+		</if>
+		<if test="updateDate != null ">
+			update_date = #{updateDate},
+		</if>
+		<if test="updateBy != null ">
+			update_by = #{updateBy.id},
+		</if>
+		<if test="delDate != null ">
+			del_date = #{delDate},
+		</if>
+		<if test="delBy != null ">
+			del_by = #{delBy},
+		</if>
+		<if test="price != null ">
+			price = #{price},
+		</if>
+		<if test="guideRouteId != null ">
+			guide_route_id = #{guideRouteId},
+		</if>
+		<if test="beginDate != null ">
+			begin_date = #{beginDate},
+		</if>
+		<if test="endDate != null ">
+			end_date = #{endDate},
+		</if>
+		<if test="type != null ">
+			type=#{type},
+		</if>
+		<if test="typeid != null ">
+			typeid=#{typeid},
+		</if>
+		<if test="contactsName != null ">
+			contacts_name=#{contactsName},
+		</if>
+		<if test="contactsMobile != null ">
+			contacts_mobile=#{contactsMobile},
+		</if>
+		<if test="remark != null ">
+			remark=#{remark},
+		</if>
+		<if test="orderNo != null ">
+			order_no=#{orderNo},
+		</if>
+		<if test="afterNo != null ">
+			after_no=#{afterNo},
+		</if>
+		<if test="adultNum != null ">
+			adult_num=#{adultNum},
+		</if>
+		<if test="childNum != null ">
+			child_num=#{childNum},
+		</if>
+		<if test="endCity != null ">
+			end_city=#{endCity},
+		</if>
+		<if test="memberId != null ">
+			member_id=#{memberId},
+		</if>
+		<if test="payWay != null ">
+			pay_way = #{payWay},
+		</if>
+		<if test="payDate != null ">
+			pay_date = #{payDate},
+		</if>
+		<if test="refundInfo != null ">
+			refund_info = #{refundInfo},
+		</if>
+		<if test="refundReason != null ">
+			refund_reason = #{refundReason},
+		</if>
+		<if test="refundPrice != null ">
+			refund_price=#{refundPrice},
+		</if>
+		<if test="payNo != null ">
+			pay_no=#{payNo},
+		</if>
+		<if test="languageid != null ">
+			language_id=#{languageid}
+		</if>
+	</sql>
+	
+	<update id="updateObject">
+		UPDATE order_guide 
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+	</update>
+	<update id="updateObject2">
+		UPDATE order_guide 
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+		<if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+		<if test="orderSys2 != null ">
+			and order_sys2 = #{orderSys2,jdbcType=INTEGER}
+		</if>
+	</update>
+	
+</mapper>

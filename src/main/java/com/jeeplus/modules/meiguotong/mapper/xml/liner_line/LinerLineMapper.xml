@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.liner_line.LinerLineMapper">
+    
+	<sql id="linerLineColumns">
+		a.id AS "id",
+		a.liner_id AS "linerId",
+		a.line_no AS "lineNo",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.img_url AS "imgUrl",
+		a.up_port AS "upPort",
+		a.route AS "route",
+		a.start_city AS "startCity",
+		a.start_city AS "cityid",
+		a.down_port AS "downPort",
+		a.tag_id AS "tagId",
+		a.travel_day AS "travelDay",
+		a.travel_night AS "travelNight",
+		a.advance_num AS "advanceNum",
+		a.price AS "price",
+		a.name AS "name",
+		a.infor AS "infor",
+		a.path AS "path",
+		a.recommend AS "recommend",
+		a.content AS "content",
+		a.status AS "status",
+		a.look_num AS "lookNum",
+		a.collection_num AS "collectionNum",
+		a.comment_num AS "commentNum",
+		a.finish_num AS "finishNum",
+		a.star AS "star",
+		a.agentid as "agentid",
+		liner.name as "lineName",
+		lp.name AS "upPortName",
+		lpp.name AS "downPortName",
+		cc.city_name AS "startCityName",
+		cc.city_name AS "cityName",
+		lc.id as "linerCompanyId",
+		lc.name as "linerCompanyName",
+		lco.name as "routeName"
+	</sql>
+	
+	<sql id="linerLineJoins">
+		left join liner liner on liner.id=a.liner_id
+		left join liner_port lp on lp.id=a.up_port
+		left join liner_port lpp on lpp.id=a.down_port
+		left join com_city cc on cc.id=a.start_city
+		left join liner_company lc on lc.id=liner.company
+		left join liner_course lco on a.route=lco.id
+	</sql>
+	<!-- 获取游轮出发港口 -->
+    <select id="getStartCity" resultType="ComCity" >
+		SELECT 
+			a.start_city as "startCity",
+			cc.city_name as "cityName"
+		FROM liner_line a
+		left join com_city cc on cc.id=a.start_city
+		WHERE a.language_id = #{languageId}
+		GROUP BY a.start_city
+	</select>
+	<!-- 接口获取游轮路线信息 -->
+	<select id="getLinerline" resultType="LinerLine" >
+		SELECT 
+			a.line_no AS "lineNo",
+			a.liner_id AS "linerId",
+			a.img_url AS "imgUrl",
+			a.up_port AS "upPort",
+			lp.name AS "upPortName",
+			lc.name AS "route",
+			a.start_city AS "startCity",
+			cc.city_name AS "startCityName",
+			a.down_port AS "downPort",
+			lp2.name AS "downPortName",
+			a.recommend AS "recommend",
+			a.comment_num AS "commentNum",
+			a.star AS "star",
+			ifnull((SELECT  group_concat(b.content) FROM com_tag b 
+				WHERE FIND_IN_SET(b.id,a.tag_id) > 0 ),"") AS "tagContent",
+			a.price AS "price",
+			a.name AS "name",
+			a.infor AS "infor",
+			a.travel_day AS "travelDay",
+			a.content AS "content",
+			if((select count(pc.id) from product_collection pc where pc.type=4 and 
+				pc.typeid=a.id and pc.memberid=#{memberid})>0,1,2) as "ifcollection",
+			su.company_name as "companyName",
+			(select GROUP_CONCAT(ss.name) from liner_trip lt
+				LEFT JOIN scenic_spot ss on ss.id=lt.scenic_spot_id
+				where lt.liner_line_id=a.id ORDER BY lt.day_count) as "scenicContent"
+		FROM liner_line a
+		left join liner_port lp on lp.id=a.up_port
+		left join liner_port lp2 on lp2.id=a.down_port
+		left join com_city cc on cc.id=a.start_city
+		left join liner liner on liner.id=a.liner_id
+		left join sys_user su on su.agentid=liner.agentid and su.fatherid=0
+		left join liner_course lc on lc.id=a.route
+		WHERE a.id = #{id}
+	</select>
+	<select id="get" resultType="LinerLine" >
+		SELECT 
+			<include refid="linerLineColumns"/>
+		FROM liner_line a
+		<include refid="linerLineJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="LinerLine" >
+		SELECT 
+			<include refid="linerLineColumns"/>, 
+			ifnull((SELECT  group_concat(ct.content) FROM com_tag ct 
+				WHERE FIND_IN_SET(ct.id,a.tag_id) > 0 ),"") as "tagContent"
+		FROM liner_line a
+		<include refid="linerLineJoins"/>
+		<where>
+			a.del_flag = 0
+			${dataScope}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+				<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status =#{status}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 邮轮搜索接口 -->
+	<select id="findCruiseList" resultType="LinerLine" >
+		SELECT 
+			a.type AS "type",
+			a.typeid AS "typeid",
+			a.name AS "name"
+		FROM (
+			(select 
+				liner.name as "name",
+				1 as "type",
+				liner.id as "typeid"
+			from liner liner
+			where liner.status=1 and liner.del_flag=0 and liner.language_id=#{languageId}
+			 and liner.name LIKE concat('%',#{name},'%')
+			 )
+			UNION ALL
+			(select 
+				cc.city_name as "name",
+				3 as "type",
+				cc.id as "typeid"
+			from com_city cc
+			where cc.status=1 and cc.del_flag=0 and cc.language_id=#{languageId}
+			 and cc.city_name LIKE concat('%',#{name},'%')
+			 )
+			UNION ALL
+			(
+			select 
+				lc.name as "name",
+				2 as "type",
+				lc.id as "typeid"
+			from liner_course lc
+			where lc.status=1 and lc.del_flag=0 and lc.language_id=#{languageId}
+			 and lc.name LIKE concat('%',#{name},'%')
+			)
+		) a
+	</select>
+		
+<!-- 邮轮筛选接口 -->
+		<select id="findCruiseScreenList" resultType="LinerLine" >
+		SELECT 
+			a.id AS "id",
+			a.img_url AS "imgUrl",
+			a.name AS "name",
+			a.start_city AS "startCity",
+			cc.city_name AS "startCityName",
+			a.price AS "price",
+			a.infor AS "infor",
+			lc.name AS "route",
+			a.comment_num AS "commentNum",
+			a.star AS "star",
+			ifnull((SELECT  group_concat(b.content) FROM com_tag b 
+				WHERE FIND_IN_SET(b.id,a.tag_id) > 0 ),"") AS "tagContent",
+			(SELECT start_date from liner_date 
+				where lineid=a.id and start_date>NOW() 
+				order by start_date limit 1) as "startDate"
+		FROM liner_line a
+		left join liner li on a.liner_id=li.id
+		left join com_city cc on cc.id=a.start_city
+		left join liner_course lc on lc.id=a.route
+		where
+		a.del_flag=0 and a.status=3 and a.language_id=#{languageId}
+		and EXISTS(SELECT start_date from liner_date 
+				where  lineid=a.id and start_date>NOW() 
+				)
+ 		<if test="startCity != null and startCity != ''">
+				and FIND_IN_SET(a.start_city,#{startCity})>0
+		</if>
+		<if test="portid != null and portid != ''">
+				and a.up_port=#{portid}
+		</if>
+		<if test="linerId != null and linerId != ''">
+				and a.liner_id=#{linerId}
+		</if>
+		<if test="route != null and route != ''">
+				and FIND_IN_SET(a.route,#{route})>0
+		</if>
+		<if test="travelDay != null and travelDay != ''">
+				AND FIND_IN_SET(if(a.travel_day>=15,15,a.travel_day),#{travelDay})>0
+		</if>
+		 <if test="dateList != null and dateList != ''">
+				 AND exists 
+				 (
+				 select id from liner_date where lineid=a.id 
+				 	and start_date in 
+					<foreach collection="dateList" item="date" index="index"
+	                	open="(" close=")" separator=",">
+	                	#{date}
+	            	</foreach>
+            	 )
+			</if>
+			<if test="attrList != null and attrList != ''">
+				and 
+				(<foreach item="attr" index="index" collection="attrList" separator="or">
+	                find_in_set(#{attr},a.tag_id)>0
+				</foreach>)
+			</if>
+			<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<when test="orderByType !=null and orderByType != '' and orderByType==1">
+				ORDER BY a.finish_num desc
+			</when>
+			<when test="orderByType !=null and orderByType != '' and orderByType==2">
+				
+				order by a.price desc
+			</when>
+			<when test="orderByType !=null and orderByType != '' and orderByType==3">
+				
+				order by a.price
+			</when>
+			<when test="orderByType !=null and orderByType != '' and orderByType==4">
+				ORDER BY a.star desc
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+     	
+	<select id="findAllList" resultType="LinerLine" >
+		SELECT 
+			<include refid="linerLineColumns"/>
+		FROM liner_line a
+		<include refid="linerLineJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO liner_line(
+			liner_id,
+			line_no,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			img_url,
+			up_port,
+			route,
+			start_city,
+			down_port,
+			tag_id,
+			travel_day,
+			travel_night,
+			advance_num,
+			price,
+			name,
+			infor,
+			path,
+			recommend,
+			content,
+			status,
+			look_num,
+			collection_num,
+			comment_num,
+			finish_num,
+			star,
+			agentid
+		) VALUES (
+			#{linerId},
+			#{lineNo},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{imgUrl},
+			#{upPort},
+			#{route},
+			#{startCity},
+			#{downPort},
+			#{tagId},
+			#{travelDay},
+			#{travelNight},
+			#{advanceNum},
+			#{price},
+			#{name},
+			#{infor},
+			#{path},
+			#{recommend},
+			#{content},
+			#{status},
+			0,
+			0,
+			0,
+			0,
+			5,
+			#{agentid}
+		)
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+			select LAST_INSERT_ID() as id
+		</selectKey> 
+	</insert>
+	
+	<update id="update">
+		UPDATE liner_line SET 	
+			liner_id = #{linerId},
+			line_no = #{lineNo},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			img_url = #{imgUrl},
+			up_port = #{upPort},
+			route = #{route},
+			start_city = #{startCity},
+			down_port = #{downPort},
+			tag_id = #{tagId},
+			travel_day = #{travelDay},
+			travel_night=#{travelNight},
+			advance_num = #{advanceNum},
+			price = #{price},
+			name = #{name},
+			infor = #{infor},
+			path = #{path},
+			recommend = #{recommend},
+			content = #{content},
+			status =#{status}
+		WHERE id = #{id}
+	</update>
+	
+	<!--修改游轮路线编号-->
+	<update id="updateLineNo">
+		UPDATE liner_line SET 	
+			line_no = #{lineNo}
+		WHERE id = #{id}
+	</update>
+	<!--修改状态-->
+	<update id="status">
+		UPDATE liner_line SET 	
+			status = #{status},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id}
+		WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM liner_line
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE liner_line SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="LinerLine" statementType="STATEMENT">
+		select * FROM liner_line  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<!--修改星级、评论数-->
+	<update id="changeCommnetNum">
+		UPDATE liner_line SET 	
+			star=(select truncate(sum(level)/count(id),1) from com_comment where type=6 and type_id=#{id}),
+			comment_num=comment_num+1
+		WHERE id = #{id}
+	</update>
+	
+	<!--修改查看数量-->
+	<update id="changeLookNum">
+		update liner_line set look_num=look_num+1 WHERE id=#{id}
+	</update>
+	
+	<!--修改收藏数量-->
+	<update id="changecollectionNum">
+		update liner_line set collection_num=collection_num+#{collectionNum} where id=#{id}
+	</update>
+</mapper>

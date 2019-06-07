@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="../../images/favicon.ico" />
+    <title>当地玩家</title>
+    <link rel="stylesheet" href="../../vendor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="../../css/reset.css" />
+    <link rel="stylesheet" href="../../css/iconfont/iconfont.css" />
+    <link rel="stylesheet" href="../../css/ez-slider.css" />
+    <link rel="stylesheet" href="../../css/ez-public.css" />
+    <link rel="stylesheet" href="../../css/ez-website.css" />
+    <link rel="stylesheet" type="text/css" href="../../css/E-publc.css">
+    <link rel="stylesheet" href="../../css/common.css" />
+</head>
+
+<body>
+
+    <div id="app" v-cloak>
+        <ez-header></ez-header>
+        <ez-container></ez-container>
+
+        <!--content-->
+        <!--<div class="container ez-container" style="height: 500px;background: #00a0e9 "></div>-->
+
+        <div class="banner banner-min">
+            <div class="banner-img">
+                <p></p>
+            </div>
+        </div>
+        <div class="content ez-travel-local">
+
+            <!--part17 当地玩家 start-->
+            <section class="col-md-12 ez-index-wrap ez-index-public ez-index-17">
+                <div class="ez-index-box col-lg-12 search-info-sty">
+                    <div class="search-info search-info-city">
+                        <div class=""><span>城市 </span> <i class="iconfont icon-dingwei"></i> 中国-广州</div>
+                        <div>
+                        <!-- 学校玩家
+                        <select class="form-control search-info-player">
+                            <option>全部</option>
+                        </select> -->
+                    </div> 
+                    </div>
+                    <div class="search-info search-info-age">
+                        <div class="search-info-left">年龄段</div>
+                        <div class="search-info-right">
+                            <ul>
+                                <li><input type="radio" v-model="guideAge" value="">不限</li>
+                                <li><input type="radio" v-model="guideAge" value="2000">00后</li>
+                                <li><input type="radio" v-model="guideAge" value="1990">90后</li>
+                                <li><input type="radio" v-model="guideAge" value="1980">80后</li>
+                                <li><input type="radio" v-model="guideAge" value="1970">70后以上</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="search-info search-info-sex">
+                        <div class="search-info-left">性别</div>
+                        <div class="search-info-right">
+                            <ul>
+                                <li><input type="radio" v-model="guideAge" value="">不限</li>
+                                <li><input type="radio" v-model="guideAge" value="1">男</li>
+                                <li><input type="radio" v-model="guideAge" value="2">女</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="search-info search-info-price">
+                        <div class="search-info-left">价格</div>
+                        <div class="search-info-right">
+                            <ul>
+                                <li><input type="number" v-model.trim="minPrice"> -</li>
+                                <li><input type="number" v-model.trim="maxPrice"></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="search-info search-info-goodat">
+                        <div class="search-info-left">擅长</div>
+                        <div class="search-info-right">
+                            <ul>
+                                <li><input type="radio" v-model="tagId" value="">不限</li>
+                                <li v-for="(tag, index) in comTagList" :key="index">
+                                    <input type="radio" v-model="tagId" :value="tag.tagid">{{tag.content}}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="">
+                    <div class="col-md-4 ez-hot-card style-list-con" v-for="(list, index) in guidList" :key="index" 
+                    @click.stop="goToInfo(list.id)">
+                        <div class="hot-card-img">
+                            <img :src="list.img | defImg">
+                            <div class="hot-card-logo">
+                                <img :src="list.photo | defPhoto">
+                            </div>
+                        </div>
+                        <div class="hot-card-text">
+                            <h4 class="text-center">{{list.realName}}</h4>
+                            <p class="content">{{list.introduction}}</p>
+                            <div>
+                                <span class="text-gray"><i class="iconfont icon-mark"></i>{{list.countryName}}·{{list.cityName}}</span>
+                                <div class="pull-right text-orange ez-price">{{currencySign}}{{list.price}}<span class="text-gray">天</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <nav class="text-center col-lg-12 col-md-12 col-sm-12" v-show="show">
+                        <ul class="pagination ez-navigation">
+                            <li @click.stop="pageChange(-1)">
+                                <a class="page-next" aria-label="Next" style="margin-right: 10px;">
+                                    <span aria-hidden="true">上一页 &gt;</span>
+                                </a>
+                            </li>
+                            <li v-show="current_page>5" @click.stop="jumpPage(1)"><a href="#">1</a></li>
+                            <li v-show="efont"><a>...</a></li>
+                            <li v-for="num in indexs" :class="{active:current_page==num}" @click.stop="jumpPage(num)"><a>{{num}}</a></li>
+                            <li v-show="ebehind"><a>...</a></li>
+                            <li v-show="current_page<pages-4" @click.stop="jumpPage(pages)"><a>{{pages}}</a></li>
+                            <li @click.stop="pageChange(1)">
+                                <a class="page-next" aria-label="Next" style="margin-left: 10px;">
+                                    <span aria-hidden="true">下一页 &gt;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+            </section>
+            <!--part17 当地玩家 end-->
+
+        </div>
+
+        <ez-footer></ez-footer>
+
+    </div>
+
+</body>
+
+</html>
+<script type="text/javascript" src="../../vendor/jquery/jQuery.js"></script>
+<script type="text/javascript" src="../../vendor/bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../vendor/raty/lib/jquery.raty.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="../../vendor/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript" src="../../vendor/calendar/calendar-k.js"></script>
+<script type="text/javascript" src="../../js/jqPaginator.js"></script>
+<script type="text/javascript" src="../../js/ez-public.js"></script>
+<script type="text/javascript" src="../../js/ez-page.js"></script>
+<script type="text/javascript" src="../../js/ez-slider.js"></script>
+<script type="text/javascript" src="../../js/import/layer/layer.js"></script>
+<script type="text/javascript" src="../../js/import/base.js"></script>
+<script type="text/javascript" src="../../js/import/vue.js"></script>
+<script type="text/javascript" src="../../js/import/common.js"></script>
+<script type="text/javascript" src="../../js/import/component.js"></script>
+<script type="text/javascript" src="../../js/import/config.js"></script>
+<script type="text/javascript" src="../../js/import/request.js"></script>
+<script type="text/javascript" src="../../js/import/md5.js"></script>
+<script>
+    const app = new Vue({
+        el: "#app",
+        data: {
+            srarchContent: localStorage.getItem("srarchContent"),   //搜索内容
+            cityid: "",     //城市ID
+            cityName: "",    //城市名称
+            guideAge: "",   //年龄
+            guideSex: "",   //性别
+            minPrice: "",  //最低价格
+            maxPrice: "",  //最高价格
+            tagId: "",  //擅长ID
+            comTagList: "",  //玩家擅长属性
+            guidList:[],  //导游列表
+            current_page: 1, //当前页
+            pages: 1, //总页数
+        },
+        computed: {
+
+        },
+        mounted() {
+            this.guideScreen();
+            this.getLAbleData();
+        },
+        watch:{
+            cityid:function(){
+                this.contentChange();
+            },
+            cityName:function(){
+                this.contentChange();
+            },
+            guideAge:function(){
+                this.contentChange();
+            },
+            guideSex:function(){
+                this.contentChange();
+            },
+            minPrice:function(){
+                this.contentChange();
+            },
+            maxPrice:function(){
+                this.contentChange();
+            },
+            tagId:function(){
+                this.contentChange();
+            },
+        },
+        methods: {
+            //跳转导游详情
+            goToInfo:function(guideId){
+                localStorage.removeItem("guideId");
+                localStorage.setItem("guideId",guideId);
+                location.href = "./H1-1-1.html";
+            },
+            //获取玩家擅长属性
+            getLAbleData: function () {
+                requestGet(getGuideLabelUrl, {
+                }, function (data) {
+                    app.comTagList = data.body.comTagList;
+                });
+            },
+            //搜索条件变化
+            contentChange:function(){
+                this.current_page = 1;
+                this.guideScreen();
+            },
+            //导游搜索
+            guideScreen: function () {
+                requestGet(guideScreenUrl, {
+                    pageNo: this.current_page,
+                    cityid: this.cityid,
+                    cityName: this.cityName,
+                    guideAge: this.guideAge,
+                    guideSex: this.guideSex,
+                    minPrice: this.minPrice,
+                    maxPrice: this.maxPrice,
+                    tagId: this.tagId,
+                }, data => {
+                    app.guidList = data.body.list;
+                    app.pages = data.body.totalPage;
+                })
+            },
+            //点击上一页 下一页
+            pageChange: function (index) {
+                index += this.current_page;
+                if (index < 1 || index > this.pages) {
+                    return;
+                }
+                this.current_page = index;
+                this.guideScreen();
+            },
+            //选择页数
+            jumpPage: function (id) {
+                if (id == this.current_page) {
+                    return;
+                }
+                this.current_page = id;
+                this.guideScreen();
+            },
+        },
+        computed: {
+            show: function () {
+                return this.pages && this.pages != 1
+            },
+            pstart: function () {
+                return this.current_page <= 1;
+            },
+            pend: function () {
+                return this.current_page >= this.pages;
+            },
+            efont: function () {
+                if (this.pages <= 7) return false;
+                return this.current_page > 5
+            },
+            ebehind: function () {
+                if (this.pages <= 7) return false;
+                var nowAy = this.indexs;
+                return nowAy[nowAy.length - 1] != this.pages;
+            },
+            indexs: function () {
+
+                var left = 1,
+                    right = this.pages,
+                    ar = [];
+                if (this.pages >= 7) {
+                    if (this.current_page > 5 && this.current_page < this.pages - 4) {
+                        left = Number(this.current_page) - 3;
+                        right = Number(this.current_page) + 3;
+                    } else {
+                        if (this.current_page <= 5) {
+                            left = 1;
+                            right = 7;
+                        } else {
+                            right = this.pages;
+
+                            left = this.pages - 6;
+                        }
+                    }
+                }
+                while (left <= right) {
+                    ar.push(left);
+                    left++;
+                }
+                return ar;
+            },
+        },
+    })
+</script>

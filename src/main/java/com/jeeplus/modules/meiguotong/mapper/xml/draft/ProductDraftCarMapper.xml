@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.draft.ProductDraftCarMapper">
+    
+	<sql id="productDraftCarColumns">
+		a.id AS "id",
+		a.carid AS "carid",
+		a.draftid AS "draftid"
+	</sql>
+	
+	<sql id="productDraftCarJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ProductDraftCar" >
+		SELECT 
+			<include refid="productDraftCarColumns"/>
+		FROM product_draft_car a
+		<include refid="productDraftCarJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ProductDraftCar" >
+		SELECT 
+			<include refid="productDraftCarColumns"/>
+		FROM product_draft_car a
+		<include refid="productDraftCarJoins"/>
+		<where>
+			
+			${dataScope}
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ProductDraftCar" >
+		SELECT 
+			<include refid="productDraftCarColumns"/>
+		FROM product_draft_car a
+		<include refid="productDraftCarJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO product_draft_car(
+			carid,
+			draftid
+		) VALUES (
+			#{carid},
+			#{draftid}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE product_draft_car SET 	
+			carid = #{carid},
+			draftid = #{draftid}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--根据草稿id物理删除-->
+	<update id="deleteByDraftId">
+		DELETE FROM product_draft_car
+		WHERE draftid = #{id}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM product_draft_car
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE product_draft_car SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ProductDraftCar" statementType="STATEMENT">
+		select * FROM product_draft_car  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

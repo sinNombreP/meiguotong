@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.sys.mapper.common.ComLoginLogMapper">
+    
+	<sql id="comLoginLogColumns">
+		a.id AS "id",
+		a.memberid AS "memberid",
+		a.login_date AS "loginDate",
+		a.login_ip AS "loginIp",
+		a.login_type AS "loginType",
+		a.login_way AS "loginWay",
+		a.source AS "source"
+	</sql>
+	
+	<sql id="comLoginLogJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="ComLoginLog" >
+		SELECT 
+			<include refid="comLoginLogColumns"/>
+		FROM com_login_log a
+		<include refid="comLoginLogJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="ComLoginLog" >
+		SELECT 
+			<include refid="comLoginLogColumns"/>
+		FROM com_login_log a
+		<include refid="comLoginLogJoins"/>
+		<where>
+			
+			${dataScope}
+			<if test="memberid != null and memberid != ''">
+				AND a.memberid LIKE 
+					<if test="dbName == 'oracle'">'%'||#{memberid}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{memberid}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{memberid},'%')</if>
+			</if>
+			<if test="beginLoginDate != null and endLoginDate != null and beginLoginDate != '' and endLoginDate != ''">
+				AND a.login_date BETWEEN #{beginLoginDate} AND #{endLoginDate}
+			</if>
+			<if test="loginIp != null and loginIp != ''">
+				AND a.login_ip LIKE 
+					<if test="dbName == 'oracle'">'%'||#{loginIp}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{loginIp}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{loginIp},'%')</if>
+			</if>
+			<if test="loginType != null and loginType != ''">
+				AND a.login_type = #{loginType}
+			</if>
+			<if test="loginWay != null and loginWay != ''">
+				AND a.login_way = #{loginWay}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="ComLoginLog" >
+		SELECT 
+			<include refid="comLoginLogColumns"/>
+		FROM com_login_log a
+		<include refid="comLoginLogJoins"/>
+		<where>
+			
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_login_log(
+			memberid,
+			login_date,
+			login_ip,
+			login_type,
+			login_way,
+			source
+		) VALUES (
+			#{memberid},
+			#{loginDate},
+			#{loginIp},
+			#{loginType},
+			#{loginWay},
+            #{source}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_login_log SET 	
+			memberid = #{memberid},
+			login_date = #{loginDate},
+			login_ip = #{loginIp},
+			login_type = #{loginType},
+			login_way = #{loginWay},
+			source=#{source}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_login_log
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_login_log SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComLoginLog" statementType="STATEMENT">
+		select * FROM com_login_log  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

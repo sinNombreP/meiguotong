@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.orderscenicspot.OrderScenicSpotMapper">
+    
+	<sql id="orderScenicSpotColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.secnic_spot_id AS "secnicSpotId",
+		a.order_no AS "orderNo",
+		a.product_name AS "productName",
+		a.member_id AS "memberId",
+		a.use_date AS "useDate",
+		a.price AS "price",
+		a.status AS "status",
+		a.contacts AS "contacts",
+		a.contact_mobile AS "contactMobile",
+		a.contact_remark AS "contactRemark",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.del_flag AS "delFlag",
+		a.language_id AS "languageId",
+		a.num AS "num",
+		a.pay_way AS "payWay",
+		a.pay_date AS "payDate",
+		a.refund_info AS "refundInfo",
+		a.refund_reason AS "refundReason",
+		a.adult_num AS "adultNum",
+		a.child_num AS "childNum",
+		a.end_city  AS "endCity",
+		a.pay_income AS "payIncome",
+		a.after_no AS "afterNo",
+		a.agentid AS "agentid",
+		a.start_date AS "startDate",
+		a.price2 AS "price2",
+		a.order_sys1 as "orderSys1",
+		a.order_sys1 as "orderSys2"
+	</sql>
+	
+	<sql id="orderScenicSpotJoins">
+		
+	</sql>
+	
+    
+	<select id="get" resultType="OrderScenicSpot" >
+		SELECT 
+			<include refid="orderScenicSpotColumns"/>,
+			m.mobile AS "mobile",
+			mi.nick_name AS "nickName",os.remark as "remark"	
+		FROM order_scenic_spot a
+		left join member m  on m.id=a.member_id
+		left join member_information mi  on mi.memberid=a.member_id
+		left join order_sys os on a.order_sys1=os.id
+		<include refid="orderScenicSpotJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="OrderScenicSpot" >
+		SELECT 
+			<include refid="orderScenicSpotColumns"/>,
+			sst.scenici_company AS "sceniciCompany",
+			s.company_name as 'companyName',
+			if(c.type=1,d.nick_name,e.company_name) AS "nickName",
+			c.type as "memberType"
+		FROM order_scenic_spot a
+		left join scenic_spot_ticket sst on a.secnic_spot_id=sst.id
+		left join sys_user s on a.agentid=s.agentid and s.fatherid=0
+		LEFT JOIN member c ON a.member_id = c.id
+		LEFT JOIN member_information d ON a.member_id = d.memberid
+		left join member_travel e on a.member_id = e.memberid
+		<include refid="orderScenicSpotJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and (a.status=1 or a.status=2 or
+			    a.status=3 or a.status=4 or
+			    a.status=5 or a.status=6)
+			${dataScope}
+			<if test="productName != null and productName != ''">
+				AND a.product_name LIKE concat('%',#{productName},'%')
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status =#{status}
+			</if>
+			<if test="dataFlag==1">
+				AND to_days(a.create_date)= to_days(now())
+			</if>
+			<if test="dataFlag==2">
+				AND to_days(a.start_date)= to_days(now())
+			</if>
+			<if test="agentid != null and agentid != ''">
+				AND a.agentid =#{agentid}
+			</if>
+			<if test="beginDate != null and beginDate!='' and endDate!=null and endDate!=''">
+				AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')>=DATE_FORMAT(a.start_date, '%Y-%m-%d')
+				and DATE_FORMAT(a.start_date, '%Y-%m-%d')>=DATE_FORMAT(#{beginDate}, '%Y-%m-%d')
+			</if>
+			<if test="memberType != null and memberType!=''">
+				AND c.type = #{memberType}
+			</if>
+			<if test="nickName != null and nickName!=''">
+				AND if(c.type=1,d.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 售后景点列表 -->
+	<select id="AfterSale" resultType="OrderScenicSpot" >
+		SELECT 
+			<include refid="orderScenicSpotColumns"/>,
+			sst.scenici_company AS "sceniciCompany",
+			s.company_name as 'companyName',
+			if(c.type=1,d.nick_name,e.company_name) AS "nickName",
+			c.type as "memberType"
+		FROM order_scenic_spot a
+		left join scenic_spot_ticket sst on a.secnic_spot_id=sst.id
+		left join sys_user s on a.agentid=s.agentid and s.fatherid=0
+		LEFT JOIN member c ON a.member_id = c.id
+		LEFT JOIN member_information d ON a.member_id = d.memberid
+		left join member_travel e on a.member_id = e.memberid
+		<include refid="orderScenicSpotJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			and (a.status=7 or a.status=8 or
+			    a.status=9)
+			${dataScope}
+			<if test="productName != null and productName != ''">
+				AND a.product_name LIKE concat('%',#{productName},'%')
+			</if>
+			<if test="status != null and status != ''">
+				AND a.status =#{status}
+			</if>
+			<if test="agentid != null and agentid != ''">
+				AND a.agentid =#{agentid}
+			</if>
+			<if test="memberType != null and memberType!=''">
+				AND c.type = #{memberType}
+			</if>
+			<if test="nickName != null and nickName!=''">
+				AND if(c.type=1,d.nick_name like concat('%',#{nickName},'%'),e.company_name like concat('%',#{nickName},'%'))
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findAllList" resultType="OrderScenicSpot" >
+		SELECT 
+			<include refid="orderScenicSpotColumns"/>
+		FROM order_scenic_spot a
+		<include refid="orderScenicSpotJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!-- 获取保险方案的信息 -->
+	<select id="getOrderInsurance" resultType="OrderScenicSpot">
+	 select
+	  <include refid="orderScenicSpotColumns"/>,
+	  ins.name AS "insuranceName",
+	  ins.price AS "insurancePrice"
+		FROM order_scenic_spot a
+		left join order_sys os on a.id=os.orderid
+		left join order_insurance oi on os.orderid=oi.id
+		left join insurance ins on oi.insuranceid=ins.id
+		where  a.del_flag=0 and oi.del_flag=0 and ins.del_flag=0
+		       and os.type=5
+	</select>
+	<insert id="insert">
+		INSERT INTO order_scenic_spot(
+			secnic_spot_id,
+			order_no,
+			name,
+			product_name,
+			member_id,
+			use_date,
+			price,
+			status,
+			contacts,
+			contact_mobile,
+			contact_remark,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			del_date,
+			del_by,
+			del_flag,
+			language_id,
+			num,
+			pay_way,
+			pay_date,
+			refund_info,
+			refund_reason,
+			adult_num,
+			child_num,
+			end_city,
+			pay_income,
+			after_no,
+			price2,
+			start_date
+		) VALUES (
+			#{secnicSpotId},
+			#{orderNo},
+			#{name},
+			#{productName},
+			#{memberId},
+			#{useDate},
+			#{price},
+			#{status},
+			#{contacts},
+			#{contactMobile},
+			#{contactRemark},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{delDate},
+			#{delBy},
+			#{delFlag},
+			#{languageId},
+			#{num},
+			#{payWay},
+			#{payDate},
+			#{refundInfo},
+			#{refundReason},
+			#{adultNum},
+			#{childNum},
+			#{endCity},
+			#{payIncome},
+			#{afterNo},
+			#{price2},
+			#{startDate}
+		)
+		<selectKey resultType="String" order="AFTER" keyProperty="id">
+			select LAST_INSERT_ID() as id
+		</selectKey>
+	</insert>
+	
+	<update id="update">
+		UPDATE order_scenic_spot SET 	
+			secnic_spot_id = #{secnicSpotId},
+			name = #{name},
+			order_no = #{orderNo},
+			product_name = #{productName},
+			member_id = #{memberId},
+			use_date = #{useDate},
+			price = #{price},
+			status = #{status},
+			contacts = #{contacts},
+			contact_mobile = #{contactMobile},
+			contact_remark = #{contactRemark},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			num = #{num},
+			pay_way = #{payWay},
+			pay_date = #{payDate},
+			refund_info = #{refundInfo},
+			refund_reason = #{refundReason},
+			start_date=#{startDate},
+			adult_num=#{adultNum},
+			child_num=#{childNum},
+			end_city=#{endCity},
+			pay_income=#{payIncome},
+			after_no=#{afterNo}
+		WHERE id = #{id}
+	</update>
+	<!-- 更改状态 -->
+	<update id="status">
+	UPDATE order_scenic_spot SET
+	status = #{status},
+	 update_date = #{updateDate}
+	 WHERE id = #{id}
+	</update>
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM order_scenic_spot
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE order_scenic_spot SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="OrderScenicSpot" statementType="STATEMENT">
+		select * FROM order_scenic_spot  where ${propertyName} = '${value}'
+	</select>
+	<sql id="set_column">
+		<if test="orderSys1 != null ">
+			order_sys1 = #{orderSys1} ,
+		</if>
+		<if test="orderSys2 != null ">
+			order_sys2 = #{orderSys2} ,
+		</if>
+		<if test="secnicSpotId != null ">
+			secnic_spot_id = #{secnicSpotId},
+		</if>
+		<if test="name != null ">
+			name = #{name},
+		</if>
+		<if test="orderNo != null ">
+			order_no = #{orderNo},
+		</if>
+		<if test="productName != null ">
+			product_name = #{productName},
+		</if>
+		<if test="memberId != null ">
+			member_id = #{memberId},
+		</if>
+		<if test="useDate != null ">
+			use_date = #{useDate},
+		</if>
+		<if test="price != null ">
+			price = #{price},
+		</if>
+		<if test="status != null ">
+			status = #{status},
+		</if>
+		<if test="contacts != null ">
+			contacts = #{contacts},
+		</if>
+		<if test="contactMobile != null ">
+			contact_mobile = #{contactMobile},
+		</if>
+		<if test="contactRemark != null ">
+			contact_remark = #{contactRemark},
+		</if>
+		<if test="updateDate != null ">
+			update_date = #{updateDate},
+		</if>
+		<if test="updateBy != null ">
+			update_by = #{updateBy.id},
+		</if>
+		<if test="languageId != null ">
+			language_id = #{languageId},
+		</if>
+		<if test="num != null ">
+			num = #{num},
+		</if>
+		<if test="payWay != null ">
+			pay_way = #{payWay},
+		</if>
+		<if test="payDate != null ">
+			pay_date = #{payDate},
+		</if>
+		<if test="refundInfo != null ">
+			refund_info = #{refundInfo},
+		</if>
+		<if test="refundReason != null ">
+			refund_reason = #{refundReason},
+		</if>
+		<if test="startDate != null ">
+			start_date=#{startDate},
+		</if>
+		<if test="adultNum != null ">
+			adult_num=#{adultNum},
+		</if>
+		<if test="childNum != null ">
+			child_num=#{childNum},
+		</if>
+		<if test="endCity != null ">
+			end_city=#{endCity},
+		</if>
+		<if test="payIncome != null ">
+			pay_income=#{payIncome},
+		</if>
+		<if test="afterNo != null ">
+			after_no=#{afterNo}
+		</if>
+	</sql>
+	<update id="updateObject">
+		UPDATE order_scenic_spot 
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+		<if test="id != null ">
+			AND id = #{id,jdbcType=INTEGER}
+		</if>
+	</update>
+	<update id="updateObject2">
+		UPDATE order_scenic_spot 
+		<set>
+			<include refid="set_column" />
+		</set>
+		WHERE	1=1
+		<if test="orderSys1 != null ">
+			and order_sys1 = #{orderSys1,jdbcType=INTEGER}
+		</if>
+		<if test="orderSys2 != null ">
+			and order_sys2 = #{orderSys2,jdbcType=INTEGER}
+		</if>
+	</update>
+	
+	<select id="findScenicSpotDetailByOrderid" resultType="OrderScenicSpot" >
+		SELECT 
+			<include refid="orderScenicSpotColumns"/>
+			from order_scenic_spot a
+		<include refid="orderScenicSpotJoins"/>
+		WHERE a.order_sys2 = #{orderSys2}
+	</select>
+</mapper>
